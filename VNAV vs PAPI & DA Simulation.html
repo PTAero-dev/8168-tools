@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VNAV vs PAPI Simulation (ICAO Doc 8168 & Annex 14)</title>
+    
+    <!-- Load Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Load React and ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    
+    <!-- Load Babel to compile JSX in the browser -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="bg-slate-200 min-h-screen py-8 px-4">
+    
+    <!-- This is where the React app will be injected -->
+    <div id="root"></div>
+
+    <!-- The React Application Code -->
+    <script type="text/babel">
+        const { useState, useMemo } = React;
+
+        const VnavPapiAdvancedSim = () => {
+          // Approach Parameters
+          const [temperature, setTemperature] = useState(35);
+          const [designVpa, setDesignVpa] = useState(3.0);
+          const [daAmsl, setDaAmsl] = useState(1480); 
+          const [fafAmsl, setFafAmsl] = useState(3000); 
+          const [elevation, setElevation] = useState(1280); 
+          const [calcIndicatedAmsl, setCalcIndicatedAmsl] = useState(1330); 
+
+          // PAPI Parameters
+          const [papiMode, setPapiMode] = useState("No"); // "No" (Standard) or "Yes" (ILS Harmonized)
+          const [nominalPapi, setNominalPapi] = useState(3.0); 
+          const [customBox3, setCustomBox3] = useState(3.25); // Default ILS Upper Limit
+          const [customBox2, setCustomBox2] = useState(2.75); // Default ILS Lower Limit
+
+          // Constants
+          const TCH = 50; 
+          const PAPI_DIST_FT = 1000; 
+          const PAPI_DIFFERENTIAL = 20; // Standard ICAO Differential (arc-minutes)
+
+          // Dynamic PAPI Angles
+          const halfDiffDeg = (PAPI_DIFFERENTIAL / 2) / 60;
+          const box3Papi = papiMode === "Yes" ? customBox3 : nominalPapi + halfDiffDeg;
+          const box2Papi = papiMode === "Yes" ? customBox2 : nominalPapi - halfDiffDeg;
+          const effectiveNominalPapi = papiMode === "Yes" ? (customBox3 + customBox2) / 2 : nominalPapi;
+
+          const toRad = (deg) => deg * (Math.PI / 180);
+
+          const results = useMemo(() => {
+            // Calculate Local ISA based on elevation (Drops 2°C per 1000ft)
+            const localISA = 15 - (2 * (elevation / 1000));
+            const deltaISA = temperature - localISA;
+            
+            // ICAO Doc 8168 Vol II (Geometric Angle Calculation)
+            const tempRatio = (temperature + 273.15) / (localISA + 273.15);
+            const trueVpaRad = Math.atan(Math.tan(toRad(designVpa)) * tempRatio);
+            const trueVpaDeg = trueVpaRad * (180 / Math.PI);
+
+            // --- ICAO Doc 8168 Vol III, Section 2, Chapter 4.3.3 (Exact Altimeter Correction) ---
+            const getTrueHat = (indicatedHat) => {
+                if (indicatedHat === 0) return 0;
+                
+                const L0 = 0.00198; // Lapse rate in Celsius per foot
+                const Hss = elevation; // Altimeter setting source elevation
+                const H = indicatedHat; // Height above the setting source
+                const t_aerodrome = temperature;
+                
+                // t0 = aerodrome temperature adjusted to sea level
+                const t0 = t_aerodrome + (L0 * Hss); 
+                
+                // ICAO Formula 4.3.3 gives the correction to ADD to indicated minimums.
+                // We SUBTRACT this correction value to find physical true altitude.
+                const icaoCorrection = H * ((15 - t0) / (273 + t0 - 0.5 * L0 * (H + Hss)));
+                
+                return H - icaoCorrection;
+            };
+
+            // --- Convert AMSL inputs to HAT ---
+            const daHat = daAmsl - elevation;
+            const fafHat = fafAmsl - elevation;
+            const calcIndicatedHat = calcIndicatedAmsl - elevation;
+
+            // Math setup for intersection
+            const tanVpa = Math.tan(toRad(designVpa));
+            const tanPapi3 = Math.tan(toRad(box3Papi));
+            const tanPapi2 = Math.tan(toRad(box2Papi));
+            
+            // 1. Distance to reach FAF and DA
+            const fafDistFt = (fafHat - TCH) / tanVpa;
+            const fafDistNm = fafDistFt / 6076.12;
+            const trueFafHatFt = getTrueHat(fafHat); 
+            const trueFafAmslFt = trueFafHatFt + elevation;
+
+            const daDistFt = (daHat - TCH) / tanVpa;
+            const daDistNm = daDistFt / 6076.12;
+            const trueDaHatFt = getTrueHat(daHat); 
+            const trueDaAmslFt = trueDaHatFt + elevation;
+
+            // 2. Intersection Distance calculations 
+            const numerator3 = (PAPI_DIST_FT * tanPapi3) - (TCH * tempRatio);
+            const denominator3 = (tanVpa * tempRatio) - tanPapi3;
+            let intersection3DistFt = numerator3 / denominator3;
+            let intersection3DistNm = intersection3DistFt / 6076.12;
+
+            const numerator2 = (PAPI_DIST_FT * tanPapi2) - (TCH * tempRatio);
+            const denominator2 = (tanVpa * tempRatio) - tanPapi2;
+            let intersection2DistFt = numerator2 / denominator2;
+            let intersection2DistNm = intersection2DistFt / 6076.12;
+
+            // Generate graph data points from -1500 ft (past threshold) to FAF + 0.5 NM
+            const points = [];
+            const minNM = -0.25; 
+            const maxNM = Math.max(2.0, Math.ceil(fafDistNm + 0.5)); 
+            const maxYFt = Math.max(1000, Math.ceil((trueFafHatFt * 1.2) / 500) * 500);
+
+            for (let nm = minNM; nm <= maxNM; nm += 0.05) {
+              const distFt = nm * 6076.12;
+              const distFromPapi = distFt + PAPI_DIST_FT;
+              
+              const papiNominalY = distFromPapi >= 0 ? distFromPapi * Math.tan(toRad(effectiveNominalPapi)) : 0;
+              const papi3Y = distFromPapi >= 0 ? distFromPapi * tanPapi3 : 0;
+              const papi2Y = distFromPapi >= 0 ? distFromPapi * tanPapi2 : 0;
+
+              // The True VNAV path is slightly curved due to the lapse rate!
+              const indicatedVnavHat = (distFt * tanVpa) + TCH;
+              const vnavTrueY = distFt >= 0 ? getTrueHat(indicatedVnavHat) : (distFt * tanVpa + TCH) * tempRatio;
+
+              points.push({
+                distNm: nm,
+                papiNominal: papiNominalY,
+                papi3: papi3Y,
+                papi2: papi2Y,
+                vnavTrue: vnavTrueY
+              });
+            }
+
+            // Determine the sequence of events 
+            let eventSequence = "";
+            const trueVpaNum = parseFloat(trueVpaDeg);
+
+            if (trueVpaNum > box3Papi) {
+                if (intersection3DistFt > 0) {
+                    if (intersection3DistFt > daDistFt) {
+                        eventSequence = "Pilot crosses PAPI Box 3 FIRST, then reaches DA.";
+                    } else {
+                        eventSequence = "Pilot reaches DA FIRST, then drops through PAPI Box 3.";
+                    }
+                } else {
+                    eventSequence = `Aircraft never crosses Box 3. It stays ABOVE ${box3Papi.toFixed(2)}° the entire time.`;
+                }
+            } else if (trueVpaNum < box2Papi) {
+                if (intersection2DistFt > 0) {
+                     if (intersection2DistFt > daDistFt) {
+                        eventSequence = "Pilot crosses up through Box 2 FIRST, then reaches DA.";
+                     } else {
+                        eventSequence = "Pilot reaches DA FIRST, then crosses up through Box 2.";
+                     }
+                } else {
+                     eventSequence = `Aircraft stays BELOW ${box2Papi.toFixed(2)}° the entire time.`;
+                }
+            } else {
+                eventSequence = "Perfect! Aircraft stays safely INSIDE the 2 White / 2 Red corridor the entire time.";
+            }
+
+            // Calculate Calculator Results
+            const calcTrueHat = getTrueHat(calcIndicatedHat);
+            const calcTrueAmsl = calcTrueHat + elevation;
+            const calcDiff = calcTrueAmsl - calcIndicatedAmsl;
+
+            return {
+              trueVpaDeg: trueVpaDeg.toFixed(2),
+              crosses3: intersection3DistFt > 0,
+              cross3DistNm: intersection3DistNm > 0 ? intersection3DistNm.toFixed(2) : "N/A",
+              cross3DistFt: intersection3DistFt > 0 ? intersection3DistFt.toFixed(0) : "N/A",
+              crosses2: intersection2DistFt > 0,
+              cross2DistNm: intersection2DistNm > 0 ? intersection2DistNm.toFixed(2) : "N/A",
+              cross2DistFt: intersection2DistFt > 0 ? intersection2DistFt.toFixed(0) : "N/A",
+              daHat,
+              daDistNm: daDistNm.toFixed(2),
+              daDistFt: daDistFt.toFixed(0),
+              trueDaHatFt: trueDaHatFt.toFixed(0),
+              trueDaAmslFt: trueDaAmslFt.toFixed(0),
+              fafHat,
+              fafDistNm: fafDistNm.toFixed(2),
+              trueFafHatFt: trueFafHatFt.toFixed(0),
+              trueFafAmslFt: trueFafAmslFt.toFixed(0),
+              eventSequence,
+              points,
+              minNM, maxNM, maxYFt,
+              localISA: localISA.toFixed(1),
+              tempRatio: tempRatio,
+              calcTrueAlt: calcTrueAmsl.toFixed(2),
+              calcDiff: calcDiff.toFixed(2)
+            };
+          }, [temperature, designVpa, papiMode, nominalPapi, customBox3, customBox2, daAmsl, fafAmsl, elevation, calcIndicatedAmsl]);
+
+          // Determine what the pilot sees
+          const getPilotView = () => {
+              const trueVpa = parseFloat(results.trueVpaDeg);
+              if (trueVpa > box3Papi) {
+                  return { text: "3 White / 1 Red (Slightly High)", color: "text-red-400" };
+              } else if (trueVpa < box2Papi) {
+                  return { text: "1 White / 3 Red (Slightly Low)", color: "text-red-400" };
+              } else {
+                  return { text: "2 White / 2 Red (On Glidepath)", color: "text-green-400" };
+              }
+          };
+          const pilotView = getPilotView();
+
+          // SVG Chart Setup & Dynamic Grid
+          const width = 700;
+          const height = 400;
+          const padding = { top: 20, right: 20, bottom: 50, left: 60 };
+          
+          const scaleX = (nm) => padding.left + ((nm - results.minNM) / (results.maxNM - results.minNM)) * (width - padding.left - padding.right);
+          const scaleY = (ft) => height - padding.bottom - (ft / results.maxYFt) * (height - padding.top - padding.bottom);
+
+          const xTicks = [];
+          for(let i = 0; i <= results.maxNM; i += (results.maxNM > 5 ? 1 : 0.5)) xTicks.push(i);
+          const yTicks = [];
+          for(let i = 0; i <= results.maxYFt; i += (results.maxYFt > 2000 ? 500 : 200)) yTicks.push(i);
+
+          return (
+            <div className="p-6 bg-slate-50 rounded-xl shadow-lg font-sans max-w-4xl mx-auto border border-slate-200">
+              <h2 className="text-2xl font-bold text-slate-800 mb-2">Detailed VNAV vs PAPI & DA Simulation</h2>
+              <p className="text-sm text-slate-600 mb-6">Observe the physical origins of the PAPI and VNAV paths, and compare where the aircraft crosses the Decision Altitude (DA) and Final Approach Fix (FAF).</p>
+
+              {/* Controls - Grouped for Clarity */}
+              <div className="bg-white p-4 rounded-lg shadow-sm border border-slate-100 mb-6">
+                  <h3 className="font-bold text-slate-800 mb-4 border-b pb-2">1. Approach & Weather Parameters</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Design VPA: {designVpa}°</label>
+                      <input type="range" min="2.5" max="3.5" step="0.1" value={designVpa} onChange={(e) => setDesignVpa(parseFloat(e.target.value))} className="w-full accent-blue-600"/>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Temp: {temperature}°C</label>
+                      <input type="range" min="-10" max="50" step="1" value={temperature} onChange={(e) => setTemperature(parseFloat(e.target.value))} className="w-full accent-orange-500"/>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">DA (AMSL):</label>
+                      <input type="number" value={daAmsl} onChange={(e) => setDaAmsl(parseFloat(e.target.value) || 0)} className="w-full border border-slate-300 rounded p-1 text-sm"/>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">FAF (AMSL):</label>
+                      <input type="number" value={fafAmsl} onChange={(e) => setFafAmsl(parseFloat(e.target.value) || 0)} className="w-full border border-slate-300 rounded p-1 text-sm"/>
+                    </div>
+                  </div>
+
+                  <h3 className="font-bold text-slate-800 mb-4 mt-6 border-b pb-2">2. PAPI Configuration (ICAO Annex 14)</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">ILS Equipped?</label>
+                      <select value={papiMode} onChange={(e) => setPapiMode(e.target.value)} className="w-full border border-slate-300 rounded p-1 text-sm bg-white cursor-pointer">
+                        <option value="No">No (Standard 20' Diff)</option>
+                        <option value="Yes">Yes (ILS Harmonized)</option>
+                      </select>
+                    </div>
+                    {papiMode === "No" ? (
+                        <div>
+                          <label className="block text-sm font-semibold text-slate-700 mb-2">PAPI Nominal: {nominalPapi}°</label>
+                          <input type="range" min="2.5" max="3.5" step="0.1" value={nominalPapi} onChange={(e) => setNominalPapi(parseFloat(e.target.value))} className="w-full accent-green-600"/>
+                        </div>
+                    ) : (
+                        <>
+                            <div>
+                              <label className="block text-sm font-semibold text-slate-700 mb-2">Box 3 (Upper Limit):</label>
+                              <input type="number" step="0.01" value={customBox3} onChange={(e) => setCustomBox3(parseFloat(e.target.value) || 0)} className="w-full border border-slate-300 rounded p-1 text-sm"/>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-semibold text-slate-700 mb-2">Box 2 (Lower Limit):</label>
+                              <input type="number" step="0.01" value={customBox2} onChange={(e) => setCustomBox2(parseFloat(e.target.value) || 0)} className="w-full border border-slate-300 rounded p-1 text-sm"/>
+                            </div>
+                        </>
+                    )}
+                  </div>
+              </div>
+
+              {/* True Altitude Calculator */}
+              <div className="mb-6 bg-blue-50 p-4 rounded-lg border border-blue-200 shadow-sm">
+                <h3 className="font-bold text-blue-900 mb-4">True Altitude Calculator (ICAO Doc 8168 Vol III)</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Aerodrome Elevation (MSL):</label>
+                      <input type="number" value={elevation} onChange={(e) => setElevation(parseFloat(e.target.value) || 0)} className="w-full border border-slate-300 rounded p-1 text-sm"/>
+                      <p className="text-xs text-slate-500 mt-1">Local ISA Temperature: {results.localISA}°C</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Indicated Altitude (AMSL):</label>
+                      <input type="number" value={calcIndicatedAmsl} onChange={(e) => setCalcIndicatedAmsl(parseFloat(e.target.value) || 0)} className="w-full border border-slate-300 rounded p-1 text-sm"/>
+                    </div>
+                </div>
+                <div className="mt-4 p-3 bg-white rounded border border-blue-100 flex justify-between items-center">
+                    <div>
+                        <span className="text-sm text-slate-500">True Altitude (AMSL):</span>
+                        <span className="ml-2 text-xl font-bold text-blue-700">{results.calcTrueAlt} ft</span>
+                    </div>
+                    <div className="text-right">
+                        <span className="text-sm text-slate-500">Altimeter Error:</span>
+                        <span className={`ml-2 font-bold ${results.calcDiff >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {results.calcDiff > 0 ? '+' : ''}{results.calcDiff} ft
+                        </span>
+                    </div>
+                </div>
+              </div>
+
+              {/* Results Panel */}
+              <div className="mb-6 bg-slate-800 p-4 rounded-lg text-slate-100 shadow-md">
+                <h3 className="font-bold text-orange-400 mb-2">Flight Profile Analysis:</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <p><strong>True Geometric VPA:</strong> {results.trueVpaDeg}°</p>
+                        <p className="mt-3 text-emerald-300"><strong>FAF ({fafAmsl}ft AMSL / {results.fafHat}ft HAT):</strong><br/>Reached at {results.fafDistNm} NM</p>
+                        <p className="text-xs text-slate-400 italic mb-2">&rarr; True FAF: {results.trueFafAmslFt}ft AMSL ({results.trueFafHatFt}ft HAT)</p>
+
+                        <p className="text-purple-300"><strong>DA ({daAmsl}ft AMSL / {results.daHat}ft HAT):</strong><br/>Reached at {results.daDistNm} NM</p>
+                        <p className="text-xs text-slate-400 italic">&rarr; True DA: {results.trueDaAmslFt}ft AMSL ({results.trueDaHatFt}ft HAT)</p>
+                    </div>
+                    <div>
+                        {parseFloat(results.trueVpaDeg) > box3Papi ? (
+                            <p><strong>Crosses PAPI Box 3 ({box3Papi.toFixed(2)}°) at:</strong> {results.cross3DistFt} ft ({results.cross3DistNm} NM)</p>
+                        ) : parseFloat(results.trueVpaDeg) < box2Papi ? (
+                            <p><strong>Crosses PAPI Box 2 ({box2Papi.toFixed(2)}°) at:</strong> {results.cross2DistFt} ft ({results.cross2DistNm} NM)</p>
+                        ) : (
+                            <p><strong>PAPI Boundaries:</strong> Path stays safely between {box2Papi.toFixed(2)}° and {box3Papi.toFixed(2)}°.</p>
+                        )}
+                        <p className="mt-2 text-yellow-300 font-bold border-t border-slate-600 pt-2">Sequence: {results.eventSequence}</p>
+                    </div>
+                </div>
+                <div className="mt-3 p-2 bg-slate-700 rounded border border-slate-600">
+                    <p className="text-center font-semibold">
+                        Pilot's visual indication over the ground: <span className={pilotView.color}>{pilotView.text}</span>
+                    </p>
+                </div>
+              </div>
+
+              {/* Chart */}
+              <div className="bg-white p-4 rounded-lg shadow-sm border border-slate-100 overflow-x-auto relative">
+                <svg width={width} height={height} className="block bg-slate-50 rounded">
+                  {yTicks.map(ft => (
+                    <g key={`gy-${ft}`}>
+                      <line x1={padding.left} y1={scaleY(ft)} x2={width - padding.right} y2={scaleY(ft)} stroke="#e2e8f0" />
+                      <text x={padding.left - 8} y={scaleY(ft) + 4} fontSize="10" fill="#64748b" textAnchor="end">{ft}</text>
+                    </g>
+                  ))}
+                  {xTicks.map(nm => (
+                    <g key={`gx-${nm}`}>
+                      <line x1={scaleX(nm)} y1={padding.top} x2={scaleX(nm)} y2={height - padding.bottom} stroke={nm === 0 ? "#cbd5e1" : "#f1f5f9"} strokeWidth={nm === 0 ? 2 : 1} />
+                      <text x={scaleX(nm)} y={height - padding.bottom + 15} fontSize="10" fill="#64748b" textAnchor="middle">{nm}</text>
+                    </g>
+                  ))}
+
+                  <rect x={scaleX(results.minNM)} y={scaleY(0)} width={scaleX(0) - scaleX(results.minNM)} height="8" fill="#94a3b8" />
+                  <text x={scaleX(-0.1)} y={scaleY(0) + 20} fontSize="10" fill="#475569" fontWeight="bold">RUNWAY</text>
+
+                  <line x1={scaleX(0)} y1={padding.top} x2={scaleX(0)} y2={height - padding.bottom} stroke="#94a3b8" strokeWidth="2" strokeDasharray="4" />
+                  <text x={scaleX(0) + 5} y={padding.top + 10} fontSize="10" fill="#64748b">Threshold (X=0)</text>
+
+                  <circle cx={scaleX(-1000/6076.12)} cy={scaleY(0)} r="5" fill="#ef4444" />
+                  <text x={scaleX(-1000/6076.12)} y={scaleY(0) - 10} fontSize="10" fill="#ef4444" textAnchor="middle">PAPI</text>
+
+                  <circle cx={scaleX(0)} cy={scaleY(50 * results.tempRatio)} r="4" fill="#2563eb" />
+                  <text x={scaleX(0) + 8} y={scaleY(50) - 10} fontSize="10" fill="#2563eb">50ft TCH</text>
+
+                  <polyline points={results.points.map(p => `${scaleX(p.distNm)},${scaleY(p.papiNominal)}`).join(' ')} fill="none" stroke="#94a3b8" strokeWidth="2" strokeDasharray="4"/>
+                  <polyline points={results.points.map(p => `${scaleX(p.distNm)},${scaleY(p.papi3)}`).join(' ')} fill="none" stroke="#ffffff" strokeWidth="2.5" />
+                  <polyline points={results.points.map(p => `${scaleX(p.distNm)},${scaleY(p.papi3)}`).join(' ')} fill="none" stroke="#ef4444" strokeWidth="2.5" strokeDasharray="8 8"/>
+                  <polyline points={results.points.map(p => `${scaleX(p.distNm)},${scaleY(p.papi2)}`).join(' ')} fill="none" stroke="#ffffff" strokeWidth="2.5" />
+                  <polyline points={results.points.map(p => `${scaleX(p.distNm)},${scaleY(p.papi2)}`).join(' ')} fill="none" stroke="#ef4444" strokeWidth="2.5" strokeDasharray="8 8"/>
+                  <polyline points={results.points.map(p => `${scaleX(p.distNm)},${scaleY(p.vnavTrue)}`).join(' ')} fill="none" stroke="#2563eb" strokeWidth="2"/>
+
+                  <circle cx={scaleX(results.fafDistNm)} cy={scaleY(results.trueFafHatFt)} r="6" fill="#10b981" />
+                  <line x1={scaleX(results.fafDistNm)} y1={scaleY(0)} x2={scaleX(results.fafDistNm)} y2={scaleY(results.trueFafHatFt)} stroke="#10b981" strokeDasharray="2" />
+                  <text x={scaleX(results.fafDistNm) + 8} y={scaleY(results.trueFafHatFt) - 5} fontSize="11" fill="#10b981" fontWeight="bold">FAF</text>
+
+                  <circle cx={scaleX(results.daDistNm)} cy={scaleY(results.trueDaHatFt)} r="6" fill="#9333ea" />
+                  <line x1={scaleX(results.daDistNm)} y1={scaleY(0)} x2={scaleX(results.daDistNm)} y2={scaleY(results.trueDaHatFt)} stroke="#9333ea" strokeDasharray="2" />
+                  <text x={scaleX(results.daDistNm) + 8} y={scaleY(results.trueDaHatFt) - 5} fontSize="11" fill="#9333ea" fontWeight="bold">DA</text>
+
+                  {results.crosses3 && parseFloat(results.trueVpaDeg) > box3Papi && (
+                      <circle cx={scaleX(results.cross3DistNm)} cy={scaleY( (results.cross3DistFt * Math.tan(toRad(designVpa)) + TCH) * results.tempRatio )} r="6" fill="#ef4444" />
+                  )}
+
+                  {results.crosses2 && parseFloat(results.trueVpaDeg) < box2Papi && (
+                      <circle cx={scaleX(results.cross2DistNm)} cy={scaleY( (results.cross2DistFt * Math.tan(toRad(designVpa)) + TCH) * results.tempRatio )} r="6" fill="#f97316" />
+                  )}
+
+                  <text x={width/2} y={height - 10} fontSize="12" fill="#475569" textAnchor="middle">Distance from Threshold (Nautical Miles) &rarr;</text>
+                  <text x={15} y={height/2} fontSize="12" fill="#475569" textAnchor="middle" transform={`rotate(-90, 15, ${height/2})`}>True Height Above Threshold (Feet)</text>
+                </svg>
+
+                <div className="absolute top-6 left-20 bg-white/90 p-2 rounded border border-slate-200 text-xs shadow-sm">
+                    <div className="flex items-center gap-2 mb-1"><div className="w-4 h-[2px] bg-blue-600"></div> True VNAV Path</div>
+                    <div className="flex items-center gap-2 mb-1">
+                        <div className="w-4 h-1 border border-slate-300" style={{ background: 'repeating-linear-gradient(to right, #ef4444 0, #ef4444 4px, #ffffff 4px, #ffffff 8px)' }}></div> 
+                        PAPI Box 3 ({box3Papi.toFixed(2)}°)
+                    </div>
+                    <div className="flex items-center gap-2 mb-1">
+                        <div className="w-4 h-1 border border-slate-300" style={{ background: 'repeating-linear-gradient(to right, #ef4444 0, #ef4444 4px, #ffffff 4px, #ffffff 8px)' }}></div> 
+                        PAPI Box 2 ({box2Papi.toFixed(2)}°)
+                    </div>
+                    <div className="flex items-center gap-2 mb-1"><div className="w-4 h-1 border-b-2 border-dashed border-slate-400"></div> PAPI Nominal ({effectiveNominalPapi.toFixed(2)}°)</div>
+                    <div className="flex items-center gap-2 mb-1"><div className="w-3 h-3 rounded-full bg-[#10b981]"></div> Final Approach Fix (FAF)</div>
+                    <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-purple-600"></div> Decision Altitude (DA)</div>
+                </div>
+              </div>
+            </div>
+          );
+        };
+
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<VnavPapiAdvancedSim />);
+    </script>
+</body>
+</html>
