@@ -5,6 +5,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>8168 Tools</title>
+    <meta name="description" content="ICAO Doc 8168 (PANS-OPS) instrument flight procedure design calculators.">
+    <meta name="theme-color" content="#0b2e59">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="8168 Tools">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -954,6 +964,33 @@
         }
 
         /* =========================================================
+           INSTALL (PWA)
+           ========================================================= */
+        .install-btn { margin-left: auto; }
+        .install-btn[hidden] { display: none; }
+
+        .install-help {
+            position: fixed;
+            left: 50%;
+            bottom: 22px;
+            transform: translateX(-50%);
+            z-index: 1100;
+            width: min(420px, calc(100vw - 24px));
+            padding: 14px 16px;
+            border: 1px solid var(--accent-primary);
+            border-radius: var(--radius);
+            background: var(--bg-sidebar);
+            color: var(--text-main);
+            font-size: 0.86rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+        }
+        .install-help[hidden] { display: none; }
+        .install-help ol { margin: 6px 0 10px; padding-left: 20px; color: var(--text-muted); }
+        .install-help b { color: var(--text-main); }
+
+        body.standalone { padding-top: env(safe-area-inset-top); }
+
+        /* =========================================================
            RESPONSIVE
            ========================================================= */
         @media (max-width: 1100px) {
@@ -1001,6 +1038,8 @@
                 <span class="brand-name">8168 Tools</span>
                 <span class="brand-sub">IFP Design · PANS-OPS</span>
             </div>
+            <button id="install-btn" class="btn-mini primary install-btn" hidden onclick="installApp()"
+                title="Install 8168 Tools as an app">⤓ Install</button>
         </div>
 
         <nav class="nav-menu">
@@ -4592,6 +4631,56 @@
             <circle cx="12" cy="12" r="5"></circle>
         </svg>
     </button>
+    <div id="install-help" class="install-help" hidden role="dialog" aria-label="Install 8168 Tools">
+        <div class="note-title">Install on iPhone / iPad</div>
+        <ol>
+            <li>Tap the <b>Share</b> button in Safari (square with arrow).</li>
+            <li>Choose <b>Add to Home Screen</b>.</li>
+            <li>Tap <b>Add</b>. The app then opens full-screen and works offline.</li>
+        </ol>
+        <button class="btn-mini primary" onclick="document.getElementById('install-help').hidden = true">Got it</button>
+    </div>
+
+    <script>
+        // ---------- Installable app (PWA) ----------
+        let deferredInstall = null;
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+            (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+        if (isStandalone) document.body.classList.add('standalone');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredInstall = e;
+            if (!isStandalone) document.getElementById('install-btn').hidden = false;
+        });
+
+        window.addEventListener('appinstalled', () => {
+            deferredInstall = null;
+            document.getElementById('install-btn').hidden = true;
+        });
+
+        // iOS Safari has no install prompt: show the button with manual steps
+        if (isIOS && !isStandalone) document.getElementById('install-btn').hidden = false;
+
+        async function installApp() {
+            if (deferredInstall) {
+                deferredInstall.prompt();
+                await deferredInstall.userChoice;
+                deferredInstall = null;
+                document.getElementById('install-btn').hidden = true;
+            } else if (isIOS) {
+                document.getElementById('install-help').hidden = false;
+            }
+        }
+
+        if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch((err) => console.warn('SW registration failed', err));
+            });
+        }
+    </script>
 </body>
 
 </html>
