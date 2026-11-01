@@ -1,5 +1,7 @@
 # 8168 Tools — AI Handover Document
 
+> **Claude Code sessions: start with `CLAUDE.md`** (rules, code map, verification workflow, current status and next steps). This file has the detailed module descriptions and history.
+
 **Project:** 8168 Tools  
 **File:** `index.html` (deployed to Cloudflare Pages: https://8168-tools.pages.dev)  
 **Location:** `d:\Antigravity.Projects\8168 Tools\` *(folder renamed from "FVP Tools" on 2026-05-08)*  
