@@ -3388,6 +3388,19 @@
             windEffect(thetaDeg, R, w) { return (thetaDeg / R) * (w / 3600); },
             // I-4-3 §3.5.4.3: base turn divergence φ
             baseTurnPhi(tas, tMin) { return tas <= 170 ? 36 / tMin : (0.215 * tas) / tMin; },
+            // Compare a charted base-turn outbound track with the required divergence φ (I-4-3 §3.5.4.3).
+            // Left turn: outbound = reciprocal + φ; right turn: outbound = reciprocal − φ.
+            baseTurnCheck(inbound, turnDir, phiReq, charted, tol) {
+                const t = tol === undefined ? 2 : tol;
+                const recip = ((inbound + 180) % 360 + 360) % 360;
+                const d = ((charted - recip + 540) % 360) - 180;          // signed, + clockwise from the reciprocal
+                const phiC = d * (turnDir === 'Left' ? 1 : -1);           // divergence on the correct side
+                let status;
+                if (phiC <= 0.5) status = 'wrong-side';
+                else if (Math.abs(phiC - phiReq) <= t) status = 'match';
+                else status = phiC < phiReq ? 'overshoot' : 'undershoot';
+                return { recip, phiC, status };
+            },
             // I-4-3 §3.5.4.1 c): 45° leg 1 min (Cat A, B, H) or 1 min 15 s (Cat C, D, E)
             pt45LegMin(cat) { return /^[CDE]/i.test(cat || '') ? 1.25 : 1.0; },
             // Table I-4-1-2: max IAS for reversal and racetrack procedures (initial approach)
@@ -3600,6 +3613,10 @@
             { g: 'Turn', n: 'ICAO wind at 6 000 ft', ref: 'I-4-3-App C, line 7', exp: 59, tol: 0.01, f: () => PANS.wind(6000) },
             { g: 'Turn', n: 'Wind effect E per degree, w 59 kt, R 3°/s', ref: 'I-4-3-App C, line 9', exp: 0.00546, tol: 0.00002, f: () => PANS.windEffect(1, 3, 59) },
             { g: 'Reversal', n: 'Base turn φ, V ≤ 170 kt, t = 2 min', ref: 'I-4-3-App C, line 10', exp: 18, tol: 0.01, f: () => PANS.baseTurnPhi(157.23, 2) },
+            { g: 'Reversal', n: 'Base turn check: inbound 360°, left, φ 25.2°, charted 215° → undershoot', ref: 'I-4-3 §3.5.4.3', exp: 1, tol: 0, f: () => +(PANS.baseTurnCheck(360, 'Left', 25.2, 215).status === 'undershoot') },
+            { g: 'Reversal', n: 'Base turn check: charted 195° (φ 15°) → overshoot', ref: 'I-4-3 §3.5.4.3', exp: 1, tol: 0, f: () => +(PANS.baseTurnCheck(360, 'Left', 25.2, 195).status === 'overshoot') },
+            { g: 'Reversal', n: 'Base turn check: right turn, charted 215° → wrong side', ref: 'I-4-3 §3.5.4.3', exp: 1, tol: 0, f: () => +(PANS.baseTurnCheck(360, 'Right', 25.2, 215).status === 'wrong-side') },
+            { g: 'Reversal', n: 'Base turn check across 360°: inbound 180°, left, φ 20°, charted 020°', ref: 'I-4-3 §3.5.4.3', exp: 1, tol: 0, f: () => +(PANS.baseTurnCheck(180, 'Left', 20, 20).status === 'match') },
             { g: 'Reversal', n: '45/180 xmax (157 kt, w 59, 1 min)', ref: 'I-4-3-App C example', exp: 13.77, tol: 0.006, f: () => PANS.extents('45/180', 157, 59, 1).xmax },
             { g: 'Reversal', n: '45/180 ymax', ref: 'I-4-3-App C example', exp: 5.45, tol: 0.006, f: () => PANS.extents('45/180', 157, 59, 1).ymax },
             { g: 'Reversal', n: '45/180 ymin', ref: 'I-4-3-App C example', exp: -5.19, tol: 0.006, f: () => PANS.extents('45/180', 157, 59, 1).ymin },
@@ -4143,28 +4160,37 @@
                 drawBtpVisualizer(Math.round(outTrack), inbTrack, turnDir, published);
 
                 // Update explanation
+                const limitTxt = isTime ? 'for <b>' + activeTime.toFixed(2) + ' min</b>'
+                    : 'until <b>DME ' + obValue + '</b> (≈ ' + activeTime.toFixed(2) + ' min at TAS ' + Math.round(tas) + ' kt)';
                 document.getElementById('btp-explanation').innerHTML =
-                    'To intercept the inbound track of <b>' + pad3(inbTrack) + '°</b>, fly outbound on <b>' +
-                    pad3(outTrack) + '°</b> for <b>' + activeTime.toFixed(2) + ' min</b>. Then commence a <b>' +
-                    turnDir + '</b> turn. The divergence angle of <b>' + phi.toFixed(1) + '°</b> ensures the turn brings you onto the final approach course.';
+                    'To intercept the inbound track of <b>' + pad3(inbTrack) + '°</b>, fly outbound on <b>' + pad3(outTrack) + '°</b> ' + limitTxt +
+                    ', i.e. ' + phi.toFixed(1) + '° ' + (turnDir === 'Left' ? 'clockwise' : 'anticlockwise') + ' of the reciprocal ' + pad3((inbTrack + 180) % 360) + '°. ' +
+                    'Then turn <b>' + turnDir.toLowerCase() + '</b> through about ' + Math.round(180 + phi) + '° onto ' + pad3(inbTrack) + '°. ' +
+                    'With φ = ' + phi.toFixed(1) + '° the lateral offset gained outbound matches the turn, so the turn ends on the inbound track (still air).';
 
                 // Overshoot Analysis
                 const panel = document.getElementById('btp-analysis');
                 const warn = document.getElementById('btp-analysis-warn');
                 if (published && published > 0) {
                     panel.style.display = 'block';
-                    const diff = Math.abs((published % 360) - (Math.round(outTrack) % 360));
-                    document.getElementById('btp-analysis-text').innerHTML =
-                        'The charted outbound track is <b>' + pad3(published) + '°</b>, but the ICAO required outbound track at ' +
-                        ias + ' kt is <b>' + pad3(outTrack) + '°</b>.';
-
-                    if (diff <= 2) {
-                        panel.className = 'note ok';
-                        warn.style.display = 'none';
-                    } else {
-                        panel.className = 'note bad';
-                        warn.style.display = 'block';
-                    }
+                    const chk = PANS.baseTurnCheck(inbTrack, turnDir, phi, published, 2);
+                    const base = 'Charted outbound <b>' + pad3(published) + '°</b> gives a divergence of <b>φ = ' + Math.abs(chk.phiC).toFixed(1) +
+                        '°</b> from the reciprocal ' + pad3(chk.recip) + '°. Required at ' + ias + ' kt IAS (TAS ' + Math.round(tas) + ' kt): <b>φ = ' +
+                        phi.toFixed(1) + '°</b>, outbound <b>' + pad3(outTrack) + '°</b>.';
+                    const lt = turnDir.toLowerCase();
+                    const msg = {
+                        match: ['ok', 'Consistent: the charted track is within ±2° of the required outbound.', ''],
+                        overshoot: ['bad', 'The charted divergence is <b>smaller</b> than required.',
+                            '⚠ Overshoot risk: the aircraft starts the ' + lt + ' turn too close to the inbound track and flies through it at this speed.'],
+                        undershoot: ['warn', 'The charted divergence is <b>larger</b> than required.',
+                            '⚠ Undershoot: the turn ends before reaching the inbound track, so a further intercept is needed and the track extends beyond the nominal pattern. No overshoot risk, but check the protected area.'],
+                        'wrong-side': ['bad', 'The charted track is on the <b>wrong side</b> of the reciprocal for a ' + lt + ' turn.',
+                            '⚠ For a ' + lt + ' base turn the outbound must be ' + (turnDir === 'Left' ? 'reciprocal + φ' : 'reciprocal − φ') + ' (' + pad3(outTrack) + '°). Check the turn direction or the charted track.']
+                    }[chk.status];
+                    panel.className = 'note ' + msg[0];
+                    document.getElementById('btp-analysis-text').innerHTML = base + ' ' + msg[1];
+                    warn.innerHTML = msg[2];
+                    warn.style.display = msg[2] ? 'block' : 'none';
                 } else {
                     panel.style.display = 'none';
                 }
