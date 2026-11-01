@@ -1370,7 +1370,7 @@
                                 <span id="temp-isa-dev" class="result-value">--- &deg;C</span>
                             </div>
                             <div class="result-row">
-                                <span class="result-label">Required Correction</span>
+                                <span class="result-label">Required Correction (↑ next 10 ft)</span>
                                 <span id="temp-corr-val" class="result-value c-warning">--- ft</span>
                             </div>
                             <div class="result-row key">
@@ -2342,53 +2342,96 @@
                 <div class="card">
                     <div class="card-header minimizable" onclick="toggleCard(this)">
                         <div class="card-heading"><span class="card-tag">06-C</span>
-                            <div class="card-title">Vertical Error Budget</div>
+                            <div class="card-title">RNP AR Vertical Error Budget</div>
                         </div>
                         <div class="card-actions">
                             <button class="btn-reset"
-                                onclick="event.stopPropagation(); resetCard('card-tol-veb', ['veb-rnp', 'veb-ase', 'veb-fte', 'veb-lne', 'veb-lat-prot', 'veb-moc'], 'calcVEB');">↺ Reset</button>
+                                onclick="event.stopPropagation(); resetCard('card-tol-veb', ['veb-ltp', 'veb-fap', 'veb-tmin', 'veb-lat-prot', 'veb-isa', 'veb-moc250', 'veb-moc', 'veb-grad', 'veb-origin', 'veb-comp'], 'calcVEB');">↺ Reset</button>
                         </div>
                     </div>
-                    <div class="card-desc"><div class="note bad"><div class="note-title">Not verified · do not use for design</div>RNP AR VEB is defined in Doc 9905, not Doc 8168 Vol II. This card is a simplified RSS × 4/3 estimate kept for orientation only.</div></div>
                     <div class="card-body">
                         <div class="form-grid">
                             <div class="vp-row">
                                 <div class="vp-input-group">
-                                    <label>RNP Value</label>
-                                    <select id="veb-rnp" onchange="calcVEB()">
-                                        <option value="0.3">RNP 0.3</option>
-                                        <option value="0.1">RNP 0.1</option>
-                                    </select>
+                                    <label>RNP (NM)</label>
+                                    <input type="number" id="veb-rnp" value="0.3" step="0.01" min="0.1" max="1" oninput="calcVEB()">
                                 </div>
                                 <div class="vp-input-group">
-                                    <label>Long. Nav Error (ft)</label>
-                                    <input type="number" id="veb-lne" value="150" oninput="calcVEB()">
+                                    <label>VPA (°)</label>
+                                    <input type="number" id="veb-vpa" value="3.0" step="0.1" oninput="calcVEB()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>RDH (ft)</label>
+                                    <input type="number" id="veb-rdh" value="50" oninput="calcVEB()">
                                 </div>
                             </div>
                             <div class="vp-row">
                                 <div class="vp-input-group">
-                                    <label>Altimetry (ASE) (ft)</label>
-                                    <input type="number" id="veb-ase" value="100" oninput="calcVEB()" title="Altimetry System Error">
+                                    <label>LTP Elev (ft)</label>
+                                    <input type="number" id="veb-ltp" placeholder="e.g. 1200" oninput="calcVEB()">
                                 </div>
                                 <div class="vp-input-group">
-                                    <label>Flight Tech (FTE) (ft)</label>
-                                    <input type="number" id="veb-fte" value="50" oninput="calcVEB()">
+                                    <label>FAP Alt (ft AMSL)</label>
+                                    <input type="number" id="veb-fap" placeholder="e.g. 4500" oninput="calcVEB()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Min AD Temp (°C)</label>
+                                    <input type="number" id="veb-tmin" placeholder="e.g. 0" oninput="calcVEB()">
+                                </div>
+                            </div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>Final Segment</label>
+                                    <select id="veb-seg" onchange="calcVEB()">
+                                        <option value="straight">Straight (bg 25 ft)</option>
+                                        <option value="rf">RF (bg = 132·sin bank)</option>
+                                    </select>
+                                </div>
+                                <div class="vp-input-group" id="veb-bank-grp" style="display:none;">
+                                    <label>Max Bank (°)</label>
+                                    <input type="number" id="veb-bank" value="18" oninput="calcVEB()">
                                 </div>
                             </div>
                         </div>
 
                         <div class="results-panel">
                             <div class="result-row">
-                                <span class="result-label">Lateral Protection (semi-width)</span>
+                                <span class="result-label">Area semi-width (2 × RNP)</span>
                                 <span id="veb-lat-prot" class="result-value">--- NM</span>
                             </div>
+                            <div class="result-row">
+                                <span class="result-label">ISA deviation at min temp</span>
+                                <span id="veb-isa" class="result-value">--- °C</span>
+                            </div>
+                            <div class="result-row">
+                                <span class="result-label">VEB MOC at 250 ft</span>
+                                <span id="veb-moc250" class="result-value">--- ft</span>
+                            </div>
                             <div class="result-row key">
-                                <span class="result-label">VEB Min Obstacle Clearance</span>
+                                <span class="result-label">VEB MOC at FAP</span>
                                 <span id="veb-moc" class="result-value c-danger">--- ft</span>
                             </div>
+                            <div class="result-row">
+                                <span class="result-label">Final approach OAS gradient</span>
+                                <span id="veb-grad" class="result-value c-warning">--- %</span>
+                            </div>
+                            <div class="result-row">
+                                <span class="result-label">OAS origin from LTP</span>
+                                <span id="veb-origin" class="result-value">--- ft</span>
+                            </div>
+                            <div class="result-row sub">
+                                <span class="result-label">Terms (250 ft / FAP, ft)</span>
+                                <span id="veb-comp" class="result-value" style="font-size: 0.7rem;">---</span>
+                            </div>
+                        </div>
+                        <div class="note" style="margin-top: 12px;">
+                            <div class="note-title">Reference</div>
+                            Doc 9905 Appendix B: MOC = bg − isad + 4/3·√(anpe² + wpr² + fte² + ase² + vae² + atis²);
+                            fte 75 ft, atis 20 ft, semi-span 132 ft. ISA deviation from the minimum aerodrome temperature.
                         </div>
                     </div>
                 </div>
+
             </div>
         </section>
 
@@ -2773,11 +2816,11 @@
                 <div class="ph-main">
                     <div class="ph-crumb">Quality / Verification</div>
                     <h1 class="page-title">Doc 8168 Self-test</h1>
-                    <p class="page-subtitle">The app's formulas re-computed against worked examples and tables in ICAO Doc 8168 Vol II</p>
+                    <p class="page-subtitle">The app's formulas re-computed against worked examples and tables in ICAO Doc 8168 Vol II, Vol III and Doc 9905</p>
                 </div>
                 <dl class="ph-block">
                     <div><dt>Sheet</dt><dd>QA</dd></div>
-                    <div><dt>Reference</dt><dd>Doc 8168 Vol II · 7th ed.</dd></div>
+                    <div><dt>Reference</dt><dd>Doc 8168 II/III · Doc 9905</dd></div>
                 </dl>
             </header>
 
@@ -2828,8 +2871,8 @@
                             <div class="section-label" style="margin-bottom: 8px;">Confirmed / outside Vol II</div>
                             <ul class="audit-list">
                                 <li><b>Confirmed:</b> TAS (I-2-1-App), r = V/(20πR), ICAO wind 2h+47, wind spiral E, φ = 36/t or 0.215·TAS/t, DME tolerance, turn anticipation, ROD.</li>
-                                <li><b>06-C VEB:</b> RNP AR VEB is in Doc 9905 — not verifiable here; card marked "do not use for design".</li>
-                                <li><b>01-B Cold temperature</b> and <b>08 true altitude</b> use the Doc 8168 Vol III altimeter correction formula (Vol III is not in this PDF).</li>
+                                <li><b>01-B Cold temperature</b> and <b>08 true altitude:</b> confirmed against Doc 8168 Vol III 2-4 §4.3.3 and Table 2-4-1 b); both now share one function.</li>
+                                <li><b>06-C VEB</b> rebuilt to Doc 9905 Appendix B (was a simplified RSS × 4/3 of three terms); reproduces the Doc sample MOC, OAS gradient and origin.</li>
                             </ul>
                         </div>
                     </div>
@@ -2931,12 +2974,44 @@
                 return (ha * (cz + ct) - (xz + x)) / cz;
             },
             // ROD (ft/min) = GS (kt) × 6076.12/60 × gradient
-            rod(gs, gradPct) { return gs * 101.2685 * gradPct / 100; }
+            rod(gs, gradPct) { return gs * 101.2685 * gradPct / 100; },
+
+            // Doc 8168 Vol III, Section 2, Ch 4, §4.3.3: cold temperature correction (ft)
+            // Correction = H·(15 − t0) / (273 + t0 − 0.5·L0·(H + Hss)), t0 = t_AD + L0·h_AD, L0 = 0.00198 °C/ft
+            coldTempCorr(H, tAD, hAD) {
+                const L0 = 0.00198, t0 = tAD + L0 * hAD;
+                return H * ((15 - t0) / (273 + t0 - 0.5 * L0 * (H + hAD)));
+            },
+
+            // Doc 9905 Appendix B (non-SI): RNP AR vertical error budget
+            // MOC = bg − isad + 4/3·√(anpe² + wpr² + fte² + ase² + vae² + atis²)
+            veb(o) {
+                const D = Math.PI / 180, Lo = -0.00198, To = 288.15;
+                const tv = Math.tan(o.vpa * D), dv = (tv - Math.tan((o.vpa - 0.01) * D)) / tv;
+                const anpe = 1.225 * o.rnp * 1852 * tv / 0.3048;
+                const wpr = 60 * tv, fte = 75, atis = 20;
+                const bg = o.rf ? 132 * Math.sin((o.bank || 18) * D) : 25;
+                const ase = (e) => -8.8e-8 * e * e + 6.5e-3 * e + 50;
+                const vae = (e) => (e - o.ltp) * dv;
+                const isad = (a) => (o.isaLow / Lo) * Math.log(1 + Lo * a / (To + Lo * o.ltp));
+                const moc = (e) => bg - isad(e - o.ltp) + (4 / 3) * Math.sqrt(anpe * anpe + wpr * wpr + fte * fte + ase(e) ** 2 + vae(e) ** 2 + atis * atis);
+                const e250 = o.ltp + 250, eFap = o.fap;
+                const moc250 = moc(e250), mocFap = moc(eFap);
+                const grad = ((o.fap - o.ltp - mocFap) - (250 - moc250)) / ((o.fap - o.ltp - 250) / tv);
+                const origin = (250 - o.rdh) / tv - (250 - moc250) / grad;
+                return { anpe, wpr, fte, atis, bg, ase250: ase(e250), aseFap: ase(eFap), vae250: vae(e250), vaeFap: vae(eFap),
+                    isad250: isad(250), isadFap: isad(o.fap - o.ltp), moc250, mocFap, grad, origin };
+            },
+            // Doc 9905: RNP AR area semi-width = 2 × RNP
+            rnpArHalfWidth(rnp) { return 2 * rnp; }
         };
 
         // =========================================================
         // SELF-TEST — Doc 8168 Vol II worked examples and tables
         // =========================================================
+        // Doc 9905 Appendix B sample: RNP 0.14, VPA 3°, LTP 1 200 ft, FAP 4 500 ft, RDH 55 ft, ISA −20, RF bank 18°
+        const VEB_SAMPLE = { rnp: 0.14, vpa: 3, ltp: 1200, fap: 4500, rdh: 55, isaLow: -20, rf: true, bank: 18 };
+
         const PANS_TESTS = [
             { g: 'TAS', n: 'TAS factor 10 000 ft, ISA', ref: 'Table I-2-1-App-2', exp: 1.1637, tol: 0.0006, f: () => PANS.tas(1, 10000, 0) },
             { g: 'TAS', n: 'TAS factor 10 000 ft, ISA+15', ref: 'Table I-2-1-App-2', exp: 1.1958, tol: 0.0006, f: () => PANS.tas(1, 10000, 15) },
@@ -2965,6 +3040,18 @@
             { g: 'PBN', n: 'RNP 4 ATT en-route', ref: 'Table III-1-2-2', exp: 3.20, tol: 0.001, f: () => PANS.pbnAtt(4) },
             { g: 'PBN', n: 'RNP APCH Cat H ½A/W at MAPt', ref: 'Table III-1-2-16', exp: 0.80, tol: 0.001, f: () => PANS.pbnHalfWidth(0.3, PANS.bufferValue('final', true)) },
             { g: 'Missed app.', n: 'ha ↔ hma round trip (hma 100, x −1500, xz 900, Z 2.5 %, θ 3°)', ref: 'II-1-1 §1.4.8.8.2.1', exp: 100, tol: 1e-9, f: () => PANS.equivHma(PANS.equivHa(100, -1500, 900, 2.5, 3), -1500, 900, 2.5, 3) },
+            { g: 'Cold temp', n: '−10 °C, 1 000 ft above SL source (rounded up 10 ft)', ref: 'Vol III Table 2-4-1 b)', exp: 100, tol: 0, f: () => Math.ceil(PANS.coldTempCorr(1000, -10, 0) / 10) * 10 },
+            { g: 'Cold temp', n: '−30 °C, 2 000 ft', ref: 'Vol III Table 2-4-1 b)', exp: 380, tol: 0, f: () => Math.ceil(PANS.coldTempCorr(2000, -30, 0) / 10) * 10 },
+            { g: 'Cold temp', n: '−50 °C, 5 000 ft', ref: 'Vol III Table 2-4-1 b)', exp: 1500, tol: 0, f: () => Math.ceil(PANS.coldTempCorr(5000, -50, 0) / 10) * 10 },
+            { g: 'Cold temp', n: '0 °C, 3 000 ft', ref: 'Vol III Table 2-4-1 b)', exp: 170, tol: 0, f: () => Math.ceil(PANS.coldTempCorr(3000, 0, 0) / 10) * 10 },
+            { g: 'Cold temp', n: '−40 °C, 900 ft', ref: 'Vol III Table 2-4-1 b)', exp: 220, tol: 0, f: () => Math.ceil(PANS.coldTempCorr(900, -40, 0) / 10) * 10 },
+            { g: 'RNP AR', n: 'VEB anpe (RNP 0.14, VPA 3°)', ref: 'Doc 9905 App B', exp: 54.6117, tol: 0.001, f: () => PANS.veb(VEB_SAMPLE).anpe },
+            { g: 'RNP AR', n: 'VEB isad at FAP (ISA −20, a 3 300 ft)', ref: 'Doc 9905 App B', exp: -233.6329, tol: 0.001, f: () => PANS.veb(VEB_SAMPLE).isadFap },
+            { g: 'RNP AR', n: 'VEB MOC at 250 ft', ref: 'Doc 9905 App B', exp: 207.536, tol: 0.002, f: () => PANS.veb(VEB_SAMPLE).moc250 },
+            { g: 'RNP AR', n: 'VEB MOC at FAP', ref: 'Doc 9905 App B', exp: 438.483, tol: 0.002, f: () => PANS.veb(VEB_SAMPLE).mocFap },
+            { g: 'RNP AR', n: 'Final approach OAS gradient', ref: 'Doc 9905 App B', exp: 0.0484, tol: 0.0001, f: () => PANS.veb(VEB_SAMPLE).grad },
+            { g: 'RNP AR', n: 'OAS origin from LTP (Doc rounds gradient to 0.0484)', ref: 'Doc 9905 App B', exp: 2843.466, tol: 1.0, f: () => PANS.veb(VEB_SAMPLE).origin },
+            { g: 'RNP AR', n: 'Area semi-width, RNP 0.1', ref: 'Doc 9905 §4 (370 m)', exp: 0.2, tol: 1e-9, f: () => PANS.rnpArHalfWidth(0.1) },
             { g: 'Missed app.', n: 'Equivalent ha, same case (hand calc 57.548 m)', ref: 'II-1-1 §1.4.8.8.2.1', exp: 3400 / (40 + 1 / Math.tan(3 * Math.PI / 180)), tol: 1e-9, f: () => PANS.equivHa(100, -1500, 900, 2.5, 3) }
         ];
 
@@ -2988,7 +3075,7 @@
             if (sum) {
                 sum.className = 'note ' + (pass === res.length ? 'ok' : 'bad');
                 sum.innerHTML = '<div class="note-title">' + (pass === res.length ? 'All checks passed' : (res.length - pass) + ' check(s) failed') + '</div>' +
-                    pass + ' of ' + res.length + ' reference values from ICAO Doc 8168 Vol II are reproduced by the formulas used in this app.';
+                    pass + ' of ' + res.length + ' reference values from ICAO Doc 8168 Vol II/III and Doc 9905 are reproduced by the formulas used in this app.';
             }
             const body = document.getElementById('selftest-body');
             if (!body) return;
@@ -3091,22 +3178,27 @@
         }
 
         // --- TOLERANCE & VEB CALCULATIONS ---
+        // --- RNP AR VERTICAL ERROR BUDGET (Doc 9905 Appendix B, non-SI) ---
         function calcVEB() {
-            const rnp = parseFloat(document.getElementById('veb-rnp').value);
-            const rnpNm = isNaN(rnp) ? 0.3 : rnp;
-            document.getElementById('veb-lat-prot').textContent = (rnpNm * 2).toFixed(1) + " NM";
-
-            const ase = parseFloat(document.getElementById('veb-ase').value) || 0;
-            const fte = parseFloat(document.getElementById('veb-fte').value) || 0;
-            const lne = parseFloat(document.getElementById('veb-lne').value) || 0;
-
-            if (ase === 0 && fte === 0 && lne === 0) return;
-
-            // VEB formula RSS combination x 4/3
-            const rss = Math.sqrt(Math.pow(ase, 2) + Math.pow(fte, 2) + Math.pow(lne, 2));
-            const moc = rss * (4 / 3);
-
-            document.getElementById('veb-moc').textContent = "+ " + moc.toFixed(0) + " ft";
+            const g = (id) => parseFloat(document.getElementById(id).value);
+            const rnp = g('veb-rnp'), vpa = g('veb-vpa'), ltp = g('veb-ltp'), fap = g('veb-fap'), rdh = g('veb-rdh'), tmin = g('veb-tmin');
+            const rf = document.getElementById('veb-seg').value === 'rf';
+            const bank = g('veb-bank') || 18;
+            document.getElementById('veb-bank-grp').style.display = rf ? 'flex' : 'none';
+            const set = (id, t) => { document.getElementById(id).textContent = t; };
+            if (!isNaN(rnp)) set('veb-lat-prot', PANS.rnpArHalfWidth(rnp).toFixed(2) + ' NM');
+            if ([rnp, vpa, ltp, fap, rdh, tmin].some(isNaN)) return;
+            const isaLow = tmin - (15 - 0.00198 * ltp);
+            set('veb-isa', (isaLow > 0 ? '+' : '') + isaLow.toFixed(1) + ' °C');
+            if (fap - ltp <= 250) { set('veb-moc', 'FAP must be > 250 ft above LTP'); return; }
+            const r = PANS.veb({ rnp, vpa, ltp, fap, rdh, isaLow, rf, bank });
+            const f0 = (n) => Math.round(n).toLocaleString();
+            set('veb-moc250', f0(r.moc250) + ' ft');
+            set('veb-moc', f0(r.mocFap) + ' ft');
+            set('veb-grad', (r.grad * 100).toFixed(2) + ' %');
+            set('veb-origin', f0(r.origin) + ' ft (' + (r.origin / 6076.12).toFixed(2) + ' NM)');
+            set('veb-comp', 'anpe ' + r.anpe.toFixed(1) + ' · wpr ' + r.wpr.toFixed(1) + ' · fte 75 · ase ' + r.ase250.toFixed(1) + '/' + r.aseFap.toFixed(1) +
+                ' · vae ' + r.vae250.toFixed(1) + '/' + r.vaeFap.toFixed(1) + ' · atis 20 · isad ' + r.isad250.toFixed(1) + '/' + r.isadFap.toFixed(1) + ' · bg ' + r.bg.toFixed(1));
         }
 
         function calcTAS() {
@@ -3754,12 +3846,10 @@
             const isaDev = tAD - isaAD;
             document.getElementById('temp-isa-dev').textContent = (isaDev > 0 ? "+" : "") + isaDev.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + " \u00B0C";
 
-            // PANS-OPS Formula: Corr = H * (15 - t0) / (273 + t0 - 0.5 * L0 * (H + H0))
-            const L0 = 0.00198; // ft
-            const t0 = tAD + (elevAD * L0);
-            const correction = H * ((15 - t0) / (273 + t0 - 0.5 * L0 * (H + elevAD)));
+            // Doc 8168 Vol III, 2-4 §4.3.3 (tables round up to the next 10 ft)
+            const correction = PANS.coldTempCorr(H, tAD, elevAD);
 
-            document.getElementById('temp-corr-val').textContent = Math.round(correction).toLocaleString() + " ft";
+            document.getElementById('temp-corr-val').textContent = Math.round(correction).toLocaleString() + " ft (↑" + (Math.ceil(correction / 10) * 10).toLocaleString() + ")";
             document.getElementById('temp-fly-alt').textContent = Math.round(altTarget + correction).toLocaleString() + " ft";
         }
 
@@ -4008,12 +4098,8 @@
             // ICAO Doc 8168 Vol III, Section 2, Chapter 4.3.3 (Exact Altimeter Correction)
             function getTrueHatVnav(indicatedHat) {
                 if (indicatedHat === 0) return 0;
-                const L0 = 0.00198;
-                const Hss = elevation;
-                const H = indicatedHat;
-                const t0 = temperature + (L0 * Hss);
-                const icaoCorrection = H * ((15 - t0) / (273 + t0 - 0.5 * L0 * (H + Hss)));
-                return H - icaoCorrection;
+                // Doc 8168 Vol III, 2-4 §4.3.3
+                return indicatedHat - PANS.coldTempCorr(indicatedHat, temperature, elevation);
             }
 
             // Convert AMSL to HAT

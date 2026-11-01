@@ -196,7 +196,7 @@ Three cards:
 **Vertical Error Budget (Doc 9905)**
 - Inputs: RNP value (0.1 or 0.3), LNE (ft), ASE (ft), FTE (ft)
 - Outputs: Lateral protection (semi-width NM), VEB MOC (ft)
-- Formula in code: `RSS(ASE, FTE, LNE) × 4/3` — **not verified**: RNP AR VEB is defined in Doc 9905, not Vol II. Card is flagged "do not use for design".
+- **RNP AR VEB per Doc 9905 Appendix B (non-SI):** `MOC = bg − isad + 4/3·√(anpe² + wpr² + fte² + ase² + vae² + atis²)`, fte 75 ft, atis 20 ft, bg 25 ft straight or 132·sin(bank) RF; ISA deviation from min aerodrome temperature. Outputs MOC at 250 ft and FAP, OAS gradient and origin, ½AW = 2 × RNP. Function `PANS.veb()`.
 - Function: `calcVEB()`
 
 ---
@@ -244,11 +244,16 @@ Function: `calcVnavPapi()`
 
 ---
 
+## 5a. Reference documents
+
+ICAO PDFs are kept in the repo folder for verification but are **git-ignored** (`*.pdf`, ICAO copyright): Doc 8168 Vol II, Doc 8168 Vol III, Doc 9905.
+Cold temperature correction (01-B, 08 true altitude) = Vol III 2-4 §4.3.3 via `PANS.coldTempCorr()`.
+
 ## 5b. PANS core formulas & self-test
 
 All Doc 8168 formulas live in one object, `PANS` (search `PANS-OPS CORE FORMULAS`), each with its paragraph reference.
-Calculators call `PANS.*`; the **QA · Doc 8168 Self-test** sheet (`#selftest`) runs `PANS_TESTS` — 28 reference values from Vol II
-worked examples and tables — and shows the pass count in the sidebar badge. **Add a test whenever a formula is added or changed.**
+Calculators call `PANS.*`; the **QA · Doc 8168 Self-test** sheet (`#selftest`) runs `PANS_TESTS` — 40 reference values from Doc 8168 Vol II,
+Vol III (Table 2-4-1 b) and Doc 9905 (Appendix B sample) — and shows the pass count in the sidebar badge. **Add a test whenever a formula is added or changed.**
 
 ## 5c. Save, scenarios and print
 
@@ -343,6 +348,7 @@ Key development milestones from previous sessions:
 | 2026-05-01 | Coordinate Converter mobile UI redesigned (within FISB Tools project, separate app). Nested card-in-card layout replaced with fluid full-page scroll. |
 | 2026-05-02 | Context imported from Claude session. Session context continuity maintained. |
 | 2026-05-08 | Folder rename from `FVP Tools` → `8168 Tools` initiated. Handover document created. |
+| 2026-11-01 | Added Vol III + Doc 9905: VEB card rebuilt to Doc 9905 App B, cold temperature confirmed vs Vol III Table 2-4-1 b); self-test now 40 checks. |
 | 2026-11-01 | Formula audit vs Doc 8168 Vol II (7 corrections, VEB flagged), PANS core + 28-check self-test sheet. Autosave, named scenarios, JSON export/import, print/PDF calculation sheet with title block. |
 | 2026-11-01 | Installable PWA (manifest, service worker, icons). Diagrams rebuilt: HiDPI, to-scale plan views, PNG export. Mobile overflow audit of all 8 pages at 360 px; VNAV chart compact layout. |
 | 2026-11-01 | Full redesign to Blueprint theme; nav regrouped into 3 sections with sheet numbers; inputs/results side by side; hash deep links; drawings use theme palette (`bpColors`). Fixed: missing `base-ymax` output (Base Turn crashed), unstyled radio toggles, invalid CSS-variable colours in canvases, Airspeed results outside its card. |
