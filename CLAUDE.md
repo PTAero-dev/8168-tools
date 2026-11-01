@@ -113,7 +113,6 @@ Card in `tab-desc` (sheet 07 renamed "Departure & Missed Approach"): `PANS.depSt
 - Turn height 120 m (394 ft) (Cat H 90 m); at 3.3 % reached at ≈ 1.9 NM (Doc: nominal 3.5 km / 1.9 NM).
 
 ### Backlog (agreed with the user, in rough priority)
-- Real-device testing by the user (install, offline, print to PDF on phone).
 - Holding: VOR/DME holding area + along-radial entry (I-4-3-App C §3.3.4); entry area for radial-intersection fixes (§3.3.3.2.2); sector-1 area reduction (§3.3.3.3); RNAV holding.
 - Racetrack protected area on sheet 02R from the same template (primary + 2.5 NM secondary, §3.3.1.3).
 - Turn area construction for departure / missed approach turns (wind spiral, turn at altitude / at a TP).
@@ -130,6 +129,7 @@ Card in `tab-desc` (sheet 07 renamed "Departure & Missed Approach"): `PANS.depSt
 - DME arc segment: area widths and lead radial.
 - Coordinate tool: WGS-84 distance/bearing, point from bearing/distance, magnetic ↔ true.
 - Obstacle list import (CSV) checked in one go against PDG, holding and departure surfaces.
+- Real-device testing by the user (install, offline, print to PDF on phone) — the user's own step; not picked by "continue".
 - Optional: renumber sheets/cards to the new section order (currently original numbers kept; 02R added).
 
 
