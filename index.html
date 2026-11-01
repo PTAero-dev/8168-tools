@@ -912,6 +912,17 @@
         .note.bad .note-title { color: var(--accent-danger); }
         .note.warn { border-color: var(--accent-warning); }
         .note.warn .note-title { color: var(--accent-warning); }
+        /* ⓘ formula / Doc reference */
+        .info-btn { display: inline-grid; place-items: center; width: 15px; height: 15px; margin-left: 6px; padding: 0; vertical-align: 1px;
+            border: 1px solid var(--line); border-radius: 50%; background: transparent; color: var(--accent-primary);
+            font-family: var(--font-mono); font-size: 0.6rem; font-weight: 700; font-style: italic; cursor: pointer; }
+        .info-btn[aria-expanded="true"] { background: var(--accent-primary); color: var(--bg-card); border-color: var(--accent-primary); }
+        .info-pop { margin: 2px 0 6px; padding: 6px 9px; border-left: 2px solid var(--accent-primary); background: var(--accent-fill);
+            font-size: 0.74rem; line-height: 1.45; color: var(--text-main); }
+        .info-pop code { display: block; font-family: var(--font-mono); font-size: 0.72rem; white-space: normal; overflow-wrap: anywhere; }
+        .info-pop em { display: block; margin-top: 2px; font-style: normal; font-family: var(--font-mono); font-size: 0.64rem; letter-spacing: 0.04em; color: var(--text-muted); }
+        .units-switch { display: inline-flex; }
+        .units-switch .btn-mini + .btn-mini { margin-left: -1px; }
         /* limit warnings (Doc limits) */
         .limit-box { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line-soft); display: grid; gap: 4px; }
         .limit-box[hidden] { display: none; }
@@ -1069,7 +1080,7 @@
                 background: #ffffff !important; background-image: none !important;
             }
             * { animation: none !important; transition: none !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            aside, .theme-fab, .project-bar, .viz-dl, .card-actions, .btn-add, .install-help, .legend + .legend, .mobile-bar, .card-index { display: none !important; }
+            aside, .theme-fab, .project-bar, .viz-dl, .info-btn, .card-actions, .btn-add, .install-help, .legend + .legend, .mobile-bar, .card-index { display: none !important; }
             main { overflow: visible; padding: 0; }
             .tab-content { max-width: none; }
             .print-only { display: block; }
@@ -1460,6 +1471,9 @@
                 <input type="file" id="scn-file" accept=".json,application/json" hidden onchange="scnImport(this)">
                 <button class="btn-mini danger" onclick="scnNew()" title="Clear all inputs">New</button>
                 <button class="btn-mini primary" onclick="printSheet()" title="Print this sheet or save it as PDF">🖶 Print / PDF</button>
+                <span class="units-switch" title="Units for results (inputs stay ft / NM / kt)">
+                    <button class="btn-mini units-btn" data-u="ft" onclick="setResultUnits('ft')">ft · NM</button><button class="btn-mini units-btn" data-u="si" onclick="setResultUnits('si')">m · km</button>
+                </span>
                 <span id="save-status" class="save-status">● Autosave on</span>
             </div>
         </div>
@@ -1627,6 +1641,7 @@
                                 <div class="vp-input-group">
                                     <label>TAS (kt)</label>
                                     <input type="number" id="turn-tas" placeholder="e.g. 250" oninput="calcTurn()">
+                                    <div id="turn-tas-src" class="coord-hint" style="text-align: left;"></div>
                                 </div>
                                 <div class="vp-input-group">
                                     <label>Bank (&deg;)</label>
@@ -4330,6 +4345,157 @@
             btn.classList.add('active');
         }
 
+        // =========================================================
+        // RESULT INFO (ⓘ formula + Doc paragraph) · RESULT UNITS (ft/NM ↔ m/km)
+        // =========================================================
+        // Formulas as implemented in PANS / the calc functions; V = TAS (kt), h in ft unless stated
+        const RESULT_INFO = {
+            'tas-out': ['TAS = IAS·171233·√[(288 + ΔISA) − 0.00198·H] / (288 − 0.00198·H)^2.628', 'Vol II I-2-1-App'],
+            'gnd-spd-out': ['GS = TAS ± along-track wind component', ''],
+            'mach-out': ['M = TAS / a,  a = 38.94·√T (kt, T in K)', 'standard atmosphere'],
+            'temp-corr-val': ['ΔH = H·(15 − t0) / (273 + t0 − 0.5·L0·(H + Hss)),  t0 = tAD + L0·hAD,  L0 = 0.00198 °C/ft', 'Vol III 2-4 §4.3.3'],
+            'turn-rate-out': ['R = 3431·tan α / (π·V), max 3°/s', 'Vol II I-2-3 §3.1.2.2 b)'],
+            'turn-rad-out': ['r = V / (20·π·R)  (NM)', 'Vol II I-2-3 §3.1.2.2 c)'],
+            'turn-ta-before': ['Lead = r·tan(θ/2)', 'turn geometry (III-2-1 §1.4, L1)'],
+            'turn-wind-calc': ['w = 2·h + 47 kt  (h in thousands of ft)', 'Vol II I-4-3-App C, line 7'],
+            'turn-etheta-out': ['Eθ = (θ / R)·(w / 3600)  (NM)', 'Vol II I-2-3 §3.3.2.1'],
+            'viz-radius': ['r = V / (20·π·R),  R = 3431·tan α / (π·V) ≤ 3°/s', 'Vol II I-2-3 §3.1.2.2'],
+            'viz-ta': ['Lead = r·tan(θ/2)', 'turn geometry (III-2-1 §1.4, L1)'],
+            'grad-ftnm': ['ft/NM = Δh / d', ''],
+            'grad-percent': ['G = Δh / (d·6076.12)·100  — checked against the segment limits below', 'I-4-3 §3.3.5 · I-4-4 §4.3.3 · I-4-5 §5.3.1'],
+            'grad-angle': ['angle = atan(G / 100)', ''],
+            'pt-tas-wind': ['TAS at ISA + 15 °C;  w = 2·h + 47 kt', 'Vol II I-4-3-App C, lines 1 and 7'],
+            'pt-radius': ['r = V / (20·π·R),  R = 25° bank or 3°/s, whichever is less', 'Vol II I-4-3-App C'],
+            'pt-outbound': ['d = TAS·t / 60  (no wind)', ''],
+            'base-xmax': ['Rectangle equations (non-SI), valid TAS 90–290 kt, w ≤ 65 kt, t 1–3 min', 'Table I-4-3-App C-5'],
+            'base-ymax': ['Rectangle equations (non-SI)', 'Table I-4-3-App C-5'],
+            'base-ymin': ['Rectangle equations (non-SI)', 'Table I-4-3-App C-5'],
+            'base-fixerr': ['z = 0.164·h·tan α  (h in thousands of ft; VOR α = 50°, NDB α = 40°)', 'Vol II I-2-2 §2.5'],
+            'btp-res-phi': ['φ = 36 / t (TAS ≤ 170 kt);  φ = 0.215·TAS / t (TAS > 170 kt)', 'Vol II I-4-3 §3.5.4.3'],
+            'hold-res-tas': ['IAS Table II-4-1-2 → TAS at ISA + 15 °C;  R = 25° bank ≤ 3°/s;  r = V / (20πR)', 'Table I-4-3-App C-4, lines 1–5'],
+            'hold-res-wind': ['w = 2·h + 47 kt;  E45 = 45·w′ / R', 'Table I-4-3-App C-4, lines 7–9'],
+            'hold-res-leg': ['L = v·t  (t = 60·T s)', 'Table I-4-3-App C-4, line 11'],
+            'hold-res-fix': ['z = 0.164·h·tan α  (VOR 50°, NDB 40°)', 'Vol II I-2-2 §2.5'],
+            'hold-res-area': ['Template swept round the fix tolerance area (convex envelope)', 'I-4-3-App C §3.3.3.1'],
+            'hold-res-holdarea': ['Basic area + curves 5–8 and the arc about A (convex envelope)', 'I-4-3-App C §3.3.3.2.1'],
+            'hold-res-xe': ['XE = 2r + (t + 15)v + (11 + 90/R + t + 15 + 105/R)w′;  YE = 11v·cos20° + r·sin20° + r + (t + 15)v·tan5° + (11 + 20/R + 90/R + t + 15 + 15/R)w′', 'I-4-3-App C §3.3.2.2.4.7'],
+            'hold-res-bufmoc': ['Buffer MOC by distance beyond the holding area', 'Table II-4-1-1'],
+            'hold-res-mhl': ['max(obstacle in area + 984 ft, buffer obstacle + buffer MOC), rounded up to 100 ft', 'II-4-1 §1.3.12'],
+            'pbn-limit-1': ['ATT = 0.8·XTT', 'Vol II III-1-2'],
+            'pbn-bv': ['Buffer value by phase of flight', 'Table III-1-1-3'],
+            'pbn-limit-2': ['½A/W = 1.5·XTT + BV', 'Vol II III-1-1 §1.5.1'],
+            'veb-lat-prot': ['semi-width = 2 × RNP', 'Doc 9905'],
+            'veb-moc': ['MOC = bg − isad + 4/3·√(anpe² + wpr² + fte² + ase² + vae² + atis²)', 'Doc 9905 Appendix B'],
+            'veb-moc250': ['MOC = bg − isad + 4/3·√(anpe² + wpr² + fte² + ase² + vae² + atis²)', 'Doc 9905 Appendix B'],
+            'ifix-res-att': ['Track and intersecting radial tolerances (2 SD) crossed on the nominal track', 'Vol II I-2-2 §2.3, Table I-2-2-1'],
+            'ifix-res-ok': ['Fix tolerance compared with the segment limits', 'Vol II I-2-2 §2.6'],
+            'desc-angle': ['angle = atan(G / 100)', ''],
+            'desc-rod': ['ROD = GS × 6076.12 / 60 × G / 100  (ft/min)', ''],
+            'eq-res-val': ['ha = [hma·cot Z + (xz + x)] / (cot Z + cot θ)', 'Vol II II-1-1 §1.4.8.8.2.1 · III-3-4 §4.4.3'],
+            'react-res-total': ['d = V·(t pilot + t bank + t engine) / 3600', 'Table I-2-3-1 (reaction times)'],
+            'dep-res-pdg': ['PDG = (h − 16 ft) / d + 0.8 %  for each penetrating obstacle (not close-in)', 'Vol II I-3-2 §2.7.2'],
+            'dep-res-to': ['ends where a standard gradient keeps 0.8 % MOC:  x = max[(h − 16 − OIS·d) / (PDG − PDGstd)]', 'Vol II I-3-2 §2.7.3–2.7.4'],
+            'dep-res-roc': ['ROC = GS × 6076.12 / 60 × PDG / 100  (ft/min)', ''],
+            'dep-res-turn': ['no turn before 120 m (394 ft) above DER (Cat H 90 m)', 'Vol II I-3-2 §2.2.4'],
+            'dep-res-std': ['3.3 % (Cat H 5.0 %) = 2.5 % OIS + 0.8 % MOC', 'Vol II I-3-2 §2.2.6'],
+            'vnp-res-truevpa': ['tan VPAeff = (hFAP − h)·tan VPA / hFAP;  h = (−ΔT/L0)·ln[1 + L0·hFAP / (T0 + L0·hTHR)]', 'Vol II III-3-4 §4.3.4.2.5, App A §1.3'],
+            'vnp-res-t25': ['temperature where the effective VPA = 2.5° (promulgate as minimum temperature)', 'Vol II III-3-4 §4.2.1, §4.7.3 c)'],
+            'vnp-res-t35': ['temperature above which the effective VPA > 3.5°', 'Vol II III-3-4 §4.7.3 d)'],
+            'vnp-res-faf-true': ['true altitude = indicated − cold temperature correction', 'Vol III 2-4 §4.3.3'],
+            'vnp-res-da-true': ['true altitude = indicated − cold temperature correction', 'Vol III 2-4 §4.3.3'],
+            'msd-res-tas': ['TAS at ISA + ΔISA;  r at the phase bank or 3°/s, whichever is less', 'Vol II III-2-1 §1.4']
+        };
+        RESULT_INFO['res-ta-before'] = RESULT_INFO['turn-ta-before'];
+
+        function attachResultInfo() {
+            Object.keys(RESULT_INFO).forEach((id) => {
+                const el = document.getElementById(id);
+                if (!el || el.dataset.info) return;
+                el.dataset.info = '1';
+                const row = el.closest('.result-row, .stat') || el.parentElement;
+                const label = row.querySelector('.result-label, .stat-label') || row.firstElementChild;
+                if (!label) return;
+                const [f, ref] = RESULT_INFO[id];
+                const b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'info-btn';
+                b.setAttribute('aria-label', 'Formula and Doc reference');
+                b.setAttribute('aria-expanded', 'false');
+                b.textContent = 'i';
+                const pop = document.createElement('div');
+                pop.className = 'info-pop';
+                pop.hidden = true;
+                pop.innerHTML = '<code></code>' + (ref ? '<em></em>' : '');
+                pop.querySelector('code').textContent = f;
+                if (ref) pop.querySelector('em').textContent = ref;
+                b.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    pop.hidden = !pop.hidden;
+                    b.setAttribute('aria-expanded', String(!pop.hidden));
+                });
+                label.appendChild(b);
+                row.after(pop);
+            });
+        }
+
+        // Results can be shown in metres / km (inputs stay in ft / NM / kt). The original text is kept in data-orig.
+        let RESULT_UNITS = 'ft';
+        try { RESULT_UNITS = localStorage.getItem('8168tools:units') === 'si' ? 'si' : 'ft'; } catch (e) { }
+        function resultText(id) {
+            const el = document.getElementById(id);
+            if (!el) return '';
+            // converted text still showing → the original is in data-orig; otherwise the text was just rewritten in ft/NM
+            return el.dataset.orig !== undefined && el.dataset.conv === el.textContent ? el.dataset.orig : el.textContent;
+        }
+        const UNIT_RE = /(-?\d[\d,]*(?:\.\d+)?)\s?(ft\/NM|ft\/min|ft|NM|kt)(?![\w/])/g;
+        function toSi(text) {
+            return text.replace(UNIT_RE, (m, num, u) => {
+                const v = parseFloat(num.replace(/,/g, '')), dec = (num.split('.')[1] || '').length;
+                const out = (x, d) => x.toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
+                if (u === 'ft') return out(v * 0.3048, 0) + ' m';
+                if (u === 'NM') return out(v * 1.852, Math.max(dec, 1)) + ' km';
+                if (u === 'kt') return out(v * 1.852, 0) + ' km/h';
+                if (u === 'ft/min') return out(v * 0.00508, 1) + ' m/s';
+                return out(v * 0.3048 / 1.852, 0) + ' m/km';
+            });
+        }
+        function convertResult(el) {
+            if (el._conv) return;
+            const cur = el.textContent;
+            if (RESULT_UNITS === 'si') {
+                if (el.dataset.conv === cur) return;
+                el.dataset.orig = cur;
+                const t = toSi(cur);
+                el._conv = true; el.textContent = t; el._conv = false;
+                el.dataset.conv = t;
+            } else if (el.dataset.orig !== undefined) {
+                const o = el.dataset.conv === cur ? el.dataset.orig : cur;
+                delete el.dataset.orig; delete el.dataset.conv;
+                el._conv = true; el.textContent = o; el._conv = false;
+            }
+        }
+        const RESULT_SEL = '.result-value, .stat-value';
+        function setResultUnits(u) {
+            RESULT_UNITS = u;
+            try { localStorage.setItem('8168tools:units', u); } catch (e) { }
+            document.querySelectorAll(RESULT_SEL).forEach(convertResult);
+            document.querySelectorAll('.units-btn').forEach((b) => b.classList.toggle('primary', b.dataset.u === u));
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            attachResultInfo();
+            const main = document.querySelector('main');
+            if (main) new MutationObserver((list) => {
+                if (RESULT_UNITS !== 'si') return;
+                const seen = new Set();
+                list.forEach((m) => {
+                    const n = m.target.nodeType === 3 ? m.target.parentElement : m.target;
+                    const el = n && n.closest && n.closest(RESULT_SEL);
+                    if (el && !seen.has(el)) { seen.add(el); convertResult(el); }
+                });
+            }).observe(main, { childList: true, characterData: true, subtree: true });
+            setResultUnits(RESULT_UNITS);
+        });
+
         // ---------- LIMIT WARNINGS: Doc limits listed under a results panel ----------
         // items: [level ('bad' shall/must not | 'warn' should not / non-standard | 'ok'), text, Doc ref]
         function showLimits(anchor, items) {
@@ -4541,9 +4707,14 @@
             // If TAS is empty, fetch from TAS converter if available
             let tas = tasIn;
             if (isNaN(tas)) {
-                const autoTasStr = document.getElementById('tas-out').textContent.replace(' kt', '');
-                const autoTas = parseFloat(autoTasStr);
+                const autoTas = parseFloat(resultText('tas-out'));
                 if (!isNaN(autoTas)) tas = autoTas;
+            }
+            {   // say where the TAS comes from when the box is empty
+                const el = document.getElementById('turn-tas'), autoTas = parseFloat(resultText('tas-out'));
+                el.placeholder = isNaN(autoTas) ? 'e.g. 250' : 'Auto ' + Math.round(autoTas);
+                const src = document.getElementById('turn-tas-src');
+                if (src) src.textContent = isNaN(tasIn) && !isNaN(autoTas) ? 'Using TAS ' + Math.round(autoTas) + ' kt from sheet 01-A' : '';
             }
 
             // Accountable Wind w = 2h + 47
@@ -4608,7 +4779,7 @@
 
         function turnLimits(bank) {
             const L = [];
-            const tas = parseFloat(document.getElementById('turn-tas').value) || parseFloat(document.getElementById('tas-out').textContent);
+            const tas = parseFloat(document.getElementById('turn-tas').value) || parseFloat(resultText('tas-out'));
             if (!isNaN(bank) && bank > PANS.maxBank) L.push(['warn', 'Bank ' + bank + '° is above the 25° used for any phase in PANS-OPS turn construction.', 'Table I-2-3-1']);
             if (!isNaN(bank) && tas > 0 && PANS.rateRaw(tas, bank) > 3) L.push(['warn', 'Rate of turn limited to 3°/s at this TAS — radius uses 3°/s, not ' + bank + '° bank.', 'I-2-3 §3.1.2.2 b)']);
             showLimits('turn-rate-out', L);

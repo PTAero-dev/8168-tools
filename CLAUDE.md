@@ -66,6 +66,9 @@ To add a sheet: add a `.nav-item` to the right group — both navs pick it up.
   options `keep` (shown with labels off) and `free` (exact position). Draw important labels first; reserve points with `ctx._lbl.push([x, y, w, h])`.
   `cvFooter` lifts the caption above the scale bar when they would touch. `decorateViz()` adds the `.viz-tools` row (Aa labels toggle + ⤓ PNG);
   labels off = canvas `data-labels="off"`, SVG elements with class `lbl` and `.legend` hidden. SVG charts do their own placement (see VNAV `placed`).
+- `RESULT INFO · RESULT UNITS` — `RESULT_INFO = { resultId: [formula, Doc ref] }` → `attachResultInfo()` adds an ⓘ button to the row label and a hidden `.info-pop` row. Add an entry for every new key result.
+  Units switch (project bar, `setResultUnits('ft'|'si')`, saved in `localStorage['8168tools:units']`): a MutationObserver rewrites `.result-value`/`.stat-value` text (ft→m, NM→km, kt→km/h, ft/min→m/s, ft/NM→m/km); the original stays in `data-orig`.
+  Inputs and drawings stay ft/NM/kt. **Code that reads a result back must use `resultText(id)`**, never `.textContent`.
 - `CARD TOOLS` — `decorateCards()`: "⌫ Clear" (inputs only) on cards with drawings; Reset also restores result placeholders (`data-init`) and clears drawings.
 - Dynamic lists are mirrored to hidden inputs so autosave captures them: `#pt-legs-json`, `#msd-json`, `#dep-json`.
 - Install/PWA script is a second `<script>` block at the end of `<body>`.
@@ -96,7 +99,7 @@ To add a sheet: add a `.nav-item` to the right group — both navs pick it up.
 - Tools available: Python 3.14 (+ Pillow, PyMuPDF), Node, pdftotext, Git Bash, PowerShell.
 
 ## Current status (2 Nov 2026)
-Last commit: sheet 08 effective VPA by Vol II III-3-4-App A (`PANS.vnavTempCorr/effectiveVpa/vpaTempFor`, hFAP = FAF − elevation) plus §4.7.3 c/d temperatures. Before that: drawing quality pass (label collision avoidance, labels toggle, 2× rendering, VNAV quick sliders under the chart, gradient redraw bug fixed). Before that: limit warnings; navigation restructured into 5 sections with a phone bottom bar, sheet strip and card jump chips; 02-B…02-D moved to new sheet 02R. Before that: holding omnidirectional entry area (05-A).
+Last commit: polish — ⓘ formula/Doc popups on 54 key results, results unit switch (m/km), Turn shows when TAS comes from sheet 01. Before that: sheet 08 effective VPA by Vol II III-3-4-App A (`PANS.vnavTempCorr/effectiveVpa/vpaTempFor`, hFAP = FAF − elevation) plus §4.7.3 c/d temperatures. Before that: drawing quality pass (label collision avoidance, labels toggle, 2× rendering, VNAV quick sliders under the chart, gradient redraw bug fixed). Before that: limit warnings; navigation restructured into 5 sections with a phone bottom bar, sheet strip and card jump chips; 02-B…02-D moved to new sheet 02R. Before that: holding omnidirectional entry area (05-A).
 
 ### Done — 07-D Departure Climb Gradient (PDG)
 Card in `tab-desc` (sheet 07 renamed "Departure & Missed Approach"): `PANS.depStd/depPdgFor/depAnalyse/rocFor`, `calcDeparture()`, `drawDepViz()`, obstacle list in hidden `#dep-json`. Details in `HANDOVER.md`.
@@ -110,7 +113,6 @@ Card in `tab-desc` (sheet 07 renamed "Departure & Missed Approach"): `PANS.depSt
 - Turn height 120 m (394 ft) (Cat H 90 m); at 3.3 % reached at ≈ 1.9 NM (Doc: nominal 3.5 km / 1.9 NM).
 
 ### Backlog (agreed with the user, in rough priority)
-- Polish: ⓘ per result showing formula + Doc paragraph; ft/NM ↔ m/km toggle; "using TAS from Sheet 01" labels.
 - Real-device testing by the user (install, offline, print to PDF on phone).
 - Holding: VOR/DME holding area + along-radial entry (I-4-3-App C §3.3.4); entry area for radial-intersection fixes (§3.3.3.2.2); sector-1 area reduction (§3.3.3.3); RNAV holding.
 - Racetrack protected area on sheet 02R from the same template (primary + 2.5 NM secondary, §3.3.1.3).
