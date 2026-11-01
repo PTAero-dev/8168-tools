@@ -22,6 +22,7 @@ Guide for Claude Code sessions working on this repo. Read this first; details ar
 8. Communicate plainly; the user is a pilot/procedure designer, not a developer.
 9. **Drawing quality:** labels must never overlap each other, lines that matter, or the scale bar/footer — place labels with collision checks and leader lines.
    Every drawing gets a **labels show/hide** toggle. Render HiDPI (crisp at phone DPR 3) and export high-resolution PNG. Use 3D only where it explains something 2D cannot (e.g. surfaces/OAS, VNAV vs terrain), with a 2D fallback.
+   Sliders/controls that change a drawing sit right next to it (a `.viz-controls` strip under the drawing, synced with the main inputs) — no scrolling between control and picture.
 10. **When the user just says "continue"**, finish any work in progress; if none, start the top item of the Backlog (below) right away without asking which one. Remove it from the Backlog when done.
 
 ## Reference documents (in this folder, git-ignored)
@@ -60,6 +61,11 @@ To add a sheet: add a `.nav-item` to the right group — both navs pick it up.
 - `DIAGRAMS — HiDPI canvas` — drawing engine: `setupCanvas`, `vizView`, `makeTurtle`, `cv*` primitives, `svgPill`, `exportViz` (PNG 4×), `redrawDiagrams`.
 - `SAVE / SCENARIOS / PRINT` — autosave (`localStorage['8168tools:autosave']`), `collectState/applyState/recalcAll`, scenarios, `printSheet/preparePrint`.
 - `LIMIT WARNINGS` — `showLimits(anchor, [[level, text, ref]])` adds a `.limit-box` under the results panel containing `anchor` (levels `bad` = shall/max, `warn` = should/non-standard, `ok`); limit values live in `PANS` (`reversalMaxIas`, `outboundTimeOk`, `maxBank`, `descentLimits`, `vpaClass`). `resetCard` clears the boxes. Used on 02-A, 02-B, 02-C, 02-D, 04 legs, 05-A, 07-A, 08-C; 06-D has its own acceptance check.
+- Drawing engine label rules: `setupCanvas` renders at ≥ 2× and starts a label registry (`ctx._lbl`) with the frame caption, buttons and north arrow reserved.
+  `cvLabel` pulls labels inside the canvas, moves a label that overlaps an earlier one to the nearest free slot (leader line for boxed labels);
+  options `keep` (shown with labels off) and `free` (exact position). Draw important labels first; reserve points with `ctx._lbl.push([x, y, w, h])`.
+  `cvFooter` lifts the caption above the scale bar when they would touch. `decorateViz()` adds the `.viz-tools` row (Aa labels toggle + ⤓ PNG);
+  labels off = canvas `data-labels="off"`, SVG elements with class `lbl` and `.legend` hidden. SVG charts do their own placement (see VNAV `placed`).
 - `CARD TOOLS` — `decorateCards()`: "⌫ Clear" (inputs only) on cards with drawings; Reset also restores result placeholders (`data-init`) and clears drawings.
 - Dynamic lists are mirrored to hidden inputs so autosave captures them: `#pt-legs-json`, `#msd-json`, `#dep-json`.
 - Install/PWA script is a second `<script>` block at the end of `<body>`.
@@ -90,7 +96,7 @@ To add a sheet: add a `.nav-item` to the right group — both navs pick it up.
 - Tools available: Python 3.14 (+ Pillow, PyMuPDF), Node, pdftotext, Git Bash, PowerShell.
 
 ## Current status (2 Nov 2026)
-Last commit: limit warnings with Doc refs on 8 cards (07-A got segment/category selectors). Before that: navigation restructured into 5 sections with a phone bottom bar, sheet strip and card jump chips; 02-B…02-D moved to new sheet 02R. Before that: holding omnidirectional entry area (05-A).
+Last commit: drawing quality pass (label collision avoidance, labels toggle, 2× rendering, VNAV quick sliders under the chart, gradient redraw bug fixed). Before that: limit warnings; navigation restructured into 5 sections with a phone bottom bar, sheet strip and card jump chips; 02-B…02-D moved to new sheet 02R. Before that: holding omnidirectional entry area (05-A).
 
 ### Done — 07-D Departure Climb Gradient (PDG)
 Card in `tab-desc` (sheet 07 renamed "Departure & Missed Approach"): `PANS.depStd/depPdgFor/depAnalyse/rocFor`, `calcDeparture()`, `drawDepViz()`, obstacle list in hidden `#dep-json`. Details in `HANDOVER.md`.
@@ -104,7 +110,6 @@ Card in `tab-desc` (sheet 07 renamed "Departure & Missed Approach"): `PANS.depSt
 - Turn height 120 m (394 ft) (Cat H 90 m); at 3.3 % reached at ≈ 1.9 NM (Doc: nominal 3.5 km / 1.9 NM).
 
 ### Backlog (agreed with the user, in rough priority)
-- Drawing quality pass on all existing drawings (rule 9): label collision avoidance (e.g. holding footer overlaps the scale bar at 360 px), labels show/hide toggle, HiDPI check.
 - VNAV vs PAPI: compute true VPA with the Vol II III-3-4 App A method (currently temperature-ratio approximation).
 - Polish: ⓘ per result showing formula + Doc paragraph; ft/NM ↔ m/km toggle; "using TAS from Sheet 01" labels.
 - Real-device testing by the user (install, offline, print to PDF on phone).

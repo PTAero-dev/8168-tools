@@ -805,6 +805,19 @@
 
         .viz canvas { display: block; width: 100%; height: auto; }
 
+        .viz-tools { position: absolute; top: 6px; right: 6px; z-index: 2; display: flex; gap: 4px; }
+        .viz-tools .viz-dl { position: static; }
+        .viz-lbl { min-width: 32px; }
+        .viz-lbl[aria-pressed="false"] { color: var(--text-muted); text-decoration: line-through; opacity: 0.75; }
+        .viz.labels-off .lbl, .viz.labels-off .legend { display: none; }
+        /* quick controls right under an interactive drawing */
+        .viz-controls { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px 14px; margin-top: 8px; padding: 8px 10px;
+            border: 1px dashed var(--line-soft); border-radius: var(--radius); }
+        .viz-controls label { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 2px 8px; font-family: var(--font-mono);
+            font-size: 0.66rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+        .viz-controls label b { justify-self: end; color: var(--text-main); font-weight: 600; letter-spacing: 0.02em; }
+        .viz-controls input[type="range"] { grid-column: 1 / -1; width: 100%; }
+        @media (max-width: 768px) { .viz-controls { grid-template-columns: minmax(0, 1fr); } }
         .viz-dl {
             position: absolute;
             top: 6px;
@@ -828,6 +841,10 @@
             position: absolute;
             top: 8px;
             left: 10px;
+            max-width: calc(100% - 120px);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
             font-family: var(--font-mono);
             font-size: 0.62rem;
             letter-spacing: 0.14em;
@@ -3338,6 +3355,14 @@
                                 <!-- SVG injected by JS -->
                             </div>
                         </div>
+                        <div class="viz-controls" aria-label="Quick controls (same as 08-A)">
+                            <label>Design VPA <b id="vnp-q-vpa-v">3.0°</b>
+                                <input type="range" id="vnp-q-vpa" min="2.5" max="4.0" step="0.1" value="3.0" oninput="vnpQuick('vnp-vpa', 'vnp-vpa-slider', this.value)"></label>
+                            <label>Temperature <b id="vnp-q-temp-v">35 °C</b>
+                                <input type="range" id="vnp-q-temp" min="-10" max="50" step="1" value="35" style="accent-color: var(--accent-warning);" oninput="vnpQuick('vnp-temp', 'vnp-temp-slider', this.value)"></label>
+                            <label id="vnp-q-papi-wrap">PAPI nominal <b id="vnp-q-papi-v">3.0°</b>
+                                <input type="range" id="vnp-q-papi" min="2.5" max="3.5" step="0.1" value="3.0" style="accent-color: var(--accent-success);" oninput="vnpQuick('vnp-papi-nom', 'vnp-papi-slider', this.value)"></label>
+                        </div>
                         <div class="legend">
                             <span class="c-primary"><i></i>True VNAV path</span>
                             <span class="c-cyan"><i class="dash"></i>Design VPA (indicated)</span>
@@ -4959,7 +4984,7 @@
                 if (pctInput) pctInput.value = pctVal.toFixed(4);
             }
 
-            if (!isNaN(angIn)) {
+            if (!isNaN(angIn) && source) {
                 if (!isNaN(sAlt) && !isNaN(d) && source !== 'eAlt') {
                     let rad = angIn * Math.PI / 180;
                     let runFt = d * FT_PER_NM;
@@ -5291,6 +5316,13 @@
             calcVnavPapi();
         }
 
+        // quick sliders under the 08-B chart drive the 08-A inputs
+        function vnpQuick(numId, sliderId, v) {
+            document.getElementById(numId).value = v;
+            document.getElementById(sliderId).value = v;
+            calcVnavPapi();
+        }
+
         function calcVnavPapi() {
             const designVpa = parseFloat(document.getElementById('vnp-vpa').value) || 3.0;
             const temperature = parseFloat(document.getElementById('vnp-temp').value);
@@ -5312,6 +5344,13 @@
             const box3Papi = isIls ? customBox3 : nominalPapi + halfDiffDeg;
             const box2Papi = isIls ? customBox2 : nominalPapi - halfDiffDeg;
             const effectiveNominalPapi = isIls ? (customBox3 + customBox2) / 2 : nominalPapi;
+            {
+                const q = (id, v, txt) => { const el = document.getElementById(id); if (el) el.value = v; const t = document.getElementById(id + '-v'); if (t) t.textContent = txt; };
+                q('vnp-q-vpa', designVpa, designVpa.toFixed(1) + '°');
+                q('vnp-q-temp', temperature, temperature + ' °C');
+                q('vnp-q-papi', nominalPapi, nominalPapi.toFixed(1) + '°');
+                const pw = document.getElementById('vnp-q-papi-wrap'); if (pw) pw.style.display = isIls ? 'none' : '';
+            }
 
             const TCH = 50;
             const PAPI_DIST_FT = 1000;
@@ -5485,7 +5524,7 @@
             let cssH = Math.round(cssW * aspect);
             if (maxH) cssH = Math.min(cssH, maxH);
             if (minH) cssH = Math.max(cssH, minH);
-            const dpr = VIZ_SCALE || Math.max(window.devicePixelRatio || 1, 1);
+            const dpr = VIZ_SCALE || Math.max(window.devicePixelRatio || 1, 2);   // never below 2× so thin lines stay crisp
             canvas.style.height = cssH + 'px';
             canvas.width = Math.round(cssW * dpr);
             canvas.height = Math.round(cssH * dpr);
@@ -5493,6 +5532,13 @@
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
+            ctx._lbl = [];                                   // placed label boxes (collision avoidance)
+            ctx._w = cssW; ctx._h = cssH;
+            ctx._labelsOff = canvas.dataset.labels === 'off'; // labels show/hide toggle on the .viz frame
+            const cap = canvas.parentElement && canvas.parentElement.querySelector(':scope > .viz-label');
+            if (cap) ctx._lbl.push([0, 0, (cap.offsetWidth || cap.textContent.length * 7.2) + 18, 26]);
+            ctx._lbl.push([cssW - 120, 0, 120, 32]);           // PNG / labels buttons
+            ctx._lbl.push([cssW - 36, 34, 26, 40]);            // north arrow (cvNorth at w − 24, 62)
             return { ctx, w: cssW, h: cssH };
         }
 
@@ -5594,23 +5640,57 @@
             });
         }
 
+        // Labels avoid each other: if the box overlaps an earlier label it moves to the nearest free slot
+        // (up/down first, then sideways) and a thin leader joins it to its anchor. o.keep = shown even with labels off,
+        // o.free = drawn exactly where asked (still reserves its box).
         function cvLabel(ctx, C, text, x, y, o) {
             o = o || {};
+            if (ctx._labelsOff && !o.keep) return;
             const size = o.size || 11;
             ctx.save();
             ctx.font = (o.bold ? '600 ' : '500 ') + size + 'px ' + C.mono;
             ctx.textAlign = o.align || 'center';
             ctx.textBaseline = 'middle';
-            if (o.box !== false) {
-                const tw = ctx.measureText(text).width, ph = 5, pv = 3;
-                const bx = o.align === 'left' ? x : (o.align === 'right' ? x - tw : x - tw / 2);
+            const boxed = o.box !== false;
+            const tw = ctx.measureText(text).width, ph = boxed ? 5 : 2, pv = boxed ? 3 : 1;
+            const bw = tw + ph * 2, bh = size + pv * 2;
+            const left0 = (o.align === 'left' ? x : (o.align === 'right' ? x - tw : x - tw / 2)) - ph, top0 = y - size / 2 - pv;
+            let dx = 0, dy = 0;
+            if (ctx._lbl) {
+                const W = ctx._w || 1e9, H = ctx._h || 1e9;
+                if (!o.free) {                                  // pull a label that runs off the edge back inside
+                    if (left0 < 2) dx = 2 - left0; else if (left0 + bw > W - 2) dx = W - 2 - bw - left0;
+                    if (top0 < 2) dy = 2 - top0; else if (top0 + bh > H - 2) dy = H - 2 - bh - top0;
+                }
+                const clash = (l, t) => ctx._lbl.some((r) => l < r[0] + r[2] && l + bw > r[0] && t < r[1] + r[3] && t + bh > r[1]);
+                const inside = (l, t) => l >= 0 && t >= 0 && l + bw <= W && t + bh <= H;
+                if (!o.free && clash(left0 + dx, top0 + dy)) {
+                    const st = bh + 2, sx = Math.max(bw * 0.55, 24), c = [];
+                    for (let k = 1; k <= 4; k++) c.push([0, -k * st], [0, k * st]);
+                    for (let k = 1; k <= 3; k++) c.push([k * sx, 0], [-k * sx, 0], [k * sx, -st], [-k * sx, -st], [k * sx, st], [-k * sx, st]);
+                    const f = c.find(([cx, cy]) => inside(left0 + dx + cx, top0 + dy + cy) && !clash(left0 + dx + cx, top0 + dy + cy));
+                    if (f) { dx += f[0]; dy += f[1]; }
+                }
+                ctx._lbl.push([left0 + dx, top0 + dy, bw, bh]);
+            }
+            if ((dx || dy) && boxed && Math.hypot(dx, dy) > 6) { // leader from the anchor to the nearest edge of the moved box
+                const l = left0 + dx, t = top0 + dy;
+                const ex = Math.max(l, Math.min(x, l + bw)), ey = Math.max(t, Math.min(y, t + bh));
+                ctx.strokeStyle = o.color || C.muted; ctx.globalAlpha = 0.7; ctx.lineWidth = 0.8;
+                ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(ex, ey); ctx.stroke();
+                ctx.beginPath(); ctx.arc(x, y, 1.6, 0, Math.PI * 2); ctx.fillStyle = o.color || C.muted; ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+            x += dx; y += dy;
+            if (boxed) {
+                const bx = left0 + dx, by = top0 + dy;
                 ctx.globalAlpha = 0.9;
                 ctx.fillStyle = C.bg;
-                ctx.fillRect(bx - ph, y - size / 2 - pv, tw + ph * 2, size + pv * 2);
+                ctx.fillRect(bx, by, bw, bh);
                 ctx.globalAlpha = 1;
                 if (o.border) {
                     ctx.strokeStyle = o.border; ctx.lineWidth = 1;
-                    ctx.strokeRect(bx - ph + 0.5, y - size / 2 - pv + 0.5, tw + ph * 2 - 1, size + pv * 2 - 1);
+                    ctx.strokeRect(bx + 0.5, by + 0.5, bw - 1, bh - 1);
                 }
             }
             ctx.fillStyle = o.color || C.ink;
@@ -5643,8 +5723,9 @@
             ctx.strokeStyle = C.ink; ctx.lineWidth = 1;
             ctx.strokeRect(x + 0.5, y - 3.5, len, 3);
             ctx.restore();
-            cvLabel(ctx, C, '0', x, y - 12, { size: 9, box: false, color: C.muted });
-            cvLabel(ctx, C, nm + ' NM', x + len, y - 12, { size: 9, box: false, color: C.muted });
+            if (ctx._lbl) ctx._lbl.push([x - 6, y - 20, len + 34, 22]);
+            cvLabel(ctx, C, '0', x, y - 12, { size: 9, box: false, color: C.muted, keep: true, free: true });
+            cvLabel(ctx, C, nm + ' NM', x + len, y - 12, { size: 9, box: false, color: C.muted, keep: true, free: true });
         }
 
         function cvNorth(ctx, C, x, y) {
@@ -5656,7 +5737,8 @@
             ctx.moveTo(x, y - 12); ctx.lineTo(x - 6, y + 6); ctx.lineTo(x, y + 2); ctx.closePath();
             ctx.strokeStyle = C.ink; ctx.lineWidth = 1; ctx.stroke();
             ctx.restore();
-            cvLabel(ctx, C, 'N', x, y - 22, { size: 10, bold: true, box: false });
+            if (ctx._lbl) ctx._lbl.push([x - 9, y - 30, 18, 38]);
+            cvLabel(ctx, C, 'N', x, y - 22, { size: 10, bold: true, box: false, keep: true, free: true });
         }
 
         function cvFix(ctx, C, x, y, label) {
@@ -5675,9 +5757,14 @@
             ctx.beginPath(); ctx.arc(x, y, r || 4, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
         }
 
+        // Scale bar bottom-left, caption bottom-right; if they would touch, the caption moves up a line
         function cvFooter(ctx, C, V, w, h, caption) {
             cvScaleBar(ctx, C, V, 16, h - 14);
-            cvLabel(ctx, C, caption, w - 12, h - 16, { align: 'right', size: 9, box: false, color: C.muted });
+            ctx.save(); ctx.font = '500 9px ' + C.mono; const cw = ctx.measureText(caption).width; ctx.restore();
+            const sb = ctx._lbl ? ctx._lbl[ctx._lbl.length - 1] : [0, 0, 120, 0];
+            const clash = w - 12 - cw < sb[0] + sb[2] + 8;
+            cvLabel(ctx, C, caption, w - 12, clash ? h - 40 : h - 16, { align: 'right', size: 9, box: false, color: C.muted, keep: true, free: true });
+            if (ctx._lbl) ctx._lbl.push([w - 16 - cw, (clash ? h - 40 : h - 16) - 7, cw + 8, 14]);
             cvNorth(ctx, C, w - 24, 62);
         }
 
@@ -5685,7 +5772,7 @@
         function svgPill(C, x, y, text, color, anchor) {
             const w = text.length * 6.6 + 12, h = 17;
             const x0 = anchor === 'start' ? x : (anchor === 'end' ? x - w : x - w / 2);
-            return `<g><rect x="${x0}" y="${y - h / 2}" width="${w}" height="${h}" rx="2" fill="${C.bg}" fill-opacity="0.92" stroke="${color}" stroke-width="1"/>` +
+            return `<g class="lbl"><rect x="${x0}" y="${y - h / 2}" width="${w}" height="${h}" rx="2" fill="${C.bg}" fill-opacity="0.92" stroke="${color}" stroke-width="1"/>` +
                 `<text x="${x0 + w / 2}" y="${y + 4}" fill="${color}" font-size="11" font-weight="600" text-anchor="middle">${text}</text></g>`;
         }
 
@@ -5918,6 +6005,7 @@
             // dimensions
             const nOut = isRightTurn ? [-u[1], u[0]] : [u[1], -u[0]]; // outside of the turn (NM vector)
             const off = 18 / V.k;
+            [S, E, [0, 0]].forEach((P) => ctx._lbl.push([V.X(P[0]) - 7, V.Y(P[1]) - 7, 14, 14]));   // keep labels off the turn points
             if (!is180 && ta > 0) {
                 cvDim(ctx, C, V.X(S[0] + nOut[0] * off), V.Y(S[1] + nOut[1] * off), V.X(nOut[0] * off), V.Y(nOut[1] * off), 'Lead ' + ta.toFixed(2) + ' NM', C.warning);
                 // turn angle at intersection
@@ -6215,27 +6303,41 @@
             s += `<polyline points="${pl('vnav')}" fill="none" stroke="${C.fill}" stroke-width="10"/>`;
             s += `<polyline points="${pl('vnav')}" fill="none" stroke="${C.primary}" stroke-width="3"/>`;
             s += `</g>`;
-            const mid = rows[Math.round(rows.length * 0.55)];
-            const vAbove = mid.vnav >= mid.design;
-            s += `<text x="${scX(mid.nm)}" y="${scY(clampA(mid.vnav)) + (vAbove ? -9 : 16)}" fill="${C.primary}" font-size="10.5" font-weight="700" text-anchor="middle">True VNAV ${r.trueVpaDeg.toFixed(2)}°</text>`;
-            s += `<text x="${scX(mid.nm)}" y="${scY(clampA(mid.design)) + (vAbove ? 16 : -9)}" fill="${C.cyan}" font-size="10.5" font-weight="700" text-anchor="middle">Design ${r.designVpa.toFixed(1)}°</text>`;
+            // label boxes placed so far: [x, y, w, h]; later labels step away from earlier ones
+            const placed = [];
+            const free = (x, y, w, h) => y >= pad.top - 2 && y + h <= plotB + 2 && !placed.some((b) => x < b[0] + b[2] && x + w > b[0] && y < b[1] + b[3] && y + h > b[1]);
 
             // DA / FAF: what the pilot sees
             const mark = (nm, color, name) => {
                 if (nm < minNM || nm > maxNM) return '';
                 const d = nm * 6076.12, a = angleAt(d, trueAt(d)), L = papiLights(a, r);
                 const x = scX(nm), y = scY(clampA(a));
-                const above = y > (pad.top + plotB) / 2;
-                const ty = above ? y - 26 : y + 26, bw = compact ? 92 : 108;
+                const above = y > (pad.top + plotB) / 2, bw = compact ? 92 : 108;
                 const bx = Math.min(Math.max(x - bw / 2, pad.left + 2), plotR - bw - 2);
+                const tys = above ? [y - 26, y + 26, y - 52, y + 52] : [y + 26, y - 26, y + 52, y - 52];
+                const ty = tys.find((t) => free(bx, t - 11, bw, 22)) || tys[0];
+                placed.push([bx, ty - 11, bw, 22], [x - 7, y - 7, 14, 14]);
                 return `<line x1="${x}" y1="${pad.top}" x2="${x}" y2="${plotB}" stroke="${color}" stroke-width="1" stroke-dasharray="2 3"/>` +
                     `<circle cx="${x}" cy="${y}" r="7" fill="${C.bg}"/><circle cx="${x}" cy="${y}" r="5" fill="${color}"/>` +
+                    `<g class="lbl"><line x1="${x}" y1="${y}" x2="${x}" y2="${ty < y ? ty + 11 : ty - 11}" stroke="${color}" stroke-width="1"/>` +
                     `<rect x="${bx}" y="${ty - 11}" width="${bw}" height="22" rx="2" fill="${C.bg}" fill-opacity="0.94" stroke="${color}"/>` +
                     `<text x="${bx + 7}" y="${ty + 4}" fill="${color}" font-size="11" font-weight="700">${name}</text>` +
-                    svgLights(C, bx + (compact ? 40 : 46), ty, L.white, compact ? 4 : 4.5);
+                    svgLights(C, bx + (compact ? 40 : 46), ty, L.white, compact ? 4 : 4.5) + '</g>';
             };
             s += mark(r.daDistNm, C.violet, 'DA');
             s += mark(r.fafDistNm, C.success, 'FAF');
+
+            const pathLabel = (nm, yLine, prefer, color, text) => {
+                const w = text.length * 6.4 + 6, x = scX(nm);
+                const ys = [prefer, -prefer, prefer * 2.4, -prefer * 2.4].map((o) => yLine + o);
+                const yy = ys.find((t) => free(x - w / 2, t - 10, w, 13)) || ys[0];
+                placed.push([x - w / 2, yy - 10, w, 13]);
+                return `<text class="lbl" x="${x}" y="${yy}" fill="${color}" font-size="10.5" font-weight="700" text-anchor="middle">${text}</text>`;
+            };
+            const mid = rows[Math.round(rows.length * 0.55)];
+            const vAbove = mid.vnav >= mid.design;
+            s += pathLabel(mid.nm, scY(clampA(mid.vnav)), vAbove ? -9 : 16, C.primary, 'True VNAV ' + r.trueVpaDeg.toFixed(2) + '°');
+            s += pathLabel(mid.nm, scY(clampA(mid.design)), vAbove ? 16 : -9, C.cyan, 'Design ' + r.designVpa.toFixed(1) + '°');
 
             // titles
             s += `<text x="${pad.left}" y="${pad.top - 12}" fill="${C.ink}" font-size="11" font-weight="600">${compact ? 'Angle seen from the PAPI' : 'Aircraft angle seen from the PAPI → what the pilot sees'}</text>`;
@@ -6386,6 +6488,8 @@
             if (typeof calcHoldArea === 'function') calcHoldArea();
             if (typeof calcIfix === 'function') calcIfix();
             if (typeof calcDeparture === 'function') calcDeparture();
+            if (typeof calcMsd === 'function') calcMsd();
+            if (typeof calcBaseTurnPhi === 'function') calcBaseTurnPhi();
         }
 
         function exportViz(btn) {
@@ -6556,7 +6660,7 @@
         // =========================================================
         const STORE_KEY = '8168tools:autosave';
         const SCN_KEY = '8168tools:scenarios';
-        const STATE_SKIP = new Set(['scn-select', 'scn-file']);
+        const STATE_SKIP = new Set(['scn-select', 'scn-file', 'vnp-q-vpa', 'vnp-q-temp', 'vnp-q-papi']);
         let _saveTimer = null, _restoring = false;
 
         const escHtml = (t) => String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -7046,8 +7150,8 @@
 
             cvFix(ctx, C, V.X(0), V.Y(0), 'FIX');
             cvLabel(ctx, C, '▭ basic area', 10, 34, { align: 'left', size: 9, box: false, color: C.warning });
-            if (o.entry) cvLabel(ctx, C, '▭ basic + entry area (curves 5–8)', 90, 34, { align: 'left', size: 9, box: false, color: C.violet });
-            cvLabel(ctx, C, '┄ template · ┄ 5 NM buffer · S1–S3 entry sectors', 10, 48, { align: 'left', size: 9, box: false, color: C.muted });
+            if (o.entry) cvLabel(ctx, C, '▭ basic + entry area (curves 5–8)', 10, 48, { align: 'left', size: 9, box: false, color: C.violet });
+            cvLabel(ctx, C, '┄ template · ┄ 5 NM buffer · S1–S3', 10, o.entry ? 62 : 48, { align: 'left', size: 9, box: false, color: C.muted });
             cvFooter(ctx, C, V, w, h, String(Math.round(o.inbound)).padStart(3, '0') + '° inbound · ' + (o.left ? 'left' : 'right') + ' turns · TAS ' + Math.round(o.V) + ' kt · w ' + Math.round(o.wind) + ' kt');
         }
 
@@ -7477,7 +7581,34 @@
         }
 
         // Add Clear buttons to cards with drawings and make Reset also clear results + drawing
+        // "Aa" button on each drawing frame: show / hide labels (canvas: data-labels; SVG: .labels-off hides .lbl)
+        function decorateViz(root) {
+            (root || document).querySelectorAll('main .viz').forEach((viz) => {
+                if (viz.querySelector(':scope > .viz-tools')) return;
+                const tools = document.createElement('div');
+                tools.className = 'viz-tools';
+                const b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'viz-dl viz-lbl';
+                b.title = 'Show / hide labels';
+                b.textContent = 'Aa';
+                b.setAttribute('aria-pressed', 'true');
+                b.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const off = viz.classList.toggle('labels-off');
+                    b.setAttribute('aria-pressed', String(!off));
+                    viz.querySelectorAll('canvas').forEach((c) => { c.dataset.labels = off ? 'off' : ''; });
+                    redrawDiagrams();
+                });
+                tools.appendChild(b);
+                const dl = viz.querySelector(':scope > .viz-dl');
+                if (dl) tools.appendChild(dl);
+                viz.appendChild(tools);
+            });
+        }
+
         function decorateCards(root) {
+            decorateViz(root);
             snapshotResultDefaults(root);
             (root || document).querySelectorAll('main .card').forEach((card) => {
                 if (card.dataset.tools) return;
