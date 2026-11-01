@@ -2708,7 +2708,11 @@
                 <div class="card span-all">
                     <div class="card-header minimizable" onclick="toggleCard(this)">
                         <div class="card-heading"><span class="card-tag">08-B</span>
-                            <div class="card-title">Profile Chart</div>
+                            <div class="card-title" id="vnp-chart-title">Path vs PAPI Corridor</div>
+                        </div>
+                        <div class="card-actions" id="vnp-mode">
+                            <button class="btn-mini primary" data-mode="dev" onclick="event.stopPropagation(); setVnpMode('dev', this)" title="Height relative to the PAPI nominal slope">Deviation</button>
+                            <button class="btn-mini" data-mode="profile" onclick="event.stopPropagation(); setVnpMode('profile', this)" title="Height above threshold">Profile</button>
                         </div>
                     </div>
                     <div class="card-body">
@@ -2721,7 +2725,9 @@
                         <div class="legend">
                             <span class="c-primary"><i></i>True VNAV path</span>
                             <span class="c-cyan"><i class="dash"></i>Design VPA (indicated)</span>
-                            <span class="c-success"><i></i>PAPI on-slope corridor</span>
+                            <span class="c-success"><i></i>On slope (2 W / 2 R)</span>
+                            <span class="c-warning"><i></i>High (3 W / 1 R)</span>
+                            <span class="c-danger"><i></i>Low (1 W / 3 R)</span>
                             <span class="c-danger"><i class="dash"></i>PAPI Box 3 / 2</span>
                             <span class="c-muted"><i class="dash"></i>PAPI nominal</span>
                             <span class="c-success"><i class="dot"></i>FAF</span>
@@ -4844,9 +4850,156 @@
         }
 
         // =========================================================
+        // 08-B VNAV vs PAPI — chart mode (deviation = default)
+        // =========================================================
+        let VNP_MODE = (() => { try { return localStorage.getItem('8168tools:vnpMode') || 'dev'; } catch (e) { return 'dev'; } })();
+
+        function setVnpMode(mode, btn) {
+            VNP_MODE = mode;
+            try { localStorage.setItem('8168tools:vnpMode', mode); } catch (e) { /* ignore */ }
+            syncVnpModeButtons();
+            calcVnavPapi();
+        }
+
+        function syncVnpModeButtons() {
+            document.querySelectorAll('#vnp-mode .btn-mini').forEach((b) => b.classList.toggle('primary', b.dataset.mode === VNP_MODE));
+            const t = document.getElementById('vnp-chart-title');
+            if (t) t.textContent = VNP_MODE === 'dev' ? 'Path vs PAPI Corridor' : 'Profile Chart';
+        }
+
+        function drawVnavPapiChart(r) {
+            if (VNP_MODE === 'profile') drawVnavProfileChart(r);
+            else drawVnavDeviationChart(r);
+        }
+
+        // Height of each path relative to the PAPI nominal slope, so ±ft differences are readable
+        function drawVnavDeviationChart(r) {
+            const C = bpColors();
+            const box = document.getElementById('vnp-chart-container');
+            const compact = box && box.clientWidth > 0 && box.clientWidth < 640;
+            const width = compact ? Math.max(300, box.clientWidth - 4) : 780;
+            const height = compact ? Math.round(width * 1.05) : 400;
+            const pad = compact ? { top: 34, right: 84, bottom: 44, left: 46 } : { top: 34, right: 120, bottom: 52, left: 70 };
+            const plotR = width - pad.right, plotB = height - pad.bottom;
+
+            const maxNM = Math.max(2.0, Math.ceil(r.fafDistNm + 0.5));
+            const tanNom = Math.tan(r.toRad(r.effectiveNominalPapi));
+            const base = (distFt) => (distFt + r.PAPI_DIST_FT) * tanNom;
+            const trueAt = (distFt) => r.getTrueHatVnav(distFt * r.tanVpa + r.TCH);
+
+            const rows = [];
+            for (let nm = 0; nm <= maxNM + 1e-9; nm += 0.05) {
+                const d = nm * 6076.12, b = base(d);
+                rows.push({
+                    nm,
+                    vnav: trueAt(d) - b,
+                    design: d * r.tanVpa + r.TCH - b,
+                    b3: (d + r.PAPI_DIST_FT) * r.tanPapi3 - b,
+                    b2: (d + r.PAPI_DIST_FT) * r.tanPapi2 - b
+                });
+            }
+            const all = rows.flatMap((p) => [p.vnav, p.design, p.b3, p.b2]);
+            let span = Math.max(50, ...all.map(Math.abs)) * 1.18;
+            const steps = [10, 20, 25, 50, 100, 200, 250, 500];
+            let step = steps.find((s) => span / s <= 4) || 500;
+            span = Math.ceil(span / step) * step;
+
+            const scX = (nm) => pad.left + (nm / maxNM) * (plotR - pad.left);
+            const scY = (ft) => pad.top + ((span - ft) / (2 * span)) * (plotB - pad.top);
+            const clamp = (ft) => Math.max(-span, Math.min(span, ft));
+            const pl = (key) => rows.map((p) => scX(p.nm).toFixed(1) + ',' + scY(clamp(p[key])).toFixed(1)).join(' ');
+            const plRev = (key) => rows.slice().reverse().map((p) => scX(p.nm).toFixed(1) + ',' + scY(clamp(p[key])).toFixed(1)).join(' ');
+            const X0 = scX(0), X1 = scX(maxNM), Yt = scY(span), Yb = scY(-span);
+
+            let s = `<defs><clipPath id="vdClip"><rect x="${pad.left}" y="${pad.top}" width="${plotR - pad.left}" height="${plotB - pad.top}"/></clipPath></defs>`;
+
+            // PAPI indication zones
+            s += `<g clip-path="url(#vdClip)">`;
+            s += `<polygon points="${X0},${Yt} ${X1},${Yt} ${plRev('b3')}" fill="${C.warning}" fill-opacity="0.10"/>`;
+            s += `<polygon points="${pl('b3')} ${plRev('b2')}" fill="${C.success}" fill-opacity="0.16"/>`;
+            s += `<polygon points="${pl('b2')} ${X1},${Yb} ${X0},${Yb}" fill="${C.danger}" fill-opacity="0.10"/>`;
+            s += `</g>`;
+
+            // grid
+            for (let ft = -span; ft <= span + 1e-9; ft += step) {
+                const y = scY(ft);
+                s += `<line x1="${pad.left}" y1="${y}" x2="${plotR}" y2="${y}" stroke="${ft === 0 ? C.muted : C.soft}" stroke-width="1" ${ft === 0 ? 'stroke-dasharray="6 4"' : ''}/>`;
+                s += `<text x="${pad.left - 6}" y="${y + 3.5}" fill="${C.muted}" font-size="10" text-anchor="end">${ft > 0 ? '+' : ''}${ft}</text>`;
+            }
+            const xStep = maxNM > 5 ? 1 : 0.5;
+            for (let nm = 0; nm <= maxNM + 1e-9; nm += xStep) {
+                s += `<line x1="${scX(nm)}" y1="${pad.top}" x2="${scX(nm)}" y2="${plotB}" stroke="${C.soft}" stroke-width="1"/>`;
+                s += `<text x="${scX(nm)}" y="${plotB + 15}" fill="${C.muted}" font-size="10" text-anchor="middle">${nm}</text>`;
+            }
+            s += `<rect x="${pad.left}" y="${pad.top}" width="${plotR - pad.left}" height="${plotB - pad.top}" fill="none" stroke="${C.line}" stroke-width="1"/>`;
+
+            // zone names (placed where the band is widest: far end)
+            const zx = scX(maxNM * 0.62);
+            const zr = rows[Math.round(rows.length * 0.62)];
+            const zt = (y, txt, col) => `<text x="${zx}" y="${y}" fill="${col}" font-size="${compact ? 9.5 : 11}" font-weight="700" text-anchor="middle" letter-spacing="0.06em">${txt}</text>`;
+            s += zt((Yt + scY(clamp(zr.b3))) / 2 + 4, 'HIGH · 3 WHITE / 1 RED', C.warning);
+            s += zt((scY(clamp(zr.b3)) + scY(0)) / 2 + 4, 'ON SLOPE · 2 W / 2 R', C.success);
+            s += zt((scY(clamp(zr.b2)) + Yb) / 2 + 4, 'LOW · 1 WHITE / 3 RED', C.danger);
+
+            // paths
+            s += `<g clip-path="url(#vdClip)">`;
+            s += `<polyline points="${pl('b3')}" fill="none" stroke="${C.danger}" stroke-width="1.4" stroke-dasharray="7 4"/>`;
+            s += `<polyline points="${pl('b2')}" fill="none" stroke="${C.danger}" stroke-width="1.4" stroke-dasharray="7 4"/>`;
+            s += `<polyline points="${pl('design')}" fill="none" stroke="${C.cyan}" stroke-width="1.5" stroke-dasharray="2 4"/>`;
+            s += `<polyline points="${pl('vnav')}" fill="none" stroke="${C.fill}" stroke-width="10"/>`;
+            s += `<polyline points="${pl('vnav')}" fill="none" stroke="${C.primary}" stroke-width="3"/>`;
+            s += `</g>`;
+
+            // DA / FAF markers with the deviation value
+            const devAt = (nm) => { const d = nm * 6076.12; return trueAt(d) - base(d); };
+            const mark = (nm, color, name) => {
+                if (nm < 0 || nm > maxNM) return '';
+                const dv = devAt(nm), x = scX(nm), y = scY(clamp(dv));
+                const txt = name + ' ' + (dv >= 0 ? '+' : '') + Math.round(dv) + ' ft';
+                const above = y > (pad.top + plotB) / 2;
+                return `<line x1="${x}" y1="${pad.top}" x2="${x}" y2="${plotB}" stroke="${color}" stroke-width="1" stroke-dasharray="2 3"/>` +
+                    `<circle cx="${x}" cy="${y}" r="7" fill="${C.bg}"/><circle cx="${x}" cy="${y}" r="5" fill="${color}"/>` +
+                    svgPill(C, x, above ? y - 18 : y + 18, txt, color);
+            };
+            s += mark(r.daDistNm, C.violet, 'DA');
+            s += mark(r.fafDistNm, C.success, 'FAF');
+
+            // where the path leaves / enters the on-slope band
+            const cross = (dFt, nmVal, key, col, label) => {
+                if (!(dFt > 0) || nmVal > maxNM) return '';
+                const d = nmVal * 6076.12, dv = (d + r.PAPI_DIST_FT) * (key === 'b3' ? r.tanPapi3 : r.tanPapi2) - base(d);
+                return `<circle cx="${scX(nmVal)}" cy="${scY(clamp(dv))}" r="6" fill="none" stroke="${col}" stroke-width="2"/>` +
+                    `<text x="${Math.max(scX(nmVal), pad.left + 4)}" y="${scY(clamp(dv)) + (key === 'b3' ? -11 : 18)}" fill="${col}" font-size="10" font-weight="700" text-anchor="${scX(nmVal) < pad.left + 70 ? 'start' : 'middle'}">${label} ${nmVal.toFixed(2)} NM</text>`;
+            };
+            if (r.trueVpaDeg > r.box3Papi) s += cross(r.int3DistFt, r.int3DistNm, 'b3', C.danger, '✕ Box 3');
+            if (r.trueVpaDeg < r.box2Papi) s += cross(r.int2DistFt, r.int2DistNm, 'b2', C.warning, '✕ Box 2');
+
+            // right-edge labels
+            const last = rows[rows.length - 1];
+            const lab = [
+                { y: scY(clamp(last.vnav)), t: 'VNAV ' + r.trueVpaDeg.toFixed(2) + '°', c: C.primary },
+                { y: scY(clamp(last.design)), t: (compact ? 'Dsgn ' : 'Design ') + r.designVpa.toFixed(1) + '°', c: C.cyan },
+                { y: scY(clamp(last.b3)), t: 'Box 3 ' + r.box3Papi.toFixed(2) + '°', c: C.danger },
+                { y: scY(0), t: 'Nom ' + r.effectiveNominalPapi.toFixed(2) + '°', c: C.muted },
+                { y: scY(clamp(last.b2)), t: 'Box 2 ' + r.box2Papi.toFixed(2) + '°', c: C.danger }
+            ].sort((a, b) => a.y - b.y);
+            for (let i = 1; i < lab.length; i++) if (lab[i].y - lab[i - 1].y < 19) lab[i].y = lab[i - 1].y + 19;
+            const over = lab[lab.length - 1].y - (plotB - 6);
+            if (over > 0) lab.forEach((l) => { l.y -= over; });
+            lab.forEach((l) => { s += svgPill(C, plotR + 8, l.y, l.t, l.c, 'start'); });
+
+            // titles
+            s += `<text x="${pad.left}" y="${pad.top - 12}" fill="${C.ink}" font-size="11" font-weight="600">${compact ? 'ft vs PAPI nominal' : 'Height above / below PAPI nominal (ft)'}</text>`;
+            s += `<text x="${(pad.left + plotR) / 2}" y="${height - 10}" fill="${C.muted}" font-size="10.5" text-anchor="middle">Distance from threshold (NM) →</text>`;
+            if (!compact) s += `<text x="${plotR}" y="${pad.top - 12}" fill="${C.muted}" font-size="10" text-anchor="end">OAT ${r.temperature}°C · T/T<tspan font-size="8" dy="2">ISA</tspan><tspan dy="-2"> ${r.tempRatio.toFixed(3)}</tspan></text>`;
+
+            box.innerHTML = `<svg viewBox="0 0 ${width} ${height}" width="100%" style="display:block; max-width:1180px; margin:0 auto; font-family:${C.mono};">${s}</svg>`;
+        }
+
+        // =========================================================
         // 08-B VNAV vs PAPI PROFILE (SVG)
         // =========================================================
-        function drawVnavPapiChart(r) {
+        function drawVnavProfileChart(r) {
             const C = bpColors();
             const box = document.getElementById('vnp-chart-container');
             const compact = box && box.clientWidth > 0 && box.clientWidth < 640;
@@ -5387,6 +5540,7 @@
             }
 
             renderSelfTest();
+            syncVnpModeButtons();
 
             // Open the sheet named in the URL hash, e.g. #vnav-papi
             const hashTab = 'tab-' + location.hash.replace(/^#/, '');
