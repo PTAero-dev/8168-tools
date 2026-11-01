@@ -86,6 +86,7 @@ Every card has a `.btn-reset` in its header (uses `event.stopPropagation()` so i
 | Procedure Construction | 04 | IFP Gradient | `tab-gradient` |
 | | 05 | Holding | `tab-holdb` |
 | | 06 | Tolerance, VEB & PBN | `tab-tol` |
+| | 09 | Path Terminators | `tab-pt` |
 | Approach & Vertical | 07 | Descent & Missed App | `tab-desc` |
 | | 08 | VNAV vs PAPI | `tab-vnav-papi` |
 
@@ -266,8 +267,8 @@ Cold temperature correction (01-B, 08 true altitude) = Vol III 2-4 §4.3.3 via `
 ## 5b. PANS core formulas & self-test
 
 All Doc 8168 formulas live in one object, `PANS` (search `PANS-OPS CORE FORMULAS`), each with its paragraph reference.
-Calculators call `PANS.*`; the **QA · Doc 8168 Self-test** sheet (`#selftest`) runs `PANS_TESTS` — 64 reference values from Doc 8168 Vol II
-(incl. holding Table I-4-3-App C-4, fix accuracies), Vol III (Table 2-4-1 b) and Doc 9905 (Appendix B sample) — and shows the pass count in the sidebar badge. **Add a test whenever a formula is added or changed.**
+Calculators call `PANS.*`; the **QA · Doc 8168 Self-test** sheet (`#selftest`) runs `PANS_TESTS` — 74 reference values from Doc 8168 Vol II
+(incl. holding Table I-4-3-App C-4, fix accuracies, path terminator tables), Vol III (Table 2-4-1 b) and Doc 9905 (Appendix B sample) — and shows the pass count in the sidebar badge. **Add a test whenever a formula is added or changed.**
 
 ## 5c. Save, scenarios and print
 
@@ -275,6 +276,12 @@ Calculators call `PANS.*`; the **QA · Doc 8168 Self-test** sheet (`#selftest`) 
 - **Project strip** (top of main): project, designer, date; named scenarios in `localStorage['8168tools:scenarios']`; Export/Import JSON; New clears autosave and reloads.
 - **Print / PDF:** `printSheet()` (or Ctrl+P) → `preparePrint()` switches to the light palette, expands collapsed cards, fills the print title block (`#print-header`), redraws diagrams at 3×, then restores after printing. Print CSS is in the `PRINT / PDF` block.
 - New sheets/inputs are saved automatically as long as inputs have an `id`; add any new calc function to `recalcAll()`.
+
+## 5d. Path terminators (sheet 09) and card tools
+
+- `PANS.ptForbidden` = shaded cells of Table III-2-5-App-2 (38 forbidden pairs), `PANS.ptInitFinal` = Table III-2-5-App-1, `PANS.ptValidate(type, legs, rnp)` applies the matrix, Notes 1–3, rules 5a–e, RNP subset and SID notes.
+- UI: `calcPathTerm`, `ptDrawChain`, `ptDrawMatrix`, `ptRenderReference`; legs are kept in `PT_LEGS` and mirrored to the hidden input `#pt-legs-json` so autosave/scenarios include them.
+- **Card tools** (`decorateCards`): every card with a drawing gets **⌫ Clear** (empties typed inputs, keeps drawing/results). Every **↺ Reset** also restores result placeholders (saved in `data-init` at load) and clears drawings in its card.
 
 ## 6. Shared Utility Functions
 
@@ -362,6 +369,7 @@ Key development milestones from previous sessions:
 | 2026-05-01 | Coordinate Converter mobile UI redesigned (within FISB Tools project, separate app). Nested card-in-card layout replaced with fluid full-page scroll. |
 | 2026-05-02 | Context imported from Claude session. Session context continuity maintained. |
 | 2026-05-08 | Folder rename from `FVP Tools` → `8168 Tools` initiated. Handover document created. |
+| 2026-11-01 | Path Terminators sheet 09 (10 new checks → 74). Clear/Reset buttons on drawing cards. VNAV chart → PAPI lights view. |
 | 2026-11-01 | Intersection fix tolerance 06-D (6 new checks → 64), linked to holding. |
 | 2026-11-01 | Holding sheet 05-A (template, basic area, entries, MHL; 18 new checks → 58). VNAV chart deviation view. |
 | 2026-11-01 | Added Vol III + Doc 9905: VEB card rebuilt to Doc 9905 App B, cold temperature confirmed vs Vol III Table 2-4-1 b); self-test now 40 checks. |

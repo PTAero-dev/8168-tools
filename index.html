@@ -1113,6 +1113,41 @@
             text-transform: uppercase; color: var(--accent-primary); padding: 6px 0;
         }
         .lines-detail .qa-table td { padding: 3px 8px; }
+        .pt-presets { display: flex; flex-wrap: wrap; gap: 6px; }
+        .pt-legs { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+        .pt-leg {
+            display: grid; grid-template-columns: 26px minmax(150px, 1.4fr) minmax(90px, 1fr) auto auto auto;
+            gap: 8px; align-items: center; padding: 8px 10px; border: 1px solid var(--line-soft);
+            border-left: 3px solid var(--accent-success); border-radius: var(--radius); background: var(--bg-input);
+        }
+        .pt-leg.warn { border-left-color: var(--accent-warning); }
+        .pt-leg.error { border-left-color: var(--accent-danger); }
+        .pt-leg select, .pt-leg input[type="text"] { height: 32px; font-size: 0.8rem; }
+        .pt-num { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); text-align: center; }
+        .pt-fo { display: flex; align-items: center; gap: 4px; font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-muted); white-space: nowrap; }
+        .pt-fo.off { opacity: 0.35; }
+        .pt-msg { grid-column: 2 / -1; font-size: 0.76rem; line-height: 1.4; }
+        .pt-msg.error { color: var(--accent-danger); }
+        .pt-msg.warn { color: var(--accent-warning); }
+        .pt-msg.info { color: var(--text-muted); }
+        .pt-matrix { border-collapse: collapse; font-family: var(--font-mono); font-size: 0.72rem; margin: 0 auto; }
+        .pt-matrix th { padding: 4px 6px; color: var(--accent-primary); font-weight: 600; }
+        .pt-matrix td { width: 30px; height: 26px; text-align: center; border: 1px solid var(--line-soft); color: var(--text-main); font-weight: 700; }
+        .pt-matrix td.no { background: repeating-linear-gradient(45deg, var(--line-soft), var(--line-soft) 3px, transparent 3px, transparent 6px); background-color: rgba(255, 122, 133, 0.18); }
+        .pt-matrix td.used { outline: 2px solid var(--accent-primary); outline-offset: -2px; }
+        .pt-matrix td.no.used { outline-color: var(--accent-danger); }
+        .pt-ref { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+        .pt-card { border: 1px solid var(--line-soft); border-radius: var(--radius); padding: 10px 12px; background: var(--bg-input); }
+        .pt-card-head { display: flex; align-items: baseline; gap: 8px; }
+        .pt-card-head b { font-family: var(--font-mono); font-size: 1.1rem; color: var(--accent-primary); }
+        .pt-card-head span { font-size: 0.8rem; font-weight: 600; flex: 1; }
+        .pt-card-head em { font-style: normal; font-family: var(--font-mono); font-size: 0.6rem; padding: 0 5px; border: 1px solid var(--accent-success); color: var(--accent-success); }
+        .pt-term { font-family: var(--font-mono); font-size: 0.66rem; color: var(--accent-cyan); letter-spacing: 0.04em; }
+        .pt-card p { margin: 4px 0 0; font-size: 0.76rem; line-height: 1.5; color: var(--text-muted); }
+        @media (max-width: 768px) {
+            .pt-leg { grid-template-columns: 22px 1fr auto auto; }
+            .pt-leg input[type="text"] { grid-column: 2 / 3; }
+        }
         .audit-list { margin: 0; padding-left: 18px; font-size: 0.84rem; line-height: 1.6; color: var(--text-muted); }
         .audit-list b { color: var(--text-main); }
         .audit-list li { margin-bottom: 6px; }
@@ -1210,6 +1245,7 @@
                 <div class="nav-item" data-tab="tab-gradient" onclick="switchTab('tab-gradient', this)"><span class="nav-num">04</span>IFP Gradient</div>
                 <div class="nav-item" data-tab="tab-holdb" onclick="switchTab('tab-holdb', this)"><span class="nav-num">05</span>Holding</div>
                 <div class="nav-item" data-tab="tab-tol" onclick="switchTab('tab-tol', this)"><span class="nav-num">06</span>Tolerance, VEB &amp; PBN</div>
+                <div class="nav-item" data-tab="tab-pt" onclick="switchTab('tab-pt', this)"><span class="nav-num">09</span>Path Terminators</div>
             </div>
             <div class="nav-group">
                 <div class="nav-group-title">Approach &amp; Vertical</div>
@@ -1274,7 +1310,7 @@
                     <p class="page-subtitle">IAS to TAS conversion and cold temperature altitude correction</p>
                 </div>
                 <dl class="ph-block">
-                    <div><dt>Sheet</dt><dd>01 / 08</dd></div>
+                    <div><dt>Sheet</dt><dd>01 / 09</dd></div>
                     <div><dt>Reference</dt><dd>Doc 8168 Vol II</dd></div>
                 </dl>
             </header>
@@ -1399,7 +1435,7 @@
                     <p class="page-subtitle">Rate, radius, wind spiral (E&theta;), procedure turn, base turn and divergence</p>
                 </div>
                 <dl class="ph-block">
-                    <div><dt>Sheet</dt><dd>02 / 08</dd></div>
+                    <div><dt>Sheet</dt><dd>02 / 09</dd></div>
                     <div><dt>Reference</dt><dd>Doc 8168 Vol II</dd></div>
                 </dl>
             </header>
@@ -1836,7 +1872,7 @@
                     <p class="page-subtitle">Geometry visualisation for intercepting a course</p>
                 </div>
                 <dl class="ph-block">
-                    <div><dt>Sheet</dt><dd>03 / 08</dd></div>
+                    <div><dt>Sheet</dt><dd>03 / 09</dd></div>
                     <div><dt>Reference</dt><dd>Doc 8168 Vol II</dd></div>
                 </dl>
             </header>
@@ -1940,7 +1976,7 @@
                     <p class="page-subtitle">Chain climb / descent legs — enter any two values and the rest calculate</p>
                 </div>
                 <dl class="ph-block">
-                    <div><dt>Sheet</dt><dd>04 / 08</dd></div>
+                    <div><dt>Sheet</dt><dd>04 / 09</dd></div>
                     <div><dt>Reference</dt><dd>Doc 8168 Vol II</dd></div>
                 </dl>
             </header>
@@ -2063,7 +2099,7 @@
                     <p class="page-subtitle">Holding template and protected area (Doc 8168 II-4-1) and ATC holding point B on a DME arc</p>
                 </div>
                 <dl class="ph-block">
-                    <div><dt>Sheet</dt><dd>05 / 08</dd></div>
+                    <div><dt>Sheet</dt><dd>05 / 09</dd></div>
                     <div><dt>Reference</dt><dd>Doc 8168 Vol II</dd></div>
                 </dl>
             </header>
@@ -2374,7 +2410,7 @@
                     <p class="page-subtitle">Fix tolerances, RNP AR vertical error budget and RNP containment</p>
                 </div>
                 <dl class="ph-block">
-                    <div><dt>Sheet</dt><dd>06 / 08</dd></div>
+                    <div><dt>Sheet</dt><dd>06 / 09</dd></div>
                     <div><dt>Reference</dt><dd>Doc 8168 · Doc 9905</dd></div>
                 </dl>
             </header>
@@ -2753,7 +2789,7 @@
                     <p class="page-subtitle">Rate of descent, equivalent obstacle height and dynamic reaction distance</p>
                 </div>
                 <dl class="ph-block">
-                    <div><dt>Sheet</dt><dd>07 / 08</dd></div>
+                    <div><dt>Sheet</dt><dd>07 / 09</dd></div>
                     <div><dt>Reference</dt><dd>Doc 8168 Vol II</dd></div>
                 </dl>
             </header>
@@ -2922,7 +2958,7 @@
                     <p class="page-subtitle">How temperature moves the barometric VNAV path relative to the geometric PAPI corridor</p>
                 </div>
                 <dl class="ph-block">
-                    <div><dt>Sheet</dt><dd>08 / 08</dd></div>
+                    <div><dt>Sheet</dt><dd>08 / 09</dd></div>
                     <div><dt>Reference</dt><dd>Doc 8168 · Annex 14</dd></div>
                 </dl>
             </header>
@@ -3184,6 +3220,7 @@
                                 <li><b>Confirmed:</b> TAS (I-2-1-App), r = V/(20πR), ICAO wind 2h+47, wind spiral E, φ = 36/t or 0.215·TAS/t, DME tolerance, turn anticipation, ROD.</li>
                                 <li><b>01-B Cold temperature</b> and <b>08 true altitude:</b> confirmed against Doc 8168 Vol III 2-4 §4.3.3 and Table 2-4-1 b); both now share one function.</li>
                                 <li><b>05-A Holding</b> (new): Table II-4-1-2 speeds, ISA+15, ICAO wind, template Table I-4-3-App C-4 (all 33 lines), entry sectors, buffer MOC.</li>
+                                <li><b>09 Path terminators</b> (new): Tables III-2-5-App-1/App-2 and coding rules a–e, RNP subset.</li>
                                 <li><b>06-D Intersection fix</b> (new): Table I-2-2-1 accuracies, VOR/NDB/LOC radial or DME intersections, along-track tolerance, §2.6 acceptance.</li>
                                 <li><b>06-C VEB</b> rebuilt to Doc 9905 Appendix B (was a simplified RSS × 4/3 of three terms); reproduces the Doc sample MOC, OAS gradient and origin.</li>
                             </ul>
@@ -3192,6 +3229,122 @@
                 </div>
             </div>
         </section>
+        <!-- =====================================================
+             09 · PATH TERMINATORS
+             ===================================================== -->
+        <section id="tab-pt" class="tab-content" style="display:none;">
+            <header class="page-header">
+                <div class="ph-main">
+                    <div class="ph-crumb">Procedure Construction / Sheet 09</div>
+                    <h1 class="page-title">Path Terminators</h1>
+                    <p class="page-subtitle">RNAV leg coding: build a leg sequence and check it against the PANS-OPS coding rules</p>
+                </div>
+                <dl class="ph-block">
+                    <div><dt>Sheet</dt><dd>09 / 09</dd></div>
+                    <div><dt>Reference</dt><dd>Doc 8168 Vol II III-2-5</dd></div>
+                </dl>
+            </header>
+
+            <div class="stack">
+                <div class="card">
+                    <div class="card-header minimizable" onclick="toggleCard(this)">
+                        <div class="card-heading"><span class="card-tag">09-A</span>
+                            <div class="card-title">Leg Sequence Builder</div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="vp-row" style="align-items: flex-end;">
+                            <div class="vp-input-group">
+                                <label>Procedure</label>
+                                <select id="pt-type" onchange="calcPathTerm()">
+                                    <option value="sid">SID</option>
+                                    <option value="star">STAR</option>
+                                    <option value="app">Approach</option>
+                                    <option value="ma">Missed approach</option>
+                                </select>
+                            </div>
+                            <div class="vp-input-group">
+                                <label>RNP Application</label>
+                                <select id="pt-rnp" onchange="calcPathTerm()">
+                                    <option value="no">No (RNAV)</option>
+                                    <option value="yes">Yes (IF/TF/RF/HM)</option>
+                                </select>
+                            </div>
+                            <div class="vp-input-group" style="flex: 2 1 320px;">
+                                <label>Examples</label>
+                                <div class="pt-presets">
+                                    <button class="btn-mini" onclick="ptPreset('sid')">SID CA-DF-TF</button>
+                                    <button class="btn-mini" onclick="ptPreset('sidcf')">SID CA-CF-DF</button>
+                                    <button class="btn-mini" onclick="ptPreset('app')">RNAV APCH</button>
+                                    <button class="btn-mini" onclick="ptPreset('rnp')">RNP RF APCH</button>
+                                    <button class="btn-mini" onclick="ptPreset('ma')">MA to hold</button>
+                                    <button class="btn-mini danger" onclick="ptPreset('bad')">Invalid example</button>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="pt-legs-json" value="">
+
+                        <div class="viz" style="margin-top: 14px;">
+                            <span class="viz-label">Leg chain · schematic</span>
+                            <div id="pt-chain" class="viz-scroll" style="padding-top: 26px;"></div>
+                        </div>
+
+                        <div id="pt-summary" class="note" style="margin-top: 12px;">—</div>
+
+                        <div id="pt-legs" class="pt-legs"></div>
+                        <button class="btn btn-add" style="margin-top: 10px;" onclick="ptAdd()">＋ Add Leg</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header minimizable" onclick="toggleCard(this)">
+                        <div class="card-heading"><span class="card-tag">09-B</span>
+                            <div class="card-title">Permitted Sequences · Table III-2-5-App-2</div>
+                        </div>
+                    </div>
+                    <div class="card-body split">
+                        <div class="table-wrap">
+                            <table class="pt-matrix" id="pt-matrix"></table>
+                        </div>
+                        <div class="col">
+                            <div class="note">
+                                <div class="note-title">How to read</div>
+                                Rows = current leg, columns = next leg. <b>Shaded = not permitted.</b> Outlined cells are the pairs used in your sequence.
+                                Notes: <b>1</b> CF/DF or DF/DF only when the first leg's termination is overflown · <b>2</b> IF coded only when the altitude
+                                constraints at each end of the FA/HM leg differ · <b>3</b> IF/RF only at the start of the final approach.
+                            </div>
+                            <div class="note">
+                                <div class="note-title">Basic rules (App §5)</div>
+                                a) FA, CA, VA should be followed by DF or CF (DF recommended) · b) TF to fly-over shall be followed by TF or CF ·
+                                c) DF after a fly-over: previous leg CF or DF · d) DF cannot follow a fly-by waypoint · e) RF start/end waypoints are not fly-over.
+                            </div>
+                            <div class="note">
+                                <div class="note-title">Initial / final legs (Table III-2-5-App-1)</div>
+                                SID: CA, CF, VA, VI → CF, DF, FM, RF, TF, VM · STAR: IF → CF, DF, FM, HM, RF, TF, VM ·
+                                Approach: IF → CF, TF, RF · Missed approach: CA, CF, DF, FA, HM, RF, VI, VM → CF, DF, FM, HM, RF, TF, VM.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header minimizable" onclick="toggleCard(this)">
+                        <div class="card-heading"><span class="card-tag">09-C</span>
+                            <div class="card-title">Path Terminator Reference</div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="pt-ref" class="pt-ref"></div>
+                        <div class="note" style="margin-top: 12px;">
+                            <div class="note-title">Reference</div>
+                            Doc 8168 Vol II, Part III, Section 2, Chapter 5 (§5.2 path terminator types) and Appendix (coding rules, based on ARINC 424).
+                            Only these 12 of the 23 ARINC 424 path terminators are used for RNAV procedure design; RNP applications should use IF, TF, RF and HM.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
     </main>
 
     <script>
@@ -3345,6 +3498,55 @@
             },
             // I-2-2 §2.6.1: minimum usable DME ground distance dm = 0.164·h·tan 55° (h in ft)
             dmeMinUsable(hFt) { return 0.164 * (hFt / 1000) * Math.tan(55 * Math.PI / 180); },
+            // ---------- Path terminators (Part III, Section 2, Chapter 5 and Appendix) ----------
+            ptCodes: ['IF', 'CA', 'CF', 'DF', 'FA', 'FM', 'HM', 'RF', 'TF', 'VA', 'VI', 'VM'],
+            // Table III-2-5-App-2: shaded (not permitted) "next leg" for each current leg
+            ptForbidden: {
+                CA: ['HM', 'RF', 'TF'], CF: ['IF'], DF: ['IF', 'RF'], FA: ['IF', 'HM', 'RF', 'TF'],
+                FM: ['IF', 'HM', 'RF', 'TF'], HM: ['IF', 'HM'], IF: ['IF'], RF: ['IF', 'DF', 'VA', 'VI', 'VM'],
+                TF: ['IF', 'DF'], VA: ['IF', 'HM', 'RF', 'TF'], VI: ['IF', 'CA', 'DF', 'HM', 'RF', 'TF'], VM: ['IF', 'HM', 'RF', 'TF']
+            },
+            ptAllowed(cur, next) { return !(PANS.ptForbidden[cur] || []).includes(next); },
+            // Table III-2-5-App-1: initial and final path terminators
+            ptInitFinal: {
+                sid: { name: 'SID', init: ['CA', 'CF', 'VA', 'VI'], fin: ['CF', 'DF', 'FM', 'RF', 'TF', 'VM'] },
+                star: { name: 'STAR', init: ['IF'], fin: ['CF', 'DF', 'FM', 'HM', 'RF', 'TF', 'VM'] },
+                app: { name: 'Approach', init: ['IF'], fin: ['CF', 'TF', 'RF'] },
+                ma: { name: 'Missed approach', init: ['CA', 'CF', 'DF', 'FA', 'HM', 'RF', 'VI', 'VM'], fin: ['CF', 'DF', 'FM', 'HM', 'RF', 'TF', 'VM'] }
+            },
+            ptEndsAtFix(t) { return ['IF', 'TF', 'CF', 'DF', 'RF'].includes(t); },
+            // Validate a leg sequence; returns [{ i, level: 'error'|'warn'|'info', msg }]
+            ptValidate(type, legs, rnp) {
+                const out = [], P = PANS.ptInitFinal[type];
+                const add = (i, level, msg) => out.push({ i, level, msg });
+                if (!legs.length) return out;
+                legs.forEach((L, i) => {
+                    const prev = legs[i - 1];
+                    if (i === 0) {
+                        if (!P.init.includes(L.t)) add(i, 'error', P.name + ' cannot start with ' + L.t + ' (Table III-2-5-App-1: ' + P.init.join(', ') + ')');
+                        if (type === 'sid' && (L.t === 'VA' || L.t === 'VI')) add(i, 'info', 'Only CA or CF are valid SID starting legs from a design perspective; VA for parallel departures (App-1 Note 2)');
+                        if (type === 'sid' && L.t === 'CF') add(i, 'info', 'CF as first leg: validate for inadvertent low-altitude banking; consider CA to ≥ 400 ft above DER first (App-1 §3, Note 3)');
+                    } else {
+                        if (!PANS.ptAllowed(prev.t, L.t)) add(i, 'error', prev.t + ' → ' + L.t + ' is not permitted (Table III-2-5-App-2)');
+                        else {
+                            if ((prev.t === 'CF' || prev.t === 'DF') && L.t === 'DF' && !prev.fo) add(i, 'error', prev.t + '/DF only when the first leg\'s termination is overflown (App-2 Note 1) — set fly-over');
+                            if (prev.t === 'IF' && ['FA', 'FM', 'HM'].includes(L.t)) add(i, 'info', 'IF before ' + L.t + ' is coded only when the altitude constraints at each end differ (App-2 Note 2)');
+                            if (prev.t === 'IF' && L.t === 'RF' && type !== 'app') add(i, 'error', 'IF/RF is only permitted at the start of the final approach (App-2 Note 3)');
+                        }
+                        if (['CA', 'FA', 'VA'].includes(prev.t) && !['DF', 'CF'].includes(L.t)) add(i, 'warn', prev.t + ' should be followed by DF or CF, DF recommended (rule 5a)');
+                        if (prev.t === 'TF' && prev.fo && !['TF', 'CF'].includes(L.t)) add(i, 'error', 'TF to a fly-over waypoint shall be followed by TF or CF (rule 5b)');
+                        if (L.t === 'DF' && prev.fo && !['CF', 'DF'].includes(prev.t)) add(i, 'error', 'DF after a fly-over requires the previous leg to be CF or DF (rule 5c)');
+                        if (L.t === 'DF' && PANS.ptEndsAtFix(prev.t) && !prev.fo) add(i, 'error', 'DF cannot follow a fly-by waypoint (rule 5d)');
+                        if (L.t === 'RF' && prev.fo) add(i, 'error', 'The waypoint at the start of an RF leg is not coded as fly-over (rule 5e)');
+                    }
+                    if (L.t === 'RF' && L.fo) add(i, 'error', 'The waypoint at the end of an RF leg is not coded as fly-over (rule 5e)');
+                    if (L.t === 'RF' && !rnp) add(i, 'info', 'RF only for RNP procedures with ARINC 424-17 (or later) systems (App-1 Note 5)');
+                    if (rnp && !['IF', 'TF', 'RF', 'HM'].includes(L.t)) add(i, 'warn', 'RNP applications should use only IF, TF, RF and HM (§5.2.1)');
+                    if (i === legs.length - 1 && !(legs.length === 1 && L.t === 'IF') && !P.fin.includes(L.t)) add(i, 'error', P.name + ' cannot end with ' + L.t + ' (Table III-2-5-App-1: ' + P.fin.join(', ') + ')');
+                });
+                if (type === 'app' && legs.length && legs[legs.length - 1].t === 'CF') add(legs.length - 1, 'info', 'Final approach should be TF; CF only where the FMS requires it (§5.2 TF)');
+                return out;
+            },
             // ROD (ft/min) = GS (kt) × 6076.12/60 × gradient
             rod(gs, gradPct) { return gs * 101.2685 * gradPct / 100; },
 
@@ -3437,6 +3639,16 @@
             { g: 'Fixes', n: 'VOR/VOR fix, θ 60°, 10 NM: law of sines d·sinβ/sin(θ−β)', ref: 'I-2-2 §2.3 (geometry)', exp: 10 * Math.sin(4.5 * Math.PI / 180) / Math.sin(55.5 * Math.PI / 180), tol: 1e-9, f: () => Math.max(...PANS.isectAlongTrack(10, 60, 4.5).map(Math.abs)) },
             { g: 'Fixes', n: 'Collocated VOR/DME at 12 NM: tolerance', ref: 'I-2-2 §2.4.4', exp: 0.40, tol: 1e-9, f: () => PANS.dmeTol(12) },
             { g: 'Fixes', n: 'Minimum usable DME distance, h 6 000 ft', ref: 'I-2-2 §2.6.1', exp: 0.164 * 6 * Math.tan(55 * Math.PI / 180), tol: 1e-9, f: () => PANS.dmeMinUsable(6000) },
+            { g: 'Path term.', n: 'CA → TF not permitted', ref: 'Table III-2-5-App-2', exp: 0, tol: 0, f: () => +PANS.ptAllowed('CA', 'TF') },
+            { g: 'Path term.', n: 'TF → DF not permitted', ref: 'Table III-2-5-App-2', exp: 0, tol: 0, f: () => +PANS.ptAllowed('TF', 'DF') },
+            { g: 'Path term.', n: 'VI → CA not permitted', ref: 'Table III-2-5-App-2', exp: 0, tol: 0, f: () => +PANS.ptAllowed('VI', 'CA') },
+            { g: 'Path term.', n: 'RF → VM not permitted', ref: 'Table III-2-5-App-2', exp: 0, tol: 0, f: () => +PANS.ptAllowed('RF', 'VM') },
+            { g: 'Path term.', n: 'CF → DF permitted (Note 1)', ref: 'Table III-2-5-App-2', exp: 1, tol: 0, f: () => +PANS.ptAllowed('CF', 'DF') },
+            { g: 'Path term.', n: 'Permitted pairs in the 12×12 matrix', ref: 'Table III-2-5-App-2 (count)', exp: 144 - 38, tol: 0, f: () => PANS.ptCodes.reduce((n, a) => n + PANS.ptCodes.filter((b) => PANS.ptAllowed(a, b)).length, 0) },
+            { g: 'Path term.', n: 'Valid SID CA-DF-TF-TF: errors', ref: 'Tables App-1, App-2', exp: 0, tol: 0, f: () => PANS.ptValidate('sid', [{ t: 'CA' }, { t: 'DF' }, { t: 'TF' }, { t: 'TF' }], false).filter((r) => r.level === 'error').length },
+            { g: 'Path term.', n: 'STAR starting with TF is rejected', ref: 'Table III-2-5-App-1', exp: 1, tol: 0, f: () => +PANS.ptValidate('star', [{ t: 'TF' }, { t: 'TF' }], false).some((r) => r.level === 'error' && r.i === 0) },
+            { g: 'Path term.', n: 'TF(fly-over) → DF rejected (rules 5b, 5c)', ref: 'App §5', exp: 1, tol: 0, f: () => +PANS.ptValidate('sid', [{ t: 'CA' }, { t: 'CF' }, { t: 'TF', fo: true }, { t: 'DF' }], false).some((r) => r.level === 'error' && r.i === 3) },
+            { g: 'Path term.', n: 'DF after fly-by CF rejected (rule 5d)', ref: 'App §5', exp: 1, tol: 0, f: () => +PANS.ptValidate('sid', [{ t: 'CA' }, { t: 'CF', fo: false }, { t: 'DF' }], false).some((r) => r.level === 'error' && /5d|Note 1/.test(r.msg)) },
             { g: 'Missed app.', n: 'ha ↔ hma round trip (hma 100, x −1500, xz 900, Z 2.5 %, θ 3°)', ref: 'II-1-1 §1.4.8.8.2.1', exp: 100, tol: 1e-9, f: () => PANS.equivHma(PANS.equivHa(100, -1500, 900, 2.5, 3), -1500, 900, 2.5, 3) },
             { g: 'Cold temp', n: '−10 °C, 1 000 ft above SL source (rounded up 10 ft)', ref: 'Vol III Table 2-4-1 b)', exp: 100, tol: 0, f: () => Math.ceil(PANS.coldTempCorr(1000, -10, 0) / 10) * 10 },
             { g: 'Cold temp', n: '−30 °C, 2 000 ft', ref: 'Vol III Table 2-4-1 b)', exp: 380, tol: 0, f: () => Math.ceil(PANS.coldTempCorr(2000, -30, 0) / 10) * 10 },
@@ -5732,7 +5944,7 @@
             if (lim) document.getElementById('btp-ob-unit').textContent = lim.checked ? 'min' : 'DME';
             run('toggleVnpIls');
             ['calcTAS', 'calcTempCorr', 'calcTurn', 'calcPT', 'calcBaseTurn', 'calcBaseTurnPhi', 'drawTurnViz', 'calcHoldB',
-                'calcPBN', 'calcTolerance', 'calcVEB', 'calcDescent', 'calcEqObs', 'calcReaction', 'calcVnavPapi', 'calcHoldArea', 'calcIfix'].forEach((f) => run(f));
+                'calcPBN', 'calcTolerance', 'calcVEB', 'calcDescent', 'calcEqObs', 'calcReaction', 'calcVnavPapi', 'calcHoldArea', 'calcIfix', 'calcPathTerm'].forEach((f) => run(f));
             gradLegIds().forEach((id) => run('calculateGradient', id));
         }
 
@@ -5920,6 +6132,7 @@
 
         // ---------- wiring ----------
         document.addEventListener('DOMContentLoaded', () => {
+            decorateCards();
             const d = document.getElementById('meta-date');
             if (d && !d.value) d.value = new Date().toISOString().slice(0, 10);
 
@@ -5933,6 +6146,9 @@
                 if (typeof fn !== 'function') return;
                 window[name] = function () { const r = fn.apply(this, arguments); scheduleSave(); return r; };
             });
+
+            const _addLeg = window.addGradientLeg;
+            window.addGradientLeg = function () { const r = _addLeg.apply(this, arguments); decorateCards(); return r; };
 
             scnRefresh();
             let saved = null;
@@ -6320,6 +6536,257 @@
             cvLabel(ctx, C, 'flight direction ↑ · not north-referenced', w - 12, h - 16, { align: 'right', size: 9, box: false, color: C.muted });
         }
 
+        // =========================================================
+        // 09 PATH TERMINATORS — sequence builder, validator, reference
+        // =========================================================
+        const PT_INFO = {
+            IF: { name: 'Initial fix', term: 'Fix (start of coding)', desc: 'Starts the coding of an RNAV procedure. Defines no track itself; used with the next leg (e.g. TF). Not published with the procedure.' },
+            TF: { name: 'Track to a fix', term: 'Fix', desc: 'Geodesic path between two waypoints. The primary straight RNAV segment; intermediate and final approach segments should always be TF.' },
+            CF: { name: 'Course to a fix', term: 'Fix', desc: 'Specified course ending at a fix. Normally used after CA/FA in departures and missed approaches to constrain track dispersion.' },
+            DF: { name: 'Direct to a fix', term: 'Fix', desc: 'From an unspecified position on the present track direct to a fix. Not predictable or repeatable; used after FA/VA/CA or a fly-over to fly the shortest track.' },
+            FA: { name: 'Course from a fix to an altitude', term: 'Altitude (no position)', desc: 'Starts at a fix and ends where the aircraft reaches a specified altitude. Unpredictable end point; useful in missed approaches.' },
+            CA: { name: 'Course to an altitude', term: 'Altitude (no position)', desc: 'Outbound course ending at an altitude, position unspecified. Preferred to FA as the initial SID leg to guard against IRS drift.' },
+            FM: { name: 'Course from a fix to a manual termination', term: 'Manual (radar vectors)', desc: 'Track from a fix until the pilot intervenes for radar vectors. Similar to VM.' },
+            HM: { name: 'Holding to a manual termination', term: 'Manual (crew exits hold)', desc: 'Holding / racetrack pattern terminated manually by the flight crew.' },
+            RF: { name: 'Constant radius arc to a fix', term: 'Fix (end of arc)', desc: 'Circular path about a defined turn centre ending at a waypoint; turns of 2° to 300°. RNP systems only (ARINC 424-17 or later).' },
+            VA: { name: 'Heading to an altitude', term: 'Altitude (no position)', desc: 'Heading (not track) until a specified altitude. In RNAV design only for parallel departures needing initial heading legs.' },
+            VI: { name: 'Heading to an intercept', term: 'Intercept of next leg', desc: 'Assigned heading flown until the next leg segment is intercepted.' },
+            VM: { name: 'Heading to a manual termination', term: 'Manual (radar vectors)', desc: 'Heading flown until the pilot intervenes, e.g. radar vectoring at the end of a procedure. Similar to FM.' }
+        };
+
+        const PT_PRESETS = {
+            sid: { type: 'sid', rnp: false, legs: [['CA', '400 ft', false], ['DF', 'ALPHA', false], ['TF', 'BRAVO', false], ['TF', 'CHARL', false]] },
+            sidcf: { type: 'sid', rnp: false, legs: [['CA', '400 ft', false], ['CF', 'ALPHA', true], ['DF', 'BRAVO', false], ['TF', 'CHARL', false]] },
+            app: { type: 'app', rnp: false, legs: [['IF', 'IAF01', false], ['TF', 'IF001', false], ['TF', 'FAF01', false], ['TF', 'RW19L', true]] },
+            rnp: { type: 'app', rnp: true, legs: [['IF', 'IAF01', false], ['TF', 'WPT02', false], ['RF', 'WPT03', false], ['TF', 'FAF01', false], ['TF', 'RW19L', true]] },
+            ma: { type: 'ma', rnp: false, legs: [['CA', '1500 ft', false], ['DF', 'MAHF1', false], ['HM', 'MAHF1', false]] },
+            bad: { type: 'sid', rnp: false, legs: [['CA', '400 ft', false], ['TF', 'ALPHA', false], ['DF', 'BRAVO', false]] }
+        };
+
+        let PT_LEGS = null;
+
+        function ptLoadState() {
+            if (PT_LEGS) return;
+            const raw = document.getElementById('pt-legs-json').value;
+            try { PT_LEGS = raw ? JSON.parse(raw) : null; } catch (e) { PT_LEGS = null; }
+            if (!Array.isArray(PT_LEGS)) PT_LEGS = PT_PRESETS.sid.legs.map(([t, wp, fo]) => ({ t, wp, fo }));
+        }
+
+        function ptSaveState() {
+            const el = document.getElementById('pt-legs-json');
+            el.value = JSON.stringify(PT_LEGS);
+            el.dispatchEvent(new Event('input', { bubbles: true }));   // triggers autosave
+        }
+
+        function ptPreset(key) {
+            const p = PT_PRESETS[key];
+            if (!p) return;
+            document.getElementById('pt-type').value = p.type;
+            document.getElementById('pt-rnp').value = p.rnp ? 'yes' : 'no';
+            PT_LEGS = p.legs.map(([t, wp, fo]) => ({ t, wp, fo }));
+            ptSaveState();
+            calcPathTerm();
+        }
+
+        function ptEdit(i, field, value) {
+            if (field === 'del') PT_LEGS.splice(i, 1);
+            else if (field === 'up' && i > 0) [PT_LEGS[i - 1], PT_LEGS[i]] = [PT_LEGS[i], PT_LEGS[i - 1]];
+            else PT_LEGS[i][field] = value;
+            if (field === 't' && (!PANS.ptEndsAtFix(value) || value === 'RF')) PT_LEGS[i].fo = false;
+            ptSaveState();
+            calcPathTerm();
+        }
+
+        function ptAdd() {
+            const last = PT_LEGS[PT_LEGS.length - 1];
+            PT_LEGS.push({ t: last && ['CA', 'FA', 'VA'].includes(last.t) ? 'DF' : 'TF', wp: '', fo: false });
+            ptSaveState();
+            calcPathTerm();
+        }
+
+        function calcPathTerm() {
+            if (!document.getElementById('pt-legs-json')) return;
+            ptLoadState();
+            const type = document.getElementById('pt-type').value;
+            const rnp = document.getElementById('pt-rnp').value === 'yes';
+            const res = PANS.ptValidate(type, PT_LEGS, rnp);
+            const byLeg = PT_LEGS.map((_, i) => res.filter((r) => r.i === i));
+            const worst = (list) => list.some((r) => r.level === 'error') ? 'error' : (list.some((r) => r.level === 'warn') ? 'warn' : 'ok');
+
+            // editable leg list
+            const opts = (sel) => PANS.ptCodes.map((c) => '<option value="' + c + '"' + (c === sel ? ' selected' : '') + '>' + c + ' · ' + PT_INFO[c].name + '</option>').join('');
+            document.getElementById('pt-legs').innerHTML = PT_LEGS.map((L, i) => {
+                const st = worst(byLeg[i]);
+                const canFo = PANS.ptEndsAtFix(L.t) && L.t !== 'RF';
+                const msgs = byLeg[i].map((r) => '<div class="pt-msg ' + r.level + '">' + (r.level === 'error' ? '✕ ' : r.level === 'warn' ? '⚠ ' : 'ℹ ') + escHtml(r.msg) + '</div>').join('');
+                return '<div class="pt-leg ' + st + '">' +
+                    '<span class="pt-num">' + (i + 1) + '</span>' +
+                    '<select onchange="ptEdit(' + i + ', \'t\', this.value)">' + opts(L.t) + '</select>' +
+                    '<input type="text" placeholder="' + (PANS.ptEndsAtFix(L.t) ? 'waypoint' : (['CA', 'FA', 'VA'].includes(L.t) ? 'altitude' : 'course / note')) + '" value="' + escHtml(L.wp || '') + '" onchange="ptEdit(' + i + ', \'wp\', this.value)">' +
+                    '<label class="pt-fo' + (canFo ? '' : ' off') + '"><input type="checkbox"' + (L.fo ? ' checked' : '') + (canFo ? '' : ' disabled') + ' onchange="ptEdit(' + i + ', \'fo\', this.checked)"> fly-over</label>' +
+                    '<button class="btn-mini" onclick="ptEdit(' + i + ', \'up\')" title="Move up"' + (i === 0 ? ' disabled' : '') + '>↑</button>' +
+                    '<button class="btn-mini danger" onclick="ptEdit(' + i + ', \'del\')" title="Remove leg">✕</button>' +
+                    msgs + '</div>';
+            }).join('');
+
+            const nErr = res.filter((r) => r.level === 'error').length, nWarn = res.filter((r) => r.level === 'warn').length;
+            const sum = document.getElementById('pt-summary');
+            sum.className = 'note ' + (nErr ? 'bad' : (nWarn ? 'warn' : 'ok'));
+            sum.innerHTML = '<div class="note-title">' + (nErr ? nErr + ' error(s)' : (nWarn ? 'Valid with ' + nWarn + ' warning(s)' : 'Valid sequence')) + '</div>' +
+                PANS.ptInitFinal[type].name + ' · ' + PT_LEGS.map((L) => L.t + (L.fo ? '(fo)' : '')).join(' → ') + (rnp ? ' · RNP' : '');
+
+            ptDrawChain(byLeg.map(worst));
+            ptDrawMatrix();
+        }
+
+        // Schematic chain of legs, colour-coded by validation status
+        function ptDrawChain(status) {
+            const C = bpColors();
+            const n = PT_LEGS.length, segW = 112, h = 96, padL = 26, w = Math.max(320, padL * 2 + n * segW);
+            const y = 52;
+            const col = (st) => st === 'error' ? C.danger : (st === 'warn' ? C.warning : C.success);
+            let s = '';
+            PT_LEGS.forEach((L, i) => {
+                const x0 = padL + i * segW, x1 = x0 + segW, c = col(status[i]);
+                const heading = L.t[0] === 'V', noLine = L.t === 'IF';
+                if (L.t === 'HM') {
+                    s += `<rect x="${x0 + 22}" y="${y - 16}" width="${segW - 44}" height="32" rx="16" fill="none" stroke="${c}" stroke-width="2.4"/>`;
+                } else if (L.t === 'RF') {
+                    s += `<path d="M ${x0} ${y} Q ${(x0 + x1) / 2} ${y - 34} ${x1} ${y}" fill="none" stroke="${c}" stroke-width="2.6"/>`;
+                } else if (L.t === 'DF') {
+                    s += `<path d="M ${x0} ${y} C ${x0 + 30} ${y + 22} ${x1 - 40} ${y + 6} ${x1} ${y}" fill="none" stroke="${c}" stroke-width="2.6"/>`;
+                } else if (!noLine) {
+                    s += `<line x1="${x0}" y1="${y}" x2="${x1 - (PANS.ptEndsAtFix(L.t) ? 0 : 14)}" y2="${y}" stroke="${c}" stroke-width="2.6" ${heading ? 'stroke-dasharray="7 5"' : ''}/>`;
+                }
+                if (!noLine && L.t !== 'HM') s += `<polygon points="${(x0 + x1) / 2 + 6},${y + (L.t === 'RF' ? -17 : 0)} ${(x0 + x1) / 2 - 4},${y - 5 + (L.t === 'RF' ? -17 : 0)} ${(x0 + x1) / 2 - 4},${y + 5 + (L.t === 'RF' ? -17 : 0)}" fill="${c}"/>`;
+                // termination symbol
+                if (PANS.ptEndsAtFix(L.t)) {
+                    s += `<polygon points="${x1},${y - 8} ${x1 + 7},${y + 5} ${x1 - 7},${y + 5}" fill="${C.bg}" stroke="${C.ink}" stroke-width="1.6"/>`;
+                    if (L.fo) s += `<circle cx="${x1}" cy="${y}" r="12" fill="none" stroke="${C.ink}" stroke-width="1.3"/>`;
+                } else if (['CA', 'FA', 'VA'].includes(L.t)) {
+                    s += `<line x1="${x1 - 10}" y1="${y - 13}" x2="${x1 - 10}" y2="${y + 13}" stroke="${C.ink}" stroke-width="2"/><text x="${x1 - 10}" y="${y - 18}" fill="${C.muted}" font-size="9" text-anchor="middle">ALT</text>`;
+                } else if (['FM', 'VM'].includes(L.t)) {
+                    s += `<text x="${x1 - 8}" y="${y + 4}" fill="${C.muted}" font-size="13" text-anchor="middle">⋯</text>`;
+                } else if (L.t === 'VI') {
+                    s += `<line x1="${x1 - 14}" y1="${y}" x2="${x1 + 4}" y2="${y - 18}" stroke="${C.muted}" stroke-width="1.4"/>`;
+                }
+                if (L.t === 'IF') s += `<polygon points="${x1},${y - 8} ${x1 + 7},${y + 5} ${x1 - 7},${y + 5}" fill="${C.bg}" stroke="${C.ink}" stroke-width="1.6"/>`;
+                s += `<text x="${(x0 + x1) / 2}" y="${y + 34}" fill="${c}" font-size="13" font-weight="700" text-anchor="middle">${L.t}</text>`;
+                if (L.wp) s += `<text x="${PANS.ptEndsAtFix(L.t) ? x1 : (x0 + x1) / 2}" y="${y - 22}" fill="${C.ink}" font-size="9.5" text-anchor="middle">${escHtml(L.wp).slice(0, 10)}</text>`;
+            });
+            document.getElementById('pt-chain').innerHTML =
+                `<svg viewBox="0 0 ${w} ${h}" width="100%" style="display:block; min-width:${Math.min(w, 520)}px; max-width:${w}px; font-family:${C.mono};">${s}</svg>`;
+        }
+
+        // Table III-2-5-App-2 with the sequence's pairs highlighted
+        function ptDrawMatrix() {
+            const codes = PANS.ptCodes;
+            const used = new Set(PT_LEGS.slice(1).map((L, i) => PT_LEGS[i].t + '>' + L.t));
+            const notes = { 'CF>DF': '1', 'DF>DF': '1', 'IF>FA': '2', 'IF>FM': '2', 'IF>HM': '2', 'IF>RF': '3' };
+            let h = '<thead><tr><th>Cur \\ Next</th>' + codes.map((c) => '<th>' + c + '</th>').join('') + '</tr></thead><tbody>';
+            codes.forEach((r) => {
+                h += '<tr><th>' + r + '</th>' + codes.map((c) => {
+                    const ok = PANS.ptAllowed(r, c), k = r + '>' + c;
+                    return '<td class="' + (ok ? 'ok' : 'no') + (used.has(k) ? ' used' : '') + '">' + (notes[k] || '') + '</td>';
+                }).join('') + '</tr>';
+            });
+            document.getElementById('pt-matrix').innerHTML = h + '</tbody>';
+        }
+
+        // Reference pictograms
+        function ptIcon(code) {
+            const st = (v, extra) => `style="stroke:var(${v}); fill:none; stroke-width:2.2; ${extra || ''}"`;
+            const fix = (x, y) => `<polygon points="${x},${y - 7} ${x + 6},${y + 4} ${x - 6},${y + 4}" style="fill:var(--bg-body); stroke:var(--text-main); stroke-width:1.4"/>`;
+            const alt = (x) => `<line x1="${x}" y1="18" x2="${x}" y2="42" style="stroke:var(--text-main); stroke-width:2"/><text x="${x}" y="13" style="fill:var(--text-muted)" font-size="9" text-anchor="middle">ALT</text>`;
+            const arrow = (x, y) => `<polygon points="${x + 5},${y} ${x - 4},${y - 4} ${x - 4},${y + 4}" style="fill:var(--accent-primary)"/>`;
+            const g = {
+                IF: fix(70, 30) + `<text x="70" y="52" style="fill:var(--text-muted)" font-size="9" text-anchor="middle">start of coding</text>`,
+                TF: `<line x1="18" y1="30" x2="122" y2="30" ${st('--accent-primary')}/>` + arrow(70, 30) + fix(18, 30) + fix(122, 30),
+                CF: `<line x1="10" y1="30" x2="122" y2="30" ${st('--accent-primary')}/>` + arrow(70, 30) + fix(122, 30) + `<text x="40" y="22" style="fill:var(--text-muted)" font-size="9">080°</text>`,
+                DF: `<path d="M 12 46 C 40 46 70 30 122 30" ${st('--accent-primary')}/>` + `<circle cx="12" cy="46" r="2.5" style="fill:var(--text-muted)"/>` + fix(122, 30),
+                FA: `<line x1="18" y1="30" x2="118" y2="30" ${st('--accent-primary')}/>` + arrow(66, 30) + fix(18, 30) + alt(118),
+                CA: `<line x1="10" y1="30" x2="118" y2="30" ${st('--accent-primary')}/>` + arrow(62, 30) + alt(118),
+                FM: `<line x1="18" y1="30" x2="104" y2="30" ${st('--accent-primary')}/>` + arrow(60, 30) + fix(18, 30) + `<text x="118" y="34" style="fill:var(--text-muted)" font-size="14" text-anchor="middle">⋯</text>`,
+                HM: `<rect x="34" y="16" width="80" height="28" rx="14" ${st('--accent-primary')}/>` + fix(34, 30),
+                RF: `<path d="M 18 40 Q 70 2 122 40" ${st('--accent-primary')}/>` + `<circle cx="70" cy="52" r="2.5" style="fill:var(--accent-cyan)"/>` + fix(18, 40) + fix(122, 40),
+                VA: `<line x1="10" y1="30" x2="118" y2="30" ${st('--accent-primary', 'stroke-dasharray:7 5;')}/>` + arrow(62, 30) + alt(118),
+                VI: `<line x1="10" y1="30" x2="96" y2="30" ${st('--accent-primary', 'stroke-dasharray:7 5;')}/>` + arrow(52, 30) + `<line x1="80" y1="50" x2="128" y2="12" ${st('--text-muted')}/>`,
+                VM: `<line x1="10" y1="30" x2="104" y2="30" ${st('--accent-primary', 'stroke-dasharray:7 5;')}/>` + arrow(56, 30) + `<text x="118" y="34" style="fill:var(--text-muted)" font-size="14" text-anchor="middle">⋯</text>`
+            };
+            return `<svg viewBox="0 0 140 58" width="140" height="58" style="font-family:var(--font-mono)">${g[code]}</svg>`;
+        }
+
+        function ptRenderReference() {
+            const el = document.getElementById('pt-ref');
+            if (!el || el.childElementCount) return;
+            el.innerHTML = PANS.ptCodes.map((c) => {
+                const I = PT_INFO[c], rnp = ['IF', 'TF', 'RF', 'HM'].includes(c);
+                return '<div class="pt-card"><div class="pt-card-head"><b>' + c + '</b><span>' + I.name + '</span>' + (rnp ? '<em>RNP</em>' : '') + '</div>' +
+                    ptIcon(c) + '<div class="pt-term">Terminates: ' + I.term + '</div><p>' + I.desc + '</p></div>';
+            }).join('');
+        }
+
+        // =========================================================
+        // CARD TOOLS — Clear (inputs only) / Reset (inputs + results + drawing)
+        // =========================================================
+        // Remember each result's original placeholder ("--- NM", "000°" …) so Reset restores the right units
+        function snapshotResultDefaults(root) {
+            (root || document).querySelectorAll('main .result-value[id], main .stat-value[id]').forEach((el) => {
+                if (el.dataset.init === undefined) el.dataset.init = el.innerHTML;
+            });
+        }
+
+        function restoreResults(card) {
+            card.querySelectorAll('.result-value[id], .stat-value[id]').forEach((el) => {
+                if (el.dataset.init !== undefined) { el.innerHTML = el.dataset.init; el.style.color = ''; }
+            });
+            card.querySelectorAll('.warn-text, #btp-analysis').forEach((el) => { el.style.display = 'none'; });
+        }
+
+        function clearViz(card) {
+            card.querySelectorAll('.viz canvas').forEach((cv) => {
+                const ctx = cv.getContext('2d');
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.clearRect(0, 0, cv.width, cv.height);
+            });
+            card.querySelectorAll('.viz-svg, .viz-scroll').forEach((el) => { el.innerHTML = ''; });
+            card.querySelectorAll('#hold-lines').forEach((el) => { el.innerHTML = ''; });
+        }
+
+        // ⌫ Clear: empty the typed inputs, keep the drawing and its results as a snapshot
+        function clearCardInputs(btn) {
+            const card = btn.closest('.card');
+            if (!card) return;
+            card.querySelectorAll('.card-body input[type="number"], .card-body input[type="text"]').forEach((el) => { el.value = ''; });
+            scheduleSave();
+        }
+
+        // Add Clear buttons to cards with drawings and make Reset also clear results + drawing
+        function decorateCards(root) {
+            snapshotResultDefaults(root);
+            (root || document).querySelectorAll('main .card').forEach((card) => {
+                if (card.dataset.tools) return;
+                const reset = card.querySelector(':scope > .card-header .btn-reset');
+                if (!reset) return;
+                card.dataset.tools = '1';
+                reset.title = 'Reset: clear inputs, results and drawing';
+                reset.addEventListener('click', () => {
+                    setTimeout(() => {
+                        restoreResults(card);
+                        if (card.querySelector('.viz')) clearViz(card);
+                    }, 0);
+                });
+                if (card.querySelector('.viz')) {
+                    const b = document.createElement('button');
+                    b.className = 'btn-mini';
+                    b.textContent = '⌫ Clear';
+                    b.title = 'Clear: empty the inputs, keep the drawing';
+                    b.onclick = (e) => { e.stopPropagation(); clearCardInputs(b); };
+                    reset.parentNode.insertBefore(b, reset);
+                }
+            });
+        }
+
         // Setup init drawing event hook
         document.addEventListener("DOMContentLoaded", () => {
             const oldSwitch = window.switchTab;
@@ -6331,6 +6798,7 @@
                 if (id === 'tab-vnav-papi') calcVnavPapi();
                 if (id === 'tab-holdb') calcHoldArea();
                 if (id === 'tab-tol') calcIfix();
+                if (id === 'tab-pt') { ptRenderReference(); calcPathTerm(); }
             }
 
             renderSelfTest();
@@ -6362,6 +6830,7 @@
             if (typeof calcBaseTurnPhi === 'function') calcBaseTurnPhi();
             if (typeof calcHoldArea === 'function') calcHoldArea();
             if (typeof calcIfix === 'function') calcIfix();
+            if (typeof calcPathTerm === 'function') calcPathTerm();
             redrawGradients();
         }
 
