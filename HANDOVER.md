@@ -1,10 +1,10 @@
 # 8168 Tools — AI Handover Document
 
 **Project:** 8168 Tools  
-**File:** `8168 TOOLS.html`  
+**File:** `index.html` (deployed to Cloudflare Pages: https://8168-tools.pages.dev)  
 **Location:** `d:\Antigravity.Projects\8168 Tools\` *(folder renamed from "FVP Tools" on 2026-05-08)*  
 **Author / Owner:** AEROTHAI – Capt. Prach  
-**Last Updated:** 2026-05-08  
+**Last Updated:** 2026-11-01  
 
 ---
 
@@ -33,54 +33,61 @@ It is designed for aviation professionals (particularly IFP designers at AEROTHA
 
 ## 3. Design System
 
-### Theme — "Sunset Gold" (Dark Default)
+### Theme — "Blueprint" (default) / "Whiteprint" (light)
+
+Technical-drawing look: deep blueprint-blue background with a 20 px / 100 px drafting grid, thin line work, square corners with registration corner marks, monospace labels.
 
 ```css
---bg-body: #0d0906;           /* Near-black warm */
---bg-sidebar: #1a130f;
---bg-card: rgba(35, 25, 20, 0.7);  /* Glassmorphism */
---accent-primary: #f59e0b;    /* Sunset Amber */
---accent-success: #10b981;    /* Green */
---accent-warning: #f87171;    /* Coral Red */
---accent-danger: #ef4444;
---accent-cyan: #fbbf24;       /* Gold */
---text-main: #eef1f5;
---text-muted: #8b9bb4;
+--bg-body: #0b2e59;          /* blueprint blue */
+--line: rgba(173,214,255,.40);   /* drawing line */
+--text-main: #eaf4ff;  --text-muted: #93b4da;
+--accent-primary: #7cc8ff;  --accent-cyan: #a3ecff;
+--accent-success: #7fe0b0;  --accent-warning: #ffc66d;
+--accent-danger:  #ff7a85;  --accent-violet: #c9adff;
 ```
 
-### Light Theme
-Toggled via a Floating Action Button (FAB) at bottom-right. Adds class `light-theme` to `<body>`. Light theme uses a white/slate palette with blue accent (`#1d4ed8`).
+- Light theme: class `light-theme` on `<body>` (toggle button bottom-right, saved in `localStorage.theme`). Same variable names, navy-on-paper values.
+- Fonts: IBM Plex Sans (UI), IBM Plex Sans Condensed (titles), IBM Plex Mono (labels, numbers).
+- **Canvas/SVG drawings never hard-code colours.** They call `bpColors()`, which reads the CSS variables at draw time, so drawings follow the theme. `toggleTheme()` redraws all of them.
 
-### Layout
-- **Desktop:** Fixed sidebar (260px wide) + scrollable main content area.
-- **Mobile:** Sidebar collapses to a horizontal scrollable nav bar at top.
-- **Cards:** `backdrop-filter: blur(12px)` glassmorphism. Rounded corners (`--radius-lg: 20px`).
-- **Grid:** `repeat(auto-fit, minmax(400px, 1fr))` responsive grid for cards.
+### Layout building blocks
+| Class | Use |
+|---|---|
+| `.page-header` | Title block: crumb, title, subtitle + `.ph-block` (sheet no., reference) |
+| `.card` / `.card-header` / `.card-body` | Drawing sheet. Header has `.card-tag` (e.g. `02-B`), `.card-title`, `.card-actions` |
+| `.card-header.minimizable` | Click to collapse (uses `toggleCard`); every card has a `.card-body` |
+| `.split` | Two columns inside a card (inputs \| results or viz); stacks below 1100 px |
+| `.grid-container` / `.stack` / `.span-all` | Card grids |
+| `.results-panel` + `.result-row` (`.key`, `.sub`) | Results with dotted leaders. `.flush` removes top margin |
+| `.stat`, `.readout` | Boxed numeric readouts |
+| `.viz` | Grid-paper frame for canvas/SVG, `.viz-label` caption |
+| `.note` (`.ok`, `.bad`, `.warn`) | Callouts |
+| `.toggle-switch` (radio) / `.segmented-control` (buttons) | Segmented selectors |
+| `.btn-reset`, `.btn-mini` (`.primary`, `.danger`), `.btn`, `.btn-add` | Buttons |
+| `.c-primary`, `.c-cyan`, `.c-success`, `.c-warning`, `.c-danger`, `.c-violet`, `.c-muted` | Value colours |
 
-### Minimizable Cards
-Cards with class `.card-header.minimizable` can be collapsed/expanded by clicking the header. A CSS triangle arrow indicates state.
+- **Desktop:** fixed 268 px sidebar ("sheet index") + scrollable main.
+- **Mobile (≤768 px):** sidebar becomes a sticky horizontal nav; group titles hidden.
 
 ### RESET buttons
-Every card has a small red RESET button that clears its inputs and re-runs the calculation to restore default state.
+Every card has a `.btn-reset` in its header (uses `event.stopPropagation()` so it doesn't collapse the card).
 
 ---
 
 ## 4. Navigation / Tab System
 
-Navigation is handled by `switchTab(tabId, element)` JS function. Each tab is a `<section id="tab-xxx" class="tab-content">`. Only the active tab is shown (`display: block`), others are `display: none`.
+`switchTab(tabId, el)` shows one `<section class="tab-content">` and updates the URL hash (e.g. `#vnav-papi`), so each sheet can be linked/bookmarked. On load the hash opens the matching sheet. Nav items carry `data-tab`.
 
-### Sidebar Nav Items → Tab IDs
-
-| Nav Label | Tab ID | Purpose |
-|---|---|---|
-| SPD, TEMP Correction | `tab-tas` | IAS→TAS, Cold Temperature Altitude Correction |
-| Turn Calculator | `tab-turn` | Rate of Turn, Radius, Wind Spiral, Procedure Turn, Base Turn |
-| Turn Anticipation | `tab-turnviz` | Visual geometry for course intercept |
-| IFP Gradient | `tab-gradient` | Multi-leg climb/descent gradient calculator |
-| Holding for ARC | `tab-holdb` | Holding point B calculation for DME arc |
-| Tolerance, VEB & PBN | `tab-tol` | Fix tolerances, VEB (Doc 9905), RNP containment |
-| Descent & Missed App | `tab-desc` | Required ROD, Equiv. Obstacle Height, Reaction Distance |
-| VNAV vs PAPI | `tab-vnav-papi` | Barometric VNAV path vs PAPI corridor simulation |
+| Group | No. | Nav Label | Tab ID |
+|---|---|---|---|
+| Aircraft Performance | 01 | Speed & Temp Correction | `tab-tas` |
+| | 02 | Turn Calculator | `tab-turn` |
+| | 03 | Turn Anticipation | `tab-turnviz` |
+| Procedure Construction | 04 | IFP Gradient | `tab-gradient` |
+| | 05 | Holding for ARC | `tab-holdb` |
+| | 06 | Tolerance, VEB & PBN | `tab-tol` |
+| Approach & Vertical | 07 | Descent & Missed App | `tab-desc` |
+| | 08 | VNAV vs PAPI | `tab-vnav-papi` |
 
 ---
 
@@ -315,6 +322,7 @@ Key development milestones from previous sessions:
 | 2026-05-01 | Coordinate Converter mobile UI redesigned (within FISB Tools project, separate app). Nested card-in-card layout replaced with fluid full-page scroll. |
 | 2026-05-02 | Context imported from Claude session. Session context continuity maintained. |
 | 2026-05-08 | Folder rename from `FVP Tools` → `8168 Tools` initiated. Handover document created. |
+| 2026-11-01 | Full redesign to Blueprint theme; nav regrouped into 3 sections with sheet numbers; inputs/results side by side; hash deep links; drawings use theme palette (`bpColors`). Fixed: missing `base-ymax` output (Base Turn crashed), unstyled radio toggles, invalid CSS-variable colours in canvases, Airspeed results outside its card. |
 
 ---
 
