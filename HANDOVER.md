@@ -267,8 +267,8 @@ Cold temperature correction (01-B, 08 true altitude) = Vol III 2-4 §4.3.3 via `
 ## 5b. PANS core formulas & self-test
 
 All Doc 8168 formulas live in one object, `PANS` (search `PANS-OPS CORE FORMULAS`), each with its paragraph reference.
-Calculators call `PANS.*`; the **QA · Doc 8168 Self-test** sheet (`#selftest`) runs `PANS_TESTS` — 74 reference values from Doc 8168 Vol II
-(incl. holding Table I-4-3-App C-4, fix accuracies, path terminator tables), Vol III (Table 2-4-1 b) and Doc 9905 (Appendix B sample) — and shows the pass count in the sidebar badge. **Add a test whenever a formula is added or changed.**
+Calculators call `PANS.*`; the **QA · Doc 8168 Self-test** sheet (`#selftest`) runs `PANS_TESTS` — 89 reference values from Doc 8168 Vol II
+(incl. holding Table I-4-3-App C-4, fix accuracies, path terminator tables, MSD tables), Vol III (Table 2-4-1 b) and Doc 9905 (Appendix B sample) — and shows the pass count in the sidebar badge. **Add a test whenever a formula is added or changed.**
 
 ## 5c. Save, scenarios and print
 
@@ -281,6 +281,7 @@ Calculators call `PANS.*`; the **QA · Doc 8168 Self-test** sheet (`#selftest`) 
 
 - `PANS.ptForbidden` = shaded cells of Table III-2-5-App-2 (38 forbidden pairs), `PANS.ptInitFinal` = Table III-2-5-App-1, `PANS.ptValidate(type, legs, rnp)` applies the matrix, Notes 1–3, rules 5a–e, RNP subset and SID notes.
 - UI: `calcPathTerm`, `ptDrawChain`, `ptDrawMatrix`, `ptRenderReference`; legs are kept in `PT_LEGS` and mirrored to the hidden input `#pt-legs-json` so autosave/scenarios include them.
+- **09-D MSD** (`calcMsd`, `drawMsdViz`, `PANS.msdFlyBy/msdFlyOver/msdLeg`): III-2-1 §1.4 models (fly-by r·tan(θ/2)+5 s; fly-over L1–L5, 30° intercept, 10 s; θ<50° → 50°; Cat H 30°/3 s/5 s), bank or 3°/s, leg rule §1.2.5 and Table III-2-1-21 D. Route rows in hidden `#msd-json`. Verified against Tables III-2-1-7…12 (1 337/1 350 cells; the 25° fly-by 130 kt column appears computed without the 3°/s limit).
 - **Card tools** (`decorateCards`): every card with a drawing gets **⌫ Clear** (empties typed inputs, keeps drawing/results). Every **↺ Reset** also restores result placeholders (saved in `data-init` at load) and clears drawings in its card.
 
 ## 6. Shared Utility Functions
@@ -369,6 +370,7 @@ Key development milestones from previous sessions:
 | 2026-05-01 | Coordinate Converter mobile UI redesigned (within FISB Tools project, separate app). Nested card-in-card layout replaced with fluid full-page scroll. |
 | 2026-05-02 | Context imported from Claude session. Session context continuity maintained. |
 | 2026-05-08 | Folder rename from `FVP Tools` → `8168 Tools` initiated. Handover document created. |
+| 2026-11-01 | MSD card 09-D (11 checks → 89); base turn overshoot analysis fixed. |
 | 2026-11-01 | Path Terminators sheet 09 (10 new checks → 74). Clear/Reset buttons on drawing cards. VNAV chart → PAPI lights view. |
 | 2026-11-01 | Intersection fix tolerance 06-D (6 new checks → 64), linked to holding. |
 | 2026-11-01 | Holding sheet 05-A (template, basic area, entries, MHL; 18 new checks → 58). VNAV chart deviation view. |
