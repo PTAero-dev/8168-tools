@@ -113,6 +113,8 @@
             display: flex;
             height: 100vh;
             overflow: hidden;
+            line-height: 1.6;
+            letter-spacing: 0.01em;
         }
 
         /* SIDEBAR */
@@ -388,26 +390,33 @@
         .results-panel {
             background: rgba(0, 0, 0, 0.2);
             border-radius: var(--radius-md);
-            padding: 15px;
+            padding: 20px;
             margin-top: 20px;
+            line-height: 1.65;
         }
 
         .result-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
+            margin-bottom: 14px;
             font-size: 0.95rem;
+        }
+
+        .result-row:last-child {
+            margin-bottom: 0;
         }
 
         .result-label {
             color: var(--text-muted);
+            letter-spacing: 0.01em;
         }
 
         .result-value {
             font-weight: 700;
             color: var(--text-main);
             font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 0.01em;
         }
 
         /* ANIMATIONS */
@@ -699,7 +708,7 @@
                                 <span id="turn-ta-after" class="result-value" style="color:var(--accent-primary);">---
                                     NM</span>
                             </div>
-                            <hr style="border-color: rgba(255,255,255,0.1); margin: 8px 0;">
+                            <hr style="border-color: rgba(255,255,255,0.08); margin: 16px 0;">
                             <div class="result-row">
                                 <span class="result-label">Accountable Wind (w)</span>
                                 <span id="turn-wind-calc" class="result-value">--- kt</span>
@@ -987,7 +996,7 @@
                                 <span class="result-label">Divergence Angle (φ)</span>
                                 <span id="btp-res-phi" class="result-value" style="color:var(--accent-warning); font-size: 1.1rem;">---&deg;</span>
                             </div>
-                            <hr style="border-color: rgba(255,255,255,0.1); margin: 8px 0;">
+                            <hr style="border-color: rgba(255,255,255,0.08); margin: 16px 0;">
                             <div style="display: flex; gap: 20px; flex-wrap: wrap;">
                                 <div style="flex: 1; min-width: 120px;">
                                     <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">Required Outbound Track</div>
@@ -998,7 +1007,7 @@
                                     <div id="btp-res-inbound" style="font-size: 2rem; font-weight: 700; color: var(--accent-primary);">000&deg;</div>
                                 </div>
                             </div>
-                            <hr style="border-color: rgba(255,255,255,0.1); margin: 8px 0;">
+                            <hr style="border-color: rgba(255,255,255,0.08); margin: 16px 0;">
                             <div class="result-row">
                                 <span class="result-label">Formula Applied</span>
                                 <span id="btp-res-formula" class="result-value" style="font-family:'JetBrains Mono',monospace; font-size:0.8rem;">---</span>
@@ -1341,7 +1350,7 @@
                             <span class="result-label">Time to fly B to A</span>
                             <span id="res-time-ba" class="result-value">--- min</span>
                         </div>
-                        <hr style="border-color: rgba(255,255,255,0.1); margin: 8px 0;">
+                        <hr style="border-color: rgba(255,255,255,0.08); margin: 16px 0;">
                         <div class="result-row">
                             <span class="result-label">Time per Hold Circuit</span>
                             <span id="res-hold-time" class="result-value">--- min</span>
@@ -1936,12 +1945,12 @@
                             <span class="result-label">Local ISA Temperature</span>
                             <span id="vnp-res-isa" class="result-value">---&deg;C</span>
                         </div>
-                        <hr style="border-color: rgba(255,255,255,0.1); margin: 8px 0;">
+                        <hr style="border-color: rgba(255,255,255,0.08); margin: 16px 0;">
                         <div class="result-row">
                             <span class="result-label" style="color: var(--accent-success);">FAF</span>
                             <span id="vnp-res-faf" class="result-value">---</span>
                         </div>
-                        <div class="result-row">
+                        <div class="result-row" style="margin-bottom: 18px;">
                             <span class="result-label" style="font-size:0.75rem; color:var(--text-muted);">→ True FAF Altitude</span>
                             <span id="vnp-res-faf-true" class="result-value" style="font-size:0.85rem;">---</span>
                         </div>
@@ -1953,7 +1962,7 @@
                             <span class="result-label" style="font-size:0.75rem; color:var(--text-muted);">→ True DA Altitude</span>
                             <span id="vnp-res-da-true" class="result-value" style="font-size:0.85rem;">---</span>
                         </div>
-                        <hr style="border-color: rgba(255,255,255,0.1); margin: 8px 0;">
+                        <hr style="border-color: rgba(255,255,255,0.08); margin: 16px 0;">
                         <div class="result-row">
                             <span class="result-label">PAPI Crossing</span>
                             <span id="vnp-res-papi-cross" class="result-value">---</span>
