@@ -20,7 +20,9 @@ Guide for Claude Code sessions working on this repo. Read this first; details ar
 6. The user tests on an **Android phone** and sends screenshots. Every change must work at ~360 px width with no horizontal overflow.
 7. Keep the **Blueprint theme** (CSS variables; drawings use `bpColors()` — never hard-code colours) and the light "Whiteprint" theme.
 8. Communicate plainly; the user is a pilot/procedure designer, not a developer.
-9. **When the user just says "continue"**, finish any work in progress; if none, start the top item of the Backlog (below) right away without asking which one. Remove it from the Backlog when done.
+9. **Drawing quality:** labels must never overlap each other, lines that matter, or the scale bar/footer — place labels with collision checks and leader lines.
+   Every drawing gets a **labels show/hide** toggle. Render HiDPI (crisp at phone DPR 3) and export high-resolution PNG. Use 3D only where it explains something 2D cannot (e.g. surfaces/OAS, VNAV vs terrain), with a 2D fallback.
+10. **When the user just says "continue"**, finish any work in progress; if none, start the top item of the Backlog (below) right away without asking which one. Remove it from the Backlog when done.
 
 ## Reference documents (in this folder, git-ignored)
 - `Doc_8168_Vol_2_Construction_of_Visual_and_Instrument_Flight_Procedures.pdf` — 7th ed., Amdt 10 (main authority)
@@ -102,6 +104,7 @@ Card in `tab-desc` (sheet 07 renamed "Departure & Missed Approach"): `PANS.depSt
 
 ### Backlog (agreed with the user, in rough priority)
 - Limit warnings on all sheets (IAS > category max, outbound time outside 1–3 min, VPA/gradient limits, fix tolerance limits) with Doc refs.
+- Drawing quality pass on all existing drawings (rule 9): label collision avoidance (e.g. holding footer overlaps the scale bar at 360 px), labels show/hide toggle, HiDPI check.
 - VNAV vs PAPI: compute true VPA with the Vol II III-3-4 App A method (currently temperature-ratio approximation).
 - Polish: ⓘ per result showing formula + Doc paragraph; ft/NM ↔ m/km toggle; "using TAS from Sheet 01" labels.
 - Real-device testing by the user (install, offline, print to PDF on phone).
@@ -111,6 +114,16 @@ Card in `tab-desc` (sheet 07 renamed "Departure & Missed Approach"): `PANS.depSt
 - Circling area (radii by category, Table I-4-7-1) and visual segment surface check.
 - OCA/H helper for non-precision approaches (MOC per segment + controlling obstacle).
 - MSA / TAA sector tool.
+- CDFA altitude/distance table from VPA + TCH, with chart rounding rules.
+- Non-precision missed approach: SOC (MAPt tolerance + 15 s transitional), 2.5 % surface check, OCA/H gain from a higher climb gradient (Vol II I-4-6).
+- Stepdown fix rules (final / intermediate) and obstacles ignored after a stepdown fix.
+- APV Baro-VNAV: FAS origin/gradient at minimum temperature, promulgated minimum temperature check (links to sheet 08).
+- RF leg calculator: minimum radius / bank for GS and wind (Doc 9905).
+- Fly-over turn protection for RNAV turns.
+- En-route obstacle clearance: MOCA, primary/buffer widths, en-route turn areas.
+- DME arc segment: area widths and lead radial.
+- Coordinate tool: WGS-84 distance/bearing, point from bearing/distance, magnetic ↔ true.
+- Obstacle list import (CSV) checked in one go against PDG, holding and departure surfaces.
 - Optional: renumber sheets/cards to the new section order (currently original numbers kept; 02R added).
 
 
