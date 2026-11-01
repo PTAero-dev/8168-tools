@@ -250,6 +250,13 @@ All Doc 8168 formulas live in one object, `PANS` (search `PANS-OPS CORE FORMULAS
 Calculators call `PANS.*`; the **QA · Doc 8168 Self-test** sheet (`#selftest`) runs `PANS_TESTS` — 28 reference values from Vol II
 worked examples and tables — and shows the pass count in the sidebar badge. **Add a test whenever a formula is added or changed.**
 
+## 5c. Save, scenarios and print
+
+- **Autosave:** every `input`/`select` with an id inside `<main>` is saved to `localStorage['8168tools:autosave']` (debounced 400 ms) and restored on load (`applyState` → `recalcAll`). Gradient legs are rebuilt with their original ids.
+- **Project strip** (top of main): project, designer, date; named scenarios in `localStorage['8168tools:scenarios']`; Export/Import JSON; New clears autosave and reloads.
+- **Print / PDF:** `printSheet()` (or Ctrl+P) → `preparePrint()` switches to the light palette, expands collapsed cards, fills the print title block (`#print-header`), redraws diagrams at 3×, then restores after printing. Print CSS is in the `PRINT / PDF` block.
+- New sheets/inputs are saved automatically as long as inputs have an `id`; add any new calc function to `recalcAll()`.
+
 ## 6. Shared Utility Functions
 
 | Function | Purpose |
@@ -301,7 +308,7 @@ All diagrams are drawn by one engine (search `DIAGRAMS — HiDPI canvas` in `ind
 
 1. **Single HTML file:** All CSS, JS, and HTML are in one file. This is intentional — the app is deployed by copying one file. Do not split it.
 
-2. **No localStorage used:** State is in-memory only. Refreshing the page resets all inputs.
+2. **localStorage:** inputs autosave (`8168tools:autosave`), scenarios (`8168tools:scenarios`), theme (`theme`). "New" in the project strip clears the autosave.
 
 3. **ISA temperature sync:** The TAS tab has two temperature inputs (OAT and ISA Dev) that are kept in sync via `syncTemp()`. When resetting, both need to be cleared or one will immediately recalculate the other.
 
@@ -336,6 +343,7 @@ Key development milestones from previous sessions:
 | 2026-05-01 | Coordinate Converter mobile UI redesigned (within FISB Tools project, separate app). Nested card-in-card layout replaced with fluid full-page scroll. |
 | 2026-05-02 | Context imported from Claude session. Session context continuity maintained. |
 | 2026-05-08 | Folder rename from `FVP Tools` → `8168 Tools` initiated. Handover document created. |
+| 2026-11-01 | Formula audit vs Doc 8168 Vol II (7 corrections, VEB flagged), PANS core + 28-check self-test sheet. Autosave, named scenarios, JSON export/import, print/PDF calculation sheet with title block. |
 | 2026-11-01 | Installable PWA (manifest, service worker, icons). Diagrams rebuilt: HiDPI, to-scale plan views, PNG export. Mobile overflow audit of all 8 pages at 360 px; VNAV chart compact layout. |
 | 2026-11-01 | Full redesign to Blueprint theme; nav regrouped into 3 sections with sheet numbers; inputs/results side by side; hash deep links; drawings use theme palette (`bpColors`). Fixed: missing `base-ymax` output (Base Turn crashed), unstyled radio toggles, invalid CSS-variable colours in canvases, Airspeed results outside its card. |
 

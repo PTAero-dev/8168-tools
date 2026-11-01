@@ -988,6 +988,104 @@
         }
 
         /* =========================================================
+           PROJECT STRIP
+           ========================================================= */
+        .project-bar {
+            max-width: 1320px;
+            margin: 0 auto 18px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            gap: 10px 18px;
+            padding: 10px 14px;
+            border: 1px dashed var(--line);
+            border-radius: var(--radius);
+            background: var(--bg-card);
+        }
+        .pb-fields { display: flex; flex-wrap: wrap; gap: 10px; flex: 1 1 460px; }
+        .pb-field { display: flex; flex-direction: column; gap: 3px; flex: 1 1 150px; min-width: 0; }
+        .pb-field.pb-date { flex: 0 1 160px; }
+        .pb-field label {
+            font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.12em;
+            text-transform: uppercase; color: var(--text-muted);
+        }
+        .pb-field input { height: 32px; font-size: 0.84rem; }
+        .pb-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+        .pb-actions select { height: 30px; width: auto; min-width: 170px; max-width: 240px; font-size: 0.78rem; }
+        .pb-actions .btn-mini { height: 30px; }
+        .save-status {
+            font-family: var(--font-mono); font-size: 0.62rem; color: var(--text-muted);
+            margin-left: 4px; white-space: nowrap;
+        }
+        input[type="date"] {
+            width: 100%; height: 32px; padding: 0 8px; background: var(--bg-input);
+            border: 1px solid var(--line); border-radius: var(--radius); color: var(--text-main);
+            font-family: var(--font-mono); font-size: 0.84rem; outline: none;
+        }
+        body { color-scheme: dark; }
+        body.light-theme { color-scheme: light; }
+
+        /* =========================================================
+           PRINT / PDF
+           ========================================================= */
+        .print-only { display: none; }
+
+        @media print {
+            @page { size: A4; margin: 12mm 12mm 16mm; }
+            html, body { height: auto; }
+            body, body.light-theme {
+                --bg-body: #ffffff; --bg-sidebar: #ffffff; --bg-card: #ffffff; --bg-input: #ffffff; --bg-viz: #ffffff;
+                --line: rgba(16, 64, 128, 0.55); --line-soft: rgba(16, 64, 128, 0.22);
+                --grid-minor: rgba(16, 64, 128, 0.07); --grid-major: transparent;
+                --text-main: #0b2e59; --text-muted: #3d5a80;
+                display: block; overflow: visible; font-size: 11px;
+                background: #ffffff !important; background-image: none !important;
+            }
+            * { animation: none !important; transition: none !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            aside, .theme-fab, .project-bar, .viz-dl, .card-actions, .btn-add, .install-help, .legend + .legend { display: none !important; }
+            main { overflow: visible; padding: 0; }
+            .tab-content { max-width: none; }
+            .print-only { display: block; }
+            .page-header { margin-bottom: 10px; }
+            .page-title { font-size: 1.3rem; }
+            .note, .results-panel, .viz, .readout-row, .card-header, .vp-row, .vp-input-group { break-inside: avoid; }
+            .card-header { break-after: avoid; }
+            .card { backdrop-filter: none; -webkit-backdrop-filter: none; }
+            .card-header.minimizable .card-heading::before { display: none; }
+            .card-header, .card-body { padding: 8px 10px; }
+            .grid-container, .stack { gap: 10px; }
+            .grid-container { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important; }
+            .split { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important; gap: 12px; }
+            .card.span-all, .stack > .card { grid-column: 1 / -1; }
+            .page-header .ph-block { display: none; }
+            .page-header { border: 0; background: none; }
+            .ph-main { padding: 0 0 4px; }
+            .viz canvas { height: auto !important; }
+            input[type="number"], input[type="text"], select { height: 26px; font-size: 0.8rem; }
+            .toggle-switch, .segmented-control { min-height: 26px; }
+            .vp-input-group > label { font-size: 0.6rem; }
+            .result-row { padding: 2px 0; font-size: 0.8rem; }
+
+            .print-header {
+                display: grid; grid-template-columns: 150px 1fr 190px; margin-bottom: 10px;
+                border: 1.5px solid #0b2e59; color: #0b2e59; font-size: 10px;
+            }
+            .pt-brand { padding: 8px 10px; border-right: 1px solid #0b2e59; display: flex; flex-direction: column; justify-content: center; }
+            .pt-brand b { font-family: var(--font-head); font-size: 16px; letter-spacing: 0.04em; }
+            .pt-brand span { font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase; }
+            .pt-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; }
+            .pt-grid > div { padding: 5px 8px; border-right: 1px solid rgba(11, 46, 89, 0.4); border-bottom: 1px solid rgba(11, 46, 89, 0.4); display: flex; flex-direction: column; }
+            .pt-grid span, .pt-sign span { font-family: var(--font-mono); font-size: 7px; letter-spacing: 0.12em; text-transform: uppercase; color: #3d5a80; }
+            .pt-grid b { font-weight: 600; font-size: 10px; }
+            .pt-sign { padding: 6px 10px; border-left: 1px solid #0b2e59; display: grid; grid-template-columns: auto 1fr; gap: 6px 8px; align-items: end; }
+            .pt-sign i { border-bottom: 1px solid #0b2e59; height: 14px; }
+            .print-footer {
+                margin-top: 10px; padding-top: 6px; border-top: 1px solid rgba(11, 46, 89, 0.4);
+                font-family: var(--font-mono); font-size: 7.5px; color: #3d5a80; text-align: center;
+            }
+        }
+
+        /* =========================================================
            SELF-TEST
            ========================================================= */
         .nav-badge {
@@ -1058,6 +1156,8 @@
             .nav-group-title { display: none; }
             .nav-item { white-space: nowrap; margin: 0; }
             .sidebar-foot { display: none; }
+            .project-bar { padding: 8px 10px; }
+            .pb-actions select { min-width: 0; flex: 1 1 100%; max-width: none; }
             main { padding: 14px 12px 80px; overflow: visible; }
             .page-header { flex-direction: column; }
             .ph-block { border-left: 0; border-top: 1px solid var(--line); grid-template-columns: repeat(3, 1fr); }
@@ -1124,6 +1224,40 @@
     </aside>
 
     <main>
+        <!-- Project strip: metadata, scenarios, print -->
+        <div class="project-bar">
+            <div class="pb-fields">
+                <div class="pb-field">
+                    <label for="meta-project">Project / procedure</label>
+                    <input type="text" id="meta-project" placeholder="e.g. VTBS RNP RWY 19L">
+                </div>
+                <div class="pb-field">
+                    <label for="meta-designer">Designer</label>
+                    <input type="text" id="meta-designer" placeholder="Name">
+                </div>
+                <div class="pb-field pb-date">
+                    <label for="meta-date">Date</label>
+                    <input type="date" id="meta-date">
+                </div>
+            </div>
+            <div class="pb-actions">
+                <select id="scn-select" aria-label="Saved scenarios"><option value="">Saved scenarios</option></select>
+                <button class="btn-mini" onclick="scnLoad()" title="Load the selected scenario">Load</button>
+                <button class="btn-mini" onclick="scnSave()" title="Save all sheets as a named scenario">Save as…</button>
+                <button class="btn-mini danger" onclick="scnDelete()" title="Delete the selected scenario">Delete</button>
+                <button class="btn-mini" onclick="scnExport()" title="Download inputs as a JSON file">Export</button>
+                <button class="btn-mini" onclick="document.getElementById('scn-file').click()" title="Load inputs from a JSON file">Import</button>
+                <input type="file" id="scn-file" accept=".json,application/json" hidden onchange="scnImport(this)">
+                <button class="btn-mini danger" onclick="scnNew()" title="Clear all inputs">New</button>
+                <button class="btn-mini primary" onclick="printSheet()" title="Print this sheet or save it as PDF">🖶 Print / PDF</button>
+                <span id="save-status" class="save-status">● Autosave on</span>
+            </div>
+        </div>
+
+        <!-- Print-only title block and footer -->
+        <div id="print-header" class="print-only print-header"></div>
+        <div id="print-footer" class="print-only print-footer"></div>
+
         <!-- =====================================================
              01 · SPEED & TEMP CORRECTION
              ===================================================== -->
@@ -4911,6 +5045,249 @@
                 document.getElementById('eq-res-val').textContent = Math.round(hma).toLocaleString() + ' ft';
             }
         }
+
+        // =========================================================
+        // SAVE / SCENARIOS / PRINT
+        // =========================================================
+        const STORE_KEY = '8168tools:autosave';
+        const SCN_KEY = '8168tools:scenarios';
+        const STATE_SKIP = new Set(['scn-select', 'scn-file']);
+        let _saveTimer = null, _restoring = false;
+
+        const escHtml = (t) => String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+        function gradLegIds() {
+            return [...document.querySelectorAll('#grad-legs-container > .card')].map((c) => c.id.replace(/^card-/, ''));
+        }
+
+        function collectState() {
+            const fields = {}, radios = {};
+            document.querySelectorAll('main input[id], main select[id]').forEach((el) => {
+                if (STATE_SKIP.has(el.id) || el.type === 'file') return;
+                if (el.type === 'radio') { if (el.checked) radios[el.name] = el.id; return; }
+                if (el.type === 'checkbox') { fields[el.id] = el.checked; return; }
+                fields[el.id] = el.value;
+            });
+            return { app: '8168 Tools', v: 1, saved: new Date().toISOString(), gradLegs: gradLegIds(), fields, radios };
+        }
+
+        function recalcAll() {
+            const run = (f, ...a) => { try { if (typeof window[f] === 'function') window[f](...a); } catch (e) { console.warn(f, e); } };
+            const lim = document.getElementById('btp-limit-time');
+            if (lim) document.getElementById('btp-ob-unit').textContent = lim.checked ? 'min' : 'DME';
+            run('toggleVnpIls');
+            ['calcTAS', 'calcTempCorr', 'calcTurn', 'calcPT', 'calcBaseTurn', 'calcBaseTurnPhi', 'drawTurnViz', 'calcHoldB',
+                'calcPBN', 'calcTolerance', 'calcVEB', 'calcDescent', 'calcEqObs', 'calcReaction', 'calcVnavPapi'].forEach((f) => run(f));
+            gradLegIds().forEach((id) => run('calculateGradient', id));
+        }
+
+        function applyState(st) {
+            if (!st || !st.fields) return false;
+            _restoring = true;
+            try {
+                // rebuild gradient legs with their original ids
+                const want = Array.isArray(st.gradLegs) ? st.gradLegs : ['grad'];
+                document.querySelectorAll('#grad-legs-container > .card').forEach((c) => { if (c.id !== 'card-grad') c.remove(); });
+                want.filter((id) => id !== 'grad').forEach((id) => {
+                    const n = parseInt(id.replace('grad', ''), 10);
+                    if (!isNaN(n)) { gradLegCount = n - 1; addGradientLeg(); }
+                });
+                gradLegCount = Math.max(1, ...want.map((id) => parseInt(id.replace('grad', ''), 10) || 1));
+
+                Object.entries(st.fields).forEach(([id, v]) => {
+                    const el = document.getElementById(id);
+                    if (!el || STATE_SKIP.has(id)) return;
+                    if (el.type === 'checkbox') el.checked = !!v; else el.value = v;
+                });
+                Object.values(st.radios || {}).forEach((id) => { const el = document.getElementById(id); if (el) el.checked = true; });
+                const vd = document.getElementById('viz-dir');
+                if (vd) document.querySelectorAll('#viz-dir-toggle .segment-item').forEach((b) => b.classList.toggle('active', b.textContent.trim().toLowerCase() === vd.value));
+                recalcAll();
+            } finally {
+                _restoring = false;
+            }
+            return true;
+        }
+
+        function setSaveStatus(text) {
+            const el = document.getElementById('save-status');
+            if (el) el.textContent = text;
+        }
+
+        function saveNow() {
+            try {
+                localStorage.setItem(STORE_KEY, JSON.stringify(collectState()));
+                setSaveStatus('● Autosaved ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+            } catch (e) {
+                setSaveStatus('⚠ Could not save (storage full or blocked)');
+            }
+        }
+
+        function scheduleSave() {
+            if (_restoring) return;
+            clearTimeout(_saveTimer);
+            _saveTimer = setTimeout(saveNow, 400);
+        }
+
+        // ---------- scenarios ----------
+        function scnList() {
+            try { return JSON.parse(localStorage.getItem(SCN_KEY)) || {}; } catch (e) { return {}; }
+        }
+
+        function scnStore(list) { localStorage.setItem(SCN_KEY, JSON.stringify(list)); }
+
+        function scnRefresh(select) {
+            const sel = document.getElementById('scn-select');
+            if (!sel) return;
+            const names = Object.keys(scnList()).sort((a, b) => a.localeCompare(b));
+            sel.innerHTML = '<option value="">Saved scenarios (' + names.length + ')</option>' +
+                names.map((n) => '<option value="' + escHtml(n) + '">' + escHtml(n) + '</option>').join('');
+            if (select) sel.value = select;
+        }
+
+        function scnSave() {
+            const proj = document.getElementById('meta-project').value.trim();
+            const name = (prompt('Save scenario as:', proj || 'Scenario ' + new Date().toLocaleDateString()) || '').trim();
+            if (!name) return;
+            const list = scnList();
+            if (list[name] && !confirm('Replace the saved scenario "' + name + '"?')) return;
+            list[name] = collectState();
+            scnStore(list);
+            scnRefresh(name);
+            setSaveStatus('● Saved scenario "' + name + '"');
+        }
+
+        function scnLoad() {
+            const name = document.getElementById('scn-select').value;
+            if (!name) { setSaveStatus('Choose a scenario to load'); return; }
+            if (applyState(scnList()[name])) { saveNow(); setSaveStatus('● Loaded "' + name + '"'); }
+        }
+
+        function scnDelete() {
+            const name = document.getElementById('scn-select').value;
+            if (!name) { setSaveStatus('Choose a scenario to delete'); return; }
+            if (!confirm('Delete the saved scenario "' + name + '"?')) return;
+            const list = scnList();
+            delete list[name];
+            scnStore(list);
+            scnRefresh();
+            setSaveStatus('Deleted "' + name + '"');
+        }
+
+        function scnExport() {
+            const st = collectState();
+            const proj = document.getElementById('meta-project').value.trim() || 'scenario';
+            st.name = proj;
+            const slug = proj.replace(/[^\w\-]+/g, '_').slice(0, 60);
+            const blob = new Blob([JSON.stringify(st, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = '8168-' + slug + '.json';
+            document.body.appendChild(a); a.click(); a.remove();
+            setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+        }
+
+        function scnImport(input) {
+            const file = input.files && input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+                try {
+                    const st = JSON.parse(reader.result);
+                    if (!st || !st.fields) throw new Error('not an 8168 Tools file');
+                    applyState(st);
+                    saveNow();
+                    setSaveStatus('● Imported ' + file.name);
+                } catch (e) {
+                    setSaveStatus('⚠ Import failed: ' + e.message);
+                }
+                input.value = '';
+            };
+            reader.readAsText(file);
+        }
+
+        function scnNew() {
+            if (!confirm('Clear all inputs on every sheet? Saved scenarios are kept.')) return;
+            localStorage.removeItem(STORE_KEY);
+            location.reload();
+        }
+
+        // ---------- print / PDF ----------
+        function fillPrintHeader() {
+            const sec = [...document.querySelectorAll('.tab-content')].find((t) => t.style.display !== 'none');
+            const v = (id) => (document.getElementById(id) || {}).value || '';
+            const title = sec ? (sec.querySelector('.page-title') || {}).textContent : '';
+            const crumb = sec ? (sec.querySelector('.ph-crumb') || {}).textContent : '';
+            const ref = sec ? [...sec.querySelectorAll('.ph-block dd')].map((d) => d.textContent).join(' · ') : '';
+            const badge = (document.getElementById('selftest-badge') || {}).textContent || '';
+            const cell = (k, val) => '<div><span>' + k + '</span><b>' + escHtml(val || '—') + '</b></div>';
+            document.getElementById('print-header').innerHTML =
+                '<div class="pt-brand"><b>8168 Tools</b><span>IFP design calculation sheet</span></div>' +
+                '<div class="pt-grid">' +
+                cell('Project / procedure', v('meta-project')) + cell('Designer', v('meta-designer')) + cell('Date', v('meta-date')) +
+                cell('Sheet', (crumb ? crumb + ' — ' : '') + title) + cell('Reference', ref) + cell('Printed', new Date().toLocaleString()) +
+                '</div>' +
+                '<div class="pt-sign"><span>Checked by</span><i></i><span>Date</span><i></i></div>';
+            document.getElementById('print-footer').textContent =
+                '8168 Tools · formulas checked against ICAO Doc 8168 Vol II (self-test ' + badge + ') · verify against the current edition before use';
+        }
+
+        let _printRestore = null;
+        function preparePrint() {
+            if (_printRestore) return;
+            const wasLight = document.body.classList.contains('light-theme');
+            document.body.classList.add('light-theme', 'printing');
+            const sec = [...document.querySelectorAll('.tab-content')].find((t) => t.style.display !== 'none');
+            const collapsed = sec ? [...sec.querySelectorAll('.card-body')].filter((b) => b.style.display === 'none') : [];
+            collapsed.forEach((b) => { b.style.display = ''; });
+            fillPrintHeader();
+            document.querySelector('main').appendChild(document.getElementById('print-footer'));
+            VIZ_SCALE = 3;
+            redrawDiagrams();
+            try { calcBaseTurnPhi(); } catch (e) { /* no data */ }
+            _printRestore = () => {
+                VIZ_SCALE = 0;
+                if (!wasLight) document.body.classList.remove('light-theme');
+                document.body.classList.remove('printing');
+                collapsed.forEach((b) => { b.style.display = 'none'; });
+                redrawDiagrams();
+                try { calcBaseTurnPhi(); } catch (e) { /* no data */ }
+            };
+        }
+
+        function printSheet() {
+            preparePrint();
+            setTimeout(() => window.print(), 60);
+        }
+
+        window.addEventListener('beforeprint', preparePrint);
+        window.addEventListener('afterprint', () => { if (_printRestore) { const r = _printRestore; _printRestore = null; r(); } });
+
+        // ---------- wiring ----------
+        document.addEventListener('DOMContentLoaded', () => {
+            const d = document.getElementById('meta-date');
+            if (d && !d.value) d.value = new Date().toISOString().slice(0, 10);
+
+            // anything typed or changed inside a sheet is autosaved
+            ['input', 'change'].forEach((ev) => document.addEventListener(ev, (e) => {
+                if (e.target && e.target.closest && e.target.closest('main') && !STATE_SKIP.has(e.target.id)) scheduleSave();
+            }, true));
+            // actions that change state without an input event
+            ['addGradientLeg', 'deleteGradientLeg', 'resetCard', 'resetGradientLeg', 'resetBaseTurnPhi', 'resetVnavPapi', 'setToggle', 'calcGradStart'].forEach((name) => {
+                const fn = window[name];
+                if (typeof fn !== 'function') return;
+                window[name] = function () { const r = fn.apply(this, arguments); scheduleSave(); return r; };
+            });
+
+            scnRefresh();
+            let saved = null;
+            try { saved = JSON.parse(localStorage.getItem(STORE_KEY)); } catch (e) { saved = null; }
+            if (saved && applyState(saved)) {
+                setSaveStatus('● Restored ' + new Date(saved.saved).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }));
+            } else {
+                setSaveStatus('● Autosave on');
+            }
+        });
 
         // Setup init drawing event hook
         document.addEventListener("DOMContentLoaded", () => {
