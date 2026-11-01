@@ -2375,7 +2375,7 @@
                                     <select id="hold-fix" onchange="calcHoldArea()">
                                         <option value="vor">VOR overhead (cone 50°)</option>
                                         <option value="ndb">NDB overhead (cone 40°)</option>
-                                        <option value="custom">Fix area ATT × XTT</option>
+                                        <option value="custom">RNAV waypoint / fix area ATT × XTT</option>
                                         <option value="none">No fix tolerance</option>
                                     </select>
                                 </div>
@@ -2491,6 +2491,111 @@
                         <span class="viz-label">Plan view · to scale</span>
                         <button class="viz-dl" onclick="exportViz(this)" data-name="holding-area" title="Download high-resolution PNG">⤓ PNG</button>
                         <canvas id="holdVizCanvas" width="600" height="540"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" id="card-rnph">
+                <div class="card-header minimizable" onclick="toggleCard(this)">
+                    <div class="card-heading"><span class="card-tag">05-C</span>
+                        <div class="card-title">RNP Holding Area (A-RNP)</div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-reset"
+                            onclick="event.stopPropagation(); resetCard('card-rnph', ['rnph-alt', 'rnph-ias', 'rnph-wind', 'rnph-d1', 'rnph-rnp', 'rnph-crs'], 'calcRnpHold');">↺ Reset</button>
+                    </div>
+                </div>
+                <div class="card-body split">
+                    <div class="form-grid">
+                        <div class="section-label">Maximum RNP holding pattern · III-3-7-App B §1.1.2</div>
+                        <div class="vp-row">
+                            <div class="vp-input-group">
+                                <label>Max Holding Alt (ft)</label>
+                                <input type="number" id="rnph-alt" placeholder="e.g. 10000" oninput="calcRnpHold()">
+                            </div>
+                            <div class="vp-input-group">
+                                <label>Max Holding IAS (kt)</label>
+                                <input type="number" id="rnph-ias" placeholder="e.g. 230" oninput="calcRnpHold()">
+                            </div>
+                        </div>
+                        <div class="vp-row">
+                            <div class="vp-input-group">
+                                <label>Max Wind (kt)<span class="opt">OPT</span></label>
+                                <input type="number" id="rnph-wind" placeholder="ICAO 2h+47" oninput="calcRnpHold()">
+                            </div>
+                            <div class="vp-input-group">
+                                <label>Inbound Length d1 (NM)</label>
+                                <input type="number" id="rnph-d1" placeholder="e.g. 4" step="0.1" oninput="calcRnpHold()">
+                            </div>
+                        </div>
+                        <div class="vp-row">
+                            <div class="vp-input-group">
+                                <label>RNP d3 (NM)</label>
+                                <input type="number" id="rnph-rnp" value="1" step="0.1" oninput="calcRnpHold()">
+                            </div>
+                            <div class="vp-input-group">
+                                <label>Category</label>
+                                <select id="rnph-cat" onchange="calcRnpHold()">
+                                    <option value="ae">A – E</option>
+                                    <option value="h">H</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="vp-row">
+                            <div class="vp-input-group">
+                                <label>Turns</label>
+                                <select id="rnph-dir" onchange="calcRnpHold()">
+                                    <option value="right">Right (standard)</option>
+                                    <option value="left">Left</option>
+                                </select>
+                            </div>
+                            <div class="vp-input-group">
+                                <label>Inbound Track (°)</label>
+                                <input type="number" id="rnph-crs" value="360" oninput="calcRnpHold()">
+                            </div>
+                        </div>
+
+                        <div class="results-panel">
+                            <div class="result-row">
+                                <span class="result-label">TAS (ISA+15) · bank · R</span>
+                                <span id="rnph-res-tas" class="result-value">---</span>
+                            </div>
+                            <div class="result-row key">
+                                <span class="result-label">Diameter of turn d2</span>
+                                <span id="rnph-res-d2" class="result-value c-cyan">---</span>
+                            </div>
+                            <div class="result-row">
+                                <span class="result-label">Sector 4 entry limit d4</span>
+                                <span id="rnph-res-d4" class="result-value">---</span>
+                            </div>
+                            <div class="result-row key">
+                                <span class="result-label">Holding area (L × W)</span>
+                                <span id="rnph-res-area" class="result-value c-warning">---</span>
+                            </div>
+                            <div class="result-row">
+                                <span class="result-label">Buffer width</span>
+                                <span id="rnph-res-buf" class="result-value">---</span>
+                            </div>
+                        </div>
+
+                        <div class="note warn">
+                            <div class="note-title">Not verifiable · d4</div>
+                            The Doc prints d4 = d2 × (1 − sin20) × 2cos20, which gives d4 ≈ 1.24·d2 and does not match Figures III-3-7-App B-1/B-2
+                            (d4 ≈ 0.16·d2). The app uses d2 × (1 − sin20) / (2·cos20) ≈ 0.175·d2 — check against the current amendment before use.
+                        </div>
+                        <div class="note">
+                            <div class="note-title">Reference</div>
+                            Doc 8168 Vol II III-3-7 and Appendix B: maximum track = inbound length d1 with turns of diameter d2 (ISA+15, tail wind in the turn,
+                            23° bank below FL245 / 15° above); area = d3 (RNP) around the straight segments, 1.414·d3 around the turns until it meets the straight
+                            limit, plus the sector 4 entry limit d4 beyond the outbound turn; buffer = greater of RNP + 2 NM and 5 NM (Cat H 2 NM), MOC as Table II-4-1-1.
+                            Manually flown RNAV waypoint holding uses the conventional template on the waypoint tolerance area (05-A, fix type "RNAV waypoint", III-3-7 §7.5).
+                        </div>
+                    </div>
+
+                    <div class="viz">
+                        <span class="viz-label">Plan view · to scale</span>
+                        <button class="viz-dl" onclick="exportViz(this)" data-name="rnp-holding" title="Download high-resolution PNG">⤓ PNG</button>
+                        <canvas id="rnphVizCanvas" width="600" height="420"></canvas>
                     </div>
                 </div>
             </div>
@@ -3541,6 +3646,7 @@
                                 <li><b>Confirmed:</b> TAS (I-2-1-App), r = V/(20πR), ICAO wind 2h+47, wind spiral E, φ = 36/t or 0.215·TAS/t, DME tolerance, turn anticipation, ROD.</li>
                                 <li><b>01-B Cold temperature</b> and <b>08 true altitude:</b> confirmed against Doc 8168 Vol III 2-4 §4.3.3 and Table 2-4-1 b); both now share one function.</li>
                                 <li><b>05-A Holding</b> (new): Table II-4-1-2 speeds, ISA+15, ICAO wind, template Table I-4-3-App C-4 (all 33 lines), entry sectors, buffer MOC. Omnidirectional entry area §3.3.3.2.1 (curves 5–8, convex-envelope approximation); template extents checked against Diagram I-4-3-App C-6.</li>
+                                <li><b>05-C RNP holding</b> (new, 2 Nov 2026): III-3-7-App B d2, area (d3 / 1.414·d3), buffer; d4 formula flagged (printed formula inconsistent with Figures B-1/B-2).</li>
                                 <li><b>08 Baro-VNAV effective VPA</b> (2 Nov 2026): replaced the temperature-ratio approximation by III-3-4-App A §1.3 (ESDU 770221 correction with hFAP = FAF height above THR) and §4.3.4.2.5; checked against Tables III-3-4-App A-4/A-5 and III-3-4-1. Adds the §4.7.3 c)/d) temperatures.</li>
                                 <li><b>Limit warnings</b> (new, 2 Nov 2026): reversal max IAS Table I-4-1-2, outbound 1–3 min I-4-3 §3.4.5.1/§3.5.5, bank ≤ 25° Table I-2-3-1, descent gradients I-4-3 §3.3.5 / I-4-4 §4.3.3.2 / I-4-5 §5.3.1, Baro-VNAV VPA 2.5°–3.5° III-3-4 §4.2.1, holding speed/timing II-4-1. Shown under the results of 02-A, 02-B, 02-C, 02-D, 04 legs, 05-A, 07-A, 08.</li>
                                 <li><b>07-D Departure PDG</b> (new): OIS 2.5 %/4.2 % from 16 ft above DER, MOC 0.8 %, PDG end point and close-in rule (I-3-2 §2.7).</li>
@@ -4089,6 +4195,15 @@
             },
             // climb rate (ft/min) for a gradient at a ground speed (kt)
             rocFor(grad, gs) { return grad * gs * 101.2685; },
+            // ---- RNP holding (Vol II III-3-7-App B) ----
+            // §1.2.1: d2 = 2·(V + W) / (20·π·R); V = TAS at ISA+15, W = max wind (tail wind through the turn), R at 23° (FL < 245) or 15° bank
+            rnpHoldBank(hFt) { return hFt < 24500 ? 23 : 15; },
+            rnpHoldD2(V, W, R) { return 2 * (V + W) / (20 * Math.PI * R); },
+            // §1.3.1 sector 4 entry limit. The Doc prints d4 = d2 × (1 − sin20) × 2cos20; Figures B-1/B-2 scale to d2 × (1 − sin20) / (2·cos20),
+            // which is used here (≈ 0.175·d2) — flagged in the UI as not verifiable.
+            rnpHoldD4(d2) { const D = Math.PI / 180; return d2 * (1 - Math.sin(20 * D)) / (2 * Math.cos(20 * D)); },
+            // §1.4.2: buffer width = greater of RNP + 2.0 NM and 5.0 NM (Cat H 2.0 NM)
+            rnpHoldBuffer(rnp, catH) { return Math.max(rnp + 2, catH ? 2 : 5); },
             // ---- LIMITS ----
             // Table I-4-1-2 (* and **): maximum IAS for reversal and racetrack procedures (kt)
             reversalMaxIas(cat, hFt) {
@@ -4274,6 +4389,9 @@
             { g: 'Baro-VNAV', n: 'Effective VPA 2.8°, MSL, +50 °C', ref: 'Table III-3-4-1', exp: 3.14, tol: 0.006, f: () => PANS.effectiveVpa(2.8, 2000, 50, 0) },
             { g: 'Baro-VNAV', n: 'Effective VPA 3.2°, 6 000 ft, −40 °C', ref: 'Table III-3-4-1', exp: 2.70, tol: 0.006, f: () => PANS.effectiveVpa(3.2, 2000, -40, 6000) },
             { g: 'Baro-VNAV', n: 'Effective VPA 3.0°, 3 000 ft, −20 °C', ref: 'Table III-3-4-1', exp: 2.69, tol: 0.006, f: () => PANS.effectiveVpa(3.0, 2000, -20, 3000) },
+            { g: 'RNP holding', n: 'Bank 23° below FL245, 15° above', ref: 'III-3-7-App B §1.2.1', exp: 1, tol: 0, f: () => (PANS.rnpHoldBank(20000) === 23 && PANS.rnpHoldBank(25000) === 15) ? 1 : 0 },
+            { g: 'RNP holding', n: 'd2 = 2(V+W)/(20πR): V 300, W 80, R 1.5°/s', ref: 'III-3-7-App B §1.2.1', exp: 2 * 380 / (20 * Math.PI * 1.5), tol: 1e-9, f: () => PANS.rnpHoldD2(300, 80, 1.5) },
+            { g: 'RNP holding', n: 'Buffer width RNP 1: 5 NM; RNP 4: 6 NM; Cat H RNP 1: 3 NM', ref: 'III-3-7-App B §1.4.2', exp: 1, tol: 0, f: () => (PANS.rnpHoldBuffer(1, false) === 5 && PANS.rnpHoldBuffer(4, false) === 6 && PANS.rnpHoldBuffer(1, true) === 3) ? 1 : 0 },
             { g: 'Missed app.', n: 'ha ↔ hma round trip (hma 100, x −1500, xz 900, Z 2.5 %, θ 3°)', ref: 'II-1-1 §1.4.8.8.2.1', exp: 100, tol: 1e-9, f: () => PANS.equivHma(PANS.equivHa(100, -1500, 900, 2.5, 3), -1500, 900, 2.5, 3) },
             { g: 'Cold temp', n: '−10 °C, 1 000 ft above SL source (rounded up 10 ft)', ref: 'Vol III Table 2-4-1 b)', exp: 100, tol: 0, f: () => Math.ceil(PANS.coldTempCorr(1000, -10, 0) / 10) * 10 },
             { g: 'Cold temp', n: '−30 °C, 2 000 ft', ref: 'Vol III Table 2-4-1 b)', exp: 380, tol: 0, f: () => Math.ceil(PANS.coldTempCorr(2000, -30, 0) / 10) * 10 },
@@ -4403,6 +4521,10 @@
             'vnp-res-t35': ['temperature above which the effective VPA > 3.5°', 'Vol II III-3-4 §4.7.3 d)'],
             'vnp-res-faf-true': ['true altitude = indicated − cold temperature correction', 'Vol III 2-4 §4.3.3'],
             'vnp-res-da-true': ['true altitude = indicated − cold temperature correction', 'Vol III 2-4 §4.3.3'],
+            'rnph-res-d2': ['d2 = 2·(V + W) / (20·π·R),  V = TAS at ISA+15, R at 23° (FL < 245) / 15° bank', 'III-3-7-App B §1.2.1'],
+            'rnph-res-d4': ['d4 = d2·(1 − sin 20°) / (2·cos 20°)  (see note: printed formula not consistent with the figures)', 'III-3-7-App B §1.3.1'],
+            'rnph-res-area': ['d3 around straight segments, 1.414·d3 around the turns, + d4 sector 4 limit', 'III-3-7-App B §1.4.1'],
+            'rnph-res-buf': ['greater of RNP + 2.0 NM and 5.0 NM (Cat H 2.0 NM)', 'III-3-7-App B §1.4.2'],
             'msd-res-tas': ['TAS at ISA + ΔISA;  r at the phase bank or 3°/s, whichever is less', 'Vol II III-2-1 §1.4']
         };
         RESULT_INFO['res-ta-before'] = RESULT_INFO['turn-ta-before'];
@@ -6700,6 +6822,7 @@
             if (typeof redrawGradients === 'function') redrawGradients();
             if (typeof calcVnavPapi === 'function') calcVnavPapi();
             if (typeof calcHoldArea === 'function') calcHoldArea();
+            if (typeof calcRnpHold === 'function') calcRnpHold();
             if (typeof calcIfix === 'function') calcIfix();
             if (typeof calcDeparture === 'function') calcDeparture();
             if (typeof calcMsd === 'function') calcMsd();
@@ -7367,6 +7490,81 @@
             if (o.entry) cvLabel(ctx, C, '▭ basic + entry area (curves 5–8)', 10, 48, { align: 'left', size: 9, box: false, color: C.violet });
             cvLabel(ctx, C, '┄ template · ┄ 5 NM buffer · S1–S3', 10, o.entry ? 62 : 48, { align: 'left', size: 9, box: false, color: C.muted });
             cvFooter(ctx, C, V, w, h, String(Math.round(o.inbound)).padStart(3, '0') + '° inbound · ' + (o.left ? 'left' : 'right') + ' turns · TAS ' + Math.round(o.V) + ' kt · w ' + Math.round(o.wind) + ' kt');
+        }
+
+        // =========================================================
+        // 05-C RNP HOLDING AREA (Vol II III-3-7-App B)
+        // Local frame: holding waypoint at origin, inbound direction +y, holding side +x (right turns)
+        // =========================================================
+        function rnpHoldGeometry(d1, d2, d3, d4) {
+            const r = d2 / 2, D = Math.PI / 180;
+            const c1 = [r, 0], c2 = [r, -d1];                 // outbound-turn centre (abeam the waypoint) and inbound-turn centre
+            // area: circles of radius r + 1.414·d3 at both turn centres (and the outbound one shifted by d4 for sector 4 entries),
+            // clipped to the straight-segment limit |x − r| ≤ r + d3; the convex envelope of those pieces
+            const Rc = r + 1.414 * d3, lim = r + d3, pts = [];
+            [c1, [c1[0], c1[1] + d4], c2].forEach((c) => {
+                for (let a = 0; a < 360; a += 2) {
+                    const x = c[0] + Rc * Math.cos(a * D), y = c[1] + Rc * Math.sin(a * D);
+                    pts.push([Math.max(r - lim, Math.min(r + lim, x)), y]);
+                }
+            });
+            const area = convexHull(pts);
+            return { r, c1, c2, area };
+        }
+
+        function calcRnpHold() {
+            const g = (id) => parseFloat(document.getElementById(id).value);
+            const set = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+            const alt = g('rnph-alt'), ias = g('rnph-ias'), d1 = g('rnph-d1');
+            const d3 = g('rnph-rnp') > 0 ? g('rnph-rnp') : 1;
+            const catH = document.getElementById('rnph-cat').value === 'h';
+            if (isNaN(alt) || isNaN(ias) || !(d1 > 0)) return;
+            const W = isNaN(g('rnph-wind')) ? PANS.wind(alt) : g('rnph-wind');
+            const bank = PANS.rnpHoldBank(alt);
+            const V = PANS.tas(ias, alt, 15), R = PANS.rateRaw(V, bank);
+            const d2 = PANS.rnpHoldD2(V, W, R), d4 = PANS.rnpHoldD4(d2), buf = PANS.rnpHoldBuffer(d3, catH);
+            const geo = rnpHoldGeometry(d1, d2, d3, d4);
+            const xs = geo.area.map((q) => q[0]), ys = geo.area.map((q) => q[1]);
+            const f2 = (n) => n.toFixed(2);
+            set('rnph-res-tas', Math.round(V) + ' kt · ' + bank + '° · R ' + R.toFixed(2) + '°/s');
+            set('rnph-res-d2', f2(d2) + ' NM (w ' + Math.round(W) + ' kt)');
+            set('rnph-res-d4', f2(d4) + ' NM');
+            set('rnph-res-area', f2(Math.max(...ys) - Math.min(...ys)) + ' × ' + f2(Math.max(...xs) - Math.min(...xs)) + ' NM');
+            set('rnph-res-buf', f2(buf) + ' NM');
+            drawRnpHoldViz({ geo, d1, d2, d3, d4, buf, inbound: isNaN(g('rnph-crs')) ? 360 : g('rnph-crs'), left: document.getElementById('rnph-dir').value === 'left', V, W });
+        }
+
+        function drawRnpHoldViz(o) {
+            const canvas = document.getElementById('rnphVizCanvas');
+            if (!canvas) return;
+            const { ctx, w, h } = setupCanvas(canvas, 0.8, 560, 300);
+            const C = bpColors();
+            const sx = o.left ? -1 : 1, th = o.inbound * DEG;
+            const W = ([x, y]) => { const X = x * sx; return [y * Math.sin(th) + X * Math.cos(th), y * Math.cos(th) - X * Math.sin(th)]; };
+            const poly = (pts) => pts.map(W);
+            const buffer = circlesHull(o.geo.area.map(([x, y]) => [x, y, 0]), [[0, 0]], o.buf);
+            const B = boundsOf(poly(buffer), 0.04);
+            const V = vizView(B, w, h, { t: 44, b: 44, l: 18, r: 18 });
+            const path = (pts, close) => { cvPath(ctx, V, pts); if (close) ctx.closePath(); };
+            ctx.save(); path(poly(buffer), true); ctx.setLineDash([6, 5]); ctx.strokeStyle = C.muted; ctx.lineWidth = 1; ctx.stroke(); ctx.restore();
+            ctx.save(); path(poly(o.geo.area), true); ctx.fillStyle = C.fill; ctx.fill(); ctx.strokeStyle = C.warning; ctx.lineWidth = 1.6; ctx.stroke(); ctx.restore();
+            // maximum track: stadium d1 × d2 (racetrack with turns of diameter d2)
+            const T = makeTurtle(0, 0, 0).turn(180, o.geo.r, true).fwd(o.d1).turn(180, o.geo.r, true).fwd(o.d1);
+            const nom = poly(T.pts);
+            cvStroke(ctx, C, V, nom, C.primary, 2.2);
+            cvArrowsAlong(ctx, V, nom, [0.22, 0.5, 0.72, 0.96], C.primary, 10);
+            // sector 4 limit: outbound turn shifted by d4
+            const T4 = makeTurtle(0, o.d4, 0).turn(180, o.geo.r, true);
+            cvStroke(ctx, C, V, poly(T4.pts), C.violet, 1, [3, 3]);
+            cvStroke(ctx, C, V, [W([0, -o.d1 * 1.5]), [0, 0]], C.primary, 1.1, [6, 4]);
+            cvFix(ctx, C, V.X(0), V.Y(0), 'HOLD WPT');
+            const mid = W([o.geo.r, -o.d1 / 2]);
+            cvLabel(ctx, C, 'd1 ' + o.d1.toFixed(1) + ' · d2 ' + o.d2.toFixed(2) + ' NM', V.X(mid[0]), V.Y(mid[1]), { size: 10, color: C.cyan, border: C.soft });
+            const p4 = W([o.geo.r, o.d4 + o.geo.r * 1.0]);
+            cvLabel(ctx, C, 'd4 ' + o.d4.toFixed(2), V.X(p4[0]), V.Y(p4[1]), { size: 9, color: C.violet });
+            cvLabel(ctx, C, '▭ holding area (RNP ' + o.d3 + ')', 10, 34, { align: 'left', size: 9, box: false, color: C.warning });
+            cvLabel(ctx, C, '┄ buffer ' + o.buf.toFixed(1) + ' NM · ┄ sector 4 limit', 10, 48, { align: 'left', size: 9, box: false, color: C.muted });
+            cvFooter(ctx, C, V, w, h, String(Math.round(o.inbound)).padStart(3, '0') + '° inbound · ' + (o.left ? 'left' : 'right') + ' · TAS ' + Math.round(o.V) + ' kt · w ' + Math.round(o.W) + ' kt');
         }
 
         // =========================================================
@@ -8159,7 +8357,7 @@
                 if (id === 'tab-gradient') redrawGradients();
                 if (id === 'tab-reversal') { calcPT(); calcBaseTurn(); }
                 if (id === 'tab-vnav-papi') calcVnavPapi();
-                if (id === 'tab-holdb') calcHoldArea();
+                if (id === 'tab-holdb') { calcHoldArea(); calcRnpHold(); }
                 if (id === 'tab-tol') calcIfix();
                 if (id === 'tab-pt') { ptRenderReference(); calcPathTerm(); calcMsd(); }
                 if (id === 'tab-desc') calcDeparture();
@@ -8193,6 +8391,7 @@
             if (typeof calcVnavPapi === 'function') calcVnavPapi();
             if (typeof calcBaseTurnPhi === 'function') calcBaseTurnPhi();
             if (typeof calcHoldArea === 'function') calcHoldArea();
+            if (typeof calcRnpHold === 'function') calcRnpHold();
             if (typeof calcIfix === 'function') calcIfix();
             if (typeof calcPathTerm === 'function') calcPathTerm();
             if (typeof calcMsd === 'function') calcMsd();

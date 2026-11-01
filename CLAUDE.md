@@ -15,7 +15,7 @@ Guide for Claude Code sessions working on this repo. Read this first; details ar
 3. **Never commit the ICAO PDFs** (`*.pdf` is git-ignored; they are ICAO copyright). Don't delete them either.
 4. **Every formula must trace to a Doc paragraph** and live in the `PANS` object with a comment reference.
    Add a self-test case to `PANS_TESTS` for every new or changed formula, using Doc tables / worked examples where possible.
-   The QA sheet must stay 100 % passing (currently **116/116**).
+   The QA sheet must stay 100 % passing (currently **119/119**).
 5. **Verify against the PDFs**, not memory. If something can't be verified, say so in the UI and the QA audit card.
 6. The user tests on an **Android phone** and sends screenshots. Every change must work at ~360 px width with no horizontal overflow.
 7. Keep the **Blueprint theme** (CSS variables; drawings use `bpColors()` — never hard-code colours) and the light "Whiteprint" theme.
@@ -40,7 +40,7 @@ Guide for Claude Code sessions working on this repo. Read this first; details ar
 | 02R | Reversal & Racetrack | `reversal` | 02-B procedure turn (to-scale), 02-C reversal/racetrack template (Table I-4-3-App C-5), 02-D base turn φ + overshoot analysis |
 | 03 | Turn Anticipation | `turnviz` | 03-A intercept geometry |
 | 04 | IFP Gradient | `gradient` | legs (dynamic, ids `grad`, `grad2`…) |
-| 05 | Holding | `holdb` | 05-A holding template & area (Table I-4-3-App C-4), 05-B ATC point B on ARC |
+| 05 | Holding | `holdb` | 05-A holding template & area (Table I-4-3-App C-4), 05-C RNP holding area (III-3-7-App B), 05-B ATC point B on ARC |
 | 06 | Tolerance, VEB & PBN | `tol` | 06-A PBN ½A/W, 06-B DME/overhead, 06-C RNP AR VEB (Doc 9905), 06-D intersection fix |
 | 07 | Descent & Missed App | `desc` | 07-A ROD, 07-B equivalent obstacle ha/hma, 07-C reaction distance |
 | 08 | VNAV vs PAPI | `vnav-papi` | 08-A params, 08-B chart (PAPI-lights / profile toggle), 08-C analysis, 08-D true altitude |
@@ -113,7 +113,7 @@ Card in `tab-desc` (sheet 07 renamed "Departure & Missed Approach"): `PANS.depSt
 - Turn height 120 m (394 ft) (Cat H 90 m); at 3.3 % reached at ≈ 1.9 NM (Doc: nominal 3.5 km / 1.9 NM).
 
 ### Backlog (agreed with the user, in rough priority)
-- Holding: VOR/DME holding area + along-radial entry (I-4-3-App C §3.3.4); entry area for radial-intersection fixes (§3.3.3.2.2); sector-1 area reduction (§3.3.3.3); RNAV holding.
+- Holding: VOR/DME holding area + along-radial entry (I-4-3-App C §3.3.4); entry area for radial-intersection fixes (§3.3.3.2.2); sector-1 area reduction (§3.3.3.3). (RNP holding 05-C and RNAV waypoint holding done.)
 - Racetrack protected area on sheet 02R from the same template (primary + 2.5 NM secondary, §3.3.1.3).
 - Turn area construction for departure / missed approach turns (wind spiral, turn at altitude / at a TP).
 - Circling area (radii by category, Table I-4-7-1) and visual segment surface check.

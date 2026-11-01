@@ -381,6 +381,7 @@ Key development milestones from previous sessions:
 | 2026-05-01 | Coordinate Converter mobile UI redesigned (within FISB Tools project, separate app). Nested card-in-card layout replaced with fluid full-page scroll. |
 | 2026-05-02 | Context imported from Claude session. Session context continuity maintained. |
 | 2026-05-08 | Folder rename from `FVP Tools` → `8168 Tools` initiated. Handover document created. |
+| 2026-11-02 | 05-C RNP holding area (III-3-7-App B): d2, d4 (printed formula inconsistent with the figures — flagged), d3 / 1.414·d3 area, buffer; 05-A fix type renamed "RNAV waypoint / fix area ATT × XTT" (III-3-7 §7.5); 3 checks → 119. |
 | 2026-11-02 | Polish: ⓘ formula + Doc reference on 54 key results; results unit switch ft·NM ↔ m·km in the project bar (display only, inputs unchanged); 02-A shows when the TAS is taken from sheet 01-A. |
 | 2026-11-02 | Sheet 08: effective VPA by III-3-4-App A §1.3 / §4.3.4.2.5 (replaces temperature ratio), min temperature for 2.5° and temperature above which VPA > 3.5° (§4.7.3 c/d); 7 checks vs Tables III-3-4-App A-4/A-5 and III-3-4-1 → 116. |
 | 2026-11-02 | Drawing quality pass: canvas labels avoid each other / the caption / buttons / north arrow and stay inside the frame (leader lines when moved), footer caption lifts above the scale bar, ≥ 2× rendering, Aa labels show/hide on every drawing, VNAV DA/FAF boxes and path labels avoid each other, quick VNAV sliders under the 08-B chart. Fixed: theme / redraw re-derived a descending gradient leg as a climb. |
