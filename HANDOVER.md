@@ -381,6 +381,7 @@ Key development milestones from previous sessions:
 | 2026-05-01 | Coordinate Converter mobile UI redesigned (within FISB Tools project, separate app). Nested card-in-card layout replaced with fluid full-page scroll. |
 | 2026-05-02 | Context imported from Claude session. Session context continuity maintained. |
 | 2026-05-08 | Folder rename from `FVP Tools` → `8168 Tools` initiated. Handover document created. |
+| 2026-11-02 | Navigation restructure: 5 sections (Aircraft · Segments & Fixes · Holding & Reversal · Departure & Approach · QA); phone bottom section bar + sheet strip, project bar behind ☰, theme button in header, card jump chips, compact sheet header; cards 02-B…02-D moved to new sheet 02R `tab-reversal`. |
 | 2026-11-02 | Holding omnidirectional entry area drawn (§3.3.3.2.1), buffer now around basic + entry; template i1/i2 ↔ i3/i4 side fixed (D-side extent was ≈1 NM short); 4 new checks → 101. |
 | 2026-11-01 | Departure PDG card 07-D (8 checks → 97); sheet 07 renamed Departure & Missed Approach; browser + 360 px verified. |
 | 2026-11-01 | MSD card 09-D (11 checks → 89); base turn overshoot analysis fixed. |

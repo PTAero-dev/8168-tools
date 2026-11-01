@@ -1042,7 +1042,7 @@
                 background: #ffffff !important; background-image: none !important;
             }
             * { animation: none !important; transition: none !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            aside, .theme-fab, .project-bar, .viz-dl, .card-actions, .btn-add, .install-help, .legend + .legend { display: none !important; }
+            aside, .theme-fab, .project-bar, .viz-dl, .card-actions, .btn-add, .install-help, .legend + .legend, .mobile-bar, .card-index { display: none !important; }
             main { overflow: visible; padding: 0; }
             .tab-content { max-width: none; }
             .print-only { display: block; }
@@ -1185,6 +1185,40 @@
 
         body.standalone { padding-top: env(safe-area-inset-top); }
 
+
+        /* =========================================================
+           SECTION NAV (phone) · CARD INDEX
+           ========================================================= */
+        .mobile-bar, .mobile-sub, .proj-btn { display: none; }
+
+        .card-index {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin: -6px 0 16px;
+        }
+        .ci-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            max-width: 100%;
+            padding: 5px 9px;
+            border: 1px dashed var(--line);
+            border-radius: var(--radius);
+            background: transparent;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            letter-spacing: 0.04em;
+            cursor: pointer;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .ci-chip b { color: var(--accent-primary); font-weight: 600; }
+        .card { scroll-margin-top: 12px; }
+        .ci-chip:hover { color: var(--text-main); border-style: solid; background: var(--accent-fill); }
+
         /* =========================================================
            RESPONSIVE
            ========================================================= */
@@ -1197,14 +1231,110 @@
             aside { width: 100%; border-right: 0; border-bottom: 1px solid var(--line); position: sticky; top: 0; }
             .sidebar-brand { padding: 12px 14px; }
             .brand-mark { width: 30px; height: 30px; }
-            .nav-menu { display: flex; overflow-x: auto; padding: 8px 10px; gap: 4px; }
-            .nav-group { display: contents; }
-            .nav-group-title { display: none; }
-            .nav-item { white-space: nowrap; margin: 0; }
+            .nav-menu { display: none; }
             .sidebar-foot { display: none; }
-            .project-bar { padding: 8px 10px; }
+            .sidebar-brand { gap: 10px; }
+            .brand-sub { font-size: 0.58rem; }
+            .proj-btn { display: inline-flex; margin-left: auto; }
+            .install-btn { margin-left: 0; }
+            .project-bar { display: none; padding: 8px 10px; }
+            body.show-project .project-bar { display: flex; }
+
+            /* sheets of the current section: title-block style tabs under the brand */
+            .mobile-sub {
+                display: flex;
+                gap: 0;
+                padding: 0 10px 8px;
+            }
+            .mobile-sub button {
+                flex: 1 1 0;
+                min-width: 0;
+                padding: 8px 4px 7px;
+                border: 1px solid var(--line-soft);
+                border-left-width: 0;
+                background: transparent;
+                color: var(--text-muted);
+                font-family: var(--font-mono);
+                font-size: 0.66rem;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                cursor: pointer;
+            }
+            .mobile-sub button:first-child { border-left-width: 1px; }
+            .mobile-sub button .ms-num { display: block; font-size: 0.56rem; opacity: 0.75; letter-spacing: 0.12em; }
+            .mobile-sub button.active {
+                color: var(--text-main);
+                background: var(--accent-fill);
+                border-color: var(--line);
+                box-shadow: inset 0 -2px 0 var(--accent-primary);
+            }
+            .mobile-sub button.active .ms-num { color: var(--accent-primary); opacity: 1; }
+
+            /* sections: fixed drafting-strip bar at the bottom */
+            .mobile-bar {
+                display: grid;
+                grid-template-columns: repeat(5, minmax(0, 1fr));
+                position: fixed;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                z-index: 1001;
+                background: var(--bg-sidebar);
+                border-top: 1px solid var(--line);
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+            .mobile-bar button {
+                position: relative;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 3px;
+                min-width: 0;
+                padding: 9px 2px 8px;
+                border: 0;
+                border-right: 1px dashed var(--line-soft);
+                background: none;
+                color: var(--text-muted);
+                font-family: var(--font-mono);
+                font-size: 0.58rem;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                white-space: nowrap;
+                cursor: pointer;
+            }
+            .mobile-bar button:last-child { border-right: 0; }
+            .mobile-bar button svg { width: 20px; height: 20px; }
+            .mobile-bar button.active { color: var(--accent-primary); background: var(--accent-fill); }
+            .mobile-bar button.active::before {
+                content: '';
+                position: absolute;
+                top: -1px;
+                left: 22%;
+                right: 22%;
+                height: 2px;
+                background: var(--accent-primary);
+            }
+            .install-help { bottom: calc(76px + env(safe-area-inset-bottom)); }
+            .card-index { flex-wrap: nowrap; overflow-x: auto; margin: -4px -12px 14px; padding: 0 12px 2px; scrollbar-width: none; }
+            .card-index::-webkit-scrollbar { display: none; }
+            .card { scroll-margin-top: 112px; }
+            .card-index .ci-chip { flex: 0 0 auto; }
+            /* compact title block: the sheet name is already in the strip above */
+            .page-header .ph-main { padding: 12px 14px 10px; }
+            .page-subtitle { font-size: 0.8rem; margin-top: 2px; }
+            .ph-block { display: flex; flex-wrap: wrap; }
+            .ph-block > div { padding: 6px 14px; flex: 0 0 auto; }
+            .ph-block > div:last-child { flex: 1 1 0; min-width: 0; }
+            .ph-block dd { font-size: 0.8rem; }
+            /* theme switch sits in the header next to ☰ Project */
+            .theme-fab { top: 11px; right: 14px; bottom: auto; width: 34px; height: 34px; }
+            .theme-fab svg { width: 18px; height: 18px; }
+            .proj-btn { margin-right: 42px; }
             .pb-actions select { min-width: 0; flex: 1 1 100%; max-width: none; }
-            main { padding: 14px 12px 80px; overflow: visible; }
+            main { padding: 14px 12px 110px; overflow: visible; }
             .page-header { flex-direction: column; }
             .ph-block { border-left: 0; border-top: 1px solid var(--line); grid-template-columns: repeat(3, 1fr); }
             .ph-block > div { border-bottom: 0; border-right: 1px solid var(--line-soft); }
@@ -1237,32 +1367,38 @@
             </div>
             <button id="install-btn" class="btn-mini primary install-btn" hidden onclick="installApp()"
                 title="Install 8168 Tools as an app">⤓ Install</button>
+            <button class="btn-mini proj-btn" id="proj-btn" onclick="toggleProjectBar()" aria-expanded="false" title="Project, scenarios, print">☰ Project</button>
         </div>
 
         <nav class="nav-menu">
-            <div class="nav-group">
-                <div class="nav-group-title">Aircraft Performance</div>
-                <div class="nav-item active" data-tab="tab-tas" onclick="switchTab('tab-tas', this)"><span class="nav-num">01</span>Speed &amp; Temp Correction</div>
-                <div class="nav-item" data-tab="tab-turn" onclick="switchTab('tab-turn', this)"><span class="nav-num">02</span>Turn Calculator</div>
-                <div class="nav-item" data-tab="tab-turnviz" onclick="switchTab('tab-turnviz', this)"><span class="nav-num">03</span>Turn Anticipation</div>
+            <div class="nav-group" data-group="aircraft" data-short="Aircraft">
+                <div class="nav-group-title">Aircraft</div>
+                <div class="nav-item active" data-tab="tab-tas" data-short="Speed" onclick="switchTab('tab-tas', this)"><span class="nav-num">01</span>Speed &amp; Temp Correction</div>
+                <div class="nav-item" data-tab="tab-turn" data-short="Turn" onclick="switchTab('tab-turn', this)"><span class="nav-num">02</span>Turn Calculator</div>
+                <div class="nav-item" data-tab="tab-turnviz" data-short="Anticipation" onclick="switchTab('tab-turnviz', this)"><span class="nav-num">03</span>Turn Anticipation</div>
             </div>
-            <div class="nav-group">
-                <div class="nav-group-title">Procedure Construction</div>
-                <div class="nav-item" data-tab="tab-gradient" onclick="switchTab('tab-gradient', this)"><span class="nav-num">04</span>IFP Gradient</div>
-                <div class="nav-item" data-tab="tab-holdb" onclick="switchTab('tab-holdb', this)"><span class="nav-num">05</span>Holding</div>
-                <div class="nav-item" data-tab="tab-tol" onclick="switchTab('tab-tol', this)"><span class="nav-num">06</span>Tolerance, VEB &amp; PBN</div>
-                <div class="nav-item" data-tab="tab-pt" onclick="switchTab('tab-pt', this)"><span class="nav-num">09</span>Path Terminators</div>
+            <div class="nav-group" data-group="segments" data-short="Segments">
+                <div class="nav-group-title">Segments &amp; Fixes</div>
+                <div class="nav-item" data-tab="tab-gradient" data-short="Gradient" onclick="switchTab('tab-gradient', this)"><span class="nav-num">04</span>IFP Gradient</div>
+                <div class="nav-item" data-tab="tab-tol" data-short="Tolerance" onclick="switchTab('tab-tol', this)"><span class="nav-num">06</span>Tolerance, VEB &amp; PBN</div>
+                <div class="nav-item" data-tab="tab-pt" data-short="Path term." onclick="switchTab('tab-pt', this)"><span class="nav-num">09</span>Path Terminators</div>
             </div>
-            <div class="nav-group">
-                <div class="nav-group-title">Approach &amp; Vertical</div>
-                <div class="nav-item" data-tab="tab-desc" onclick="switchTab('tab-desc', this)"><span class="nav-num">07</span>Departure &amp; Missed App</div>
-                <div class="nav-item" data-tab="tab-vnav-papi" onclick="switchTab('tab-vnav-papi', this)"><span class="nav-num">08</span>VNAV vs PAPI</div>
+            <div class="nav-group" data-group="holding" data-short="Holding">
+                <div class="nav-group-title">Holding &amp; Reversal</div>
+                <div class="nav-item" data-tab="tab-reversal" data-short="Reversal" onclick="switchTab('tab-reversal', this)"><span class="nav-num">02R</span>Reversal &amp; Racetrack</div>
+                <div class="nav-item" data-tab="tab-holdb" data-short="Holding" onclick="switchTab('tab-holdb', this)"><span class="nav-num">05</span>Holding</div>
             </div>
-            <div class="nav-group">
+            <div class="nav-group" data-group="depapp" data-short="Dep · App">
+                <div class="nav-group-title">Departure &amp; Approach</div>
+                <div class="nav-item" data-tab="tab-desc" data-short="Departure" onclick="switchTab('tab-desc', this)"><span class="nav-num">07</span>Departure &amp; Missed App</div>
+                <div class="nav-item" data-tab="tab-vnav-papi" data-short="VNAV · PAPI" onclick="switchTab('tab-vnav-papi', this)"><span class="nav-num">08</span>VNAV vs PAPI</div>
+            </div>
+            <div class="nav-group" data-group="qa" data-short="QA">
                 <div class="nav-group-title">Quality</div>
-                <div class="nav-item" data-tab="tab-selftest" onclick="switchTab('tab-selftest', this)"><span class="nav-num">QA</span>Doc 8168 Self-test<span id="selftest-badge" class="nav-badge">…</span></div>
+                <div class="nav-item" data-tab="tab-selftest" data-short="Self-test" onclick="switchTab('tab-selftest', this)"><span class="nav-num">QA</span>Doc 8168 Self-test<span id="selftest-badge" class="nav-badge">…</span></div>
             </div>
         </nav>
+        <div class="mobile-sub" id="mobile-sub" role="tablist" aria-label="Sheets in this section"></div>
 
         <div class="sidebar-foot">
             <span>© AEROTHAI–Capt.Prach</span>
@@ -1311,12 +1447,12 @@
         <section id="tab-tas" class="tab-content">
             <header class="page-header">
                 <div class="ph-main">
-                    <div class="ph-crumb">Aircraft Performance / Sheet 01</div>
+                    <div class="ph-crumb">Aircraft / Sheet 01</div>
                     <h1 class="page-title">Speed &amp; Temp Correction</h1>
                     <p class="page-subtitle">IAS to TAS conversion and cold temperature altitude correction</p>
                 </div>
                 <dl class="ph-block">
-                    <div><dt>Sheet</dt><dd>01 / 09</dd></div>
+                    <div><dt>Sheet</dt><dd>01</dd></div>
                     <div><dt>Reference</dt><dd>Doc 8168 Vol II</dd></div>
                 </dl>
             </header>
@@ -1436,12 +1572,12 @@
         <section id="tab-turn" class="tab-content" style="display:none;">
             <header class="page-header">
                 <div class="ph-main">
-                    <div class="ph-crumb">Aircraft Performance / Sheet 02</div>
+                    <div class="ph-crumb">Aircraft / Sheet 02</div>
                     <h1 class="page-title">Turn Calculator</h1>
-                    <p class="page-subtitle">Rate, radius, wind spiral (E&theta;), procedure turn, base turn and divergence</p>
+                    <p class="page-subtitle">Rate of turn, radius and wind spiral (E&theta;) · reversal procedures are on sheet 02R</p>
                 </div>
                 <dl class="ph-block">
-                    <div><dt>Sheet</dt><dd>02 / 09</dd></div>
+                    <div><dt>Sheet</dt><dd>02</dd></div>
                     <div><dt>Reference</dt><dd>Doc 8168 Vol II</dd></div>
                 </dl>
             </header>
@@ -1521,6 +1657,256 @@
                     </div>
                 </div>
 
+            </div>
+        </section>
+
+        <!-- =====================================================
+             03 · TURN ANTICIPATION
+             ===================================================== -->
+        <section id="tab-turnviz" class="tab-content" style="display:none;">
+            <header class="page-header">
+                <div class="ph-main">
+                    <div class="ph-crumb">Aircraft / Sheet 03</div>
+                    <h1 class="page-title">Turn Anticipation</h1>
+                    <p class="page-subtitle">Geometry visualisation for intercepting a course</p>
+                </div>
+                <dl class="ph-block">
+                    <div><dt>Sheet</dt><dd>03</dd></div>
+                    <div><dt>Reference</dt><dd>Doc 8168 Vol II</dd></div>
+                </dl>
+            </header>
+
+            <div class="card">
+                <div class="card-header minimizable" onclick="toggleCard(this)">
+                    <div class="card-heading"><span class="card-tag">03-A</span>
+                        <div class="card-title">Intercept Geometry</div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-reset"
+                            onclick="event.stopPropagation(); resetCard('card-turnviz-setup', ['viz-cur-trk', 'viz-fin-crs', 'viz-ias', 'viz-alt', 'viz-bank', 'viz-dir', 'viz-theta', 'viz-ta', 'viz-offset'], 'drawTurnViz');">↺ Reset</button>
+                    </div>
+                </div>
+                <div class="card-body split">
+                    <div class="col">
+                        <div class="form-grid">
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>Current Track (&deg;)</label>
+                                    <input type="number" id="viz-cur-trk" value="270" oninput="drawTurnViz()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Next Track (&deg;)</label>
+                                    <input type="number" id="viz-fin-crs" value="180" oninput="drawTurnViz()">
+                                </div>
+                            </div>
+                            <div class="vp-input-group">
+                                <label>Turn Direction</label>
+                                <div class="segmented-control" id="viz-dir-toggle">
+                                    <button class="segment-item active"
+                                        onclick="setToggle('viz-dir', 'auto', this); drawTurnViz();">Auto</button>
+                                    <button class="segment-item"
+                                        onclick="setToggle('viz-dir', 'right', this); drawTurnViz();">Right</button>
+                                    <button class="segment-item"
+                                        onclick="setToggle('viz-dir', 'left', this); drawTurnViz();">Left</button>
+                                </div>
+                                <input type="hidden" id="viz-dir" value="auto">
+                            </div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>IAS (kt)</label>
+                                    <input type="number" id="viz-ias" value="160" oninput="drawTurnViz()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Altitude (ft)</label>
+                                    <input type="number" id="viz-alt" value="3000" oninput="drawTurnViz()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Bank (&deg;)</label>
+                                    <input type="number" id="viz-bank" value="25" oninput="drawTurnViz()">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="results-panel flush">
+                            <div class="result-row">
+                                <span class="result-label">Intercept Angle (&theta;)</span>
+                                <span id="viz-theta" class="result-value">--- &deg;</span>
+                            </div>
+                            <div class="result-row">
+                                <span class="result-label">Turn Radius (r)</span>
+                                <span id="viz-radius" class="result-value c-cyan">--- NM</span>
+                            </div>
+                            <div class="result-row key">
+                                <span class="result-label">Turn Anticipation (Lead)</span>
+                                <span id="viz-ta" class="result-value c-warning">--- NM</span>
+                            </div>
+                            <div class="result-row">
+                                <span class="result-label">Offset Distance (if 180&deg;)</span>
+                                <span id="viz-offset" class="result-value c-primary">--- NM</span>
+                            </div>
+                        </div>
+
+                        <div class="legend">
+                            <span style="color: var(--text-main);"><i></i>Current track</span>
+                            <span class="c-warning"><i></i>Turn arc</span>
+                            <span class="c-success"><i></i>Next track</span>
+                            <span class="c-danger"><i class="dot"></i>Turn start / intersection</span>
+                            <span class="c-cyan"><i class="dash"></i>Radius</span>
+                        </div>
+                    </div>
+
+                    <div class="viz" style="max-width: 560px; justify-self: center;">
+                        <span class="viz-label">Plan view · to scale</span>
+                        <button class="viz-dl" onclick="exportViz(this)" data-name="turn-anticipation" title="Download high-resolution PNG">⤓ PNG</button>
+                        <canvas id="turnCanvas" width="400" height="400"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =====================================================
+             04 · IFP GRADIENT
+             ===================================================== -->
+        <section id="tab-gradient" class="tab-content" style="display:none;">
+            <header class="page-header">
+                <div class="ph-main">
+                    <div class="ph-crumb">Segments / Sheet 04</div>
+                    <h1 class="page-title">IFP Gradient</h1>
+                    <p class="page-subtitle">Chain climb / descent legs — enter any two values and the rest calculate</p>
+                </div>
+                <dl class="ph-block">
+                    <div><dt>Sheet</dt><dd>04</dd></div>
+                    <div><dt>Reference</dt><dd>Doc 8168 Vol II</dd></div>
+                </dl>
+            </header>
+
+            <div class="stack">
+                <div class="card">
+                    <div class="card-header minimizable" onclick="toggleCard(this)">
+                        <div class="card-heading"><span class="card-tag">04-0</span>
+                            <div class="card-title">Initial Parameters</div>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-reset"
+                                onclick="event.stopPropagation(); resetCard('card-grad-initial', ['grad-rwy-elev', 'grad-tch', 'grad-type', 'grad-delta', 'grad-ftnm', 'grad-percent', 'grad-angle'], 'calcGradStart');">↺ Reset</button>
+                            <button class="btn-mini primary" onclick="event.stopPropagation(); calcGradStart()">＋ Set Leg 1</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="vp-row" style="align-items: flex-end;">
+                            <div class="vp-input-group">
+                                <label>RWY Elev (ft)</label>
+                                <input type="number" id="grad-rwy-elev" placeholder="e.g. 100" oninput="calcGradStart()">
+                            </div>
+                            <div class="vp-input-group">
+                                <label>TCH (ft)</label>
+                                <input type="number" id="grad-tch" value="50" oninput="calcGradStart()">
+                            </div>
+                            <div class="vp-input-group" style="flex: 0 0 auto; min-width: 0;">
+                                <label>Approach Offset</label>
+                                <button class="btn c-warning" style="width: 90px;" onclick="calcGradStart(-100)"
+                                    title="Subtract 100 ft from Threshold Crossing Height (simulation)">−100</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid-container" id="grad-legs-container">
+                    <!-- LEG 1 -->
+                    <div class="card" id="card-grad">
+                        <div class="card-header">
+                            <div class="card-heading"><span class="card-tag">LEG 1</span>
+                                <div class="card-title"><span id="grad-header-info" class="leg-info"></span></div>
+                            </div>
+                            <div class="card-actions">
+                                <button class="btn-reset" onclick="event.stopPropagation(); resetGradientLeg('grad');">↺ Reset</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-grid">
+                                <div class="vp-row">
+                                    <div class="vp-input-group">
+                                        <label>Start Alt (ft)</label>
+                                        <input type="number" id="grad-startAlt" placeholder="e.g. 2000"
+                                            oninput="calculateGradient('grad', 'sAlt')">
+                                    </div>
+                                    <div class="vp-input-group">
+                                        <label>End Alt (ft)</label>
+                                        <input type="number" id="grad-endAlt" placeholder="e.g. 5000"
+                                            oninput="calculateGradient('grad', 'eAlt')">
+                                    </div>
+                                </div>
+                                <div class="vp-row">
+                                    <div class="vp-input-group">
+                                        <label>Gradient (%)<span class="opt">OPT</span></label>
+                                        <input type="number" id="grad-pct-in" class="input-alt" placeholder="Calc"
+                                            onchange="calculateGradient('grad', 'pct')" step="0.01">
+                                    </div>
+                                    <div class="vp-input-group">
+                                        <label>Angle (&deg;)<span class="opt">OPT</span></label>
+                                        <input type="number" id="grad-angle-in" class="input-alt" placeholder="Calc"
+                                            onchange="calculateGradient('grad', 'angle')">
+                                    </div>
+                                </div>
+                                <div class="vp-row">
+                                    <div class="vp-input-group">
+                                        <label>Leg Dist (NM)</label>
+                                        <input type="number" id="grad-dist" placeholder="e.g. 5.0"
+                                            onchange="calculateGradient('grad', 'dist')">
+                                    </div>
+                                    <div class="vp-input-group">
+                                        <label>Start Dist (NM)</label>
+                                        <input type="number" id="grad-sdist" placeholder="--"
+                                            onchange="calculateGradient('grad', 'sDist')">
+                                    </div>
+                                    <div class="vp-input-group">
+                                        <label>End Dist (NM)</label>
+                                        <input type="number" id="grad-edist" placeholder="--"
+                                            onchange="calculateGradient('grad', 'eDist')">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="results-panel">
+                                <div class="result-row"><span class="result-label">Status</span><span id="grad-type" class="result-value">---</span></div>
+                                <div class="result-row"><span class="result-label">Alt Change</span><span id="grad-delta" class="result-value">0 ft</span></div>
+                                <hr>
+                                <div class="result-row"><span class="result-label">Gradient (ft/NM)</span><span id="grad-ftnm" class="result-value c-cyan">0</span></div>
+                                <div class="result-row"><span class="result-label">Gradient (%)</span><span id="grad-percent" class="result-value c-cyan">0.0%</span></div>
+                                <div class="result-row"><span class="result-label">Angle (&deg;)</span><span id="grad-angle" class="result-value c-cyan">0.00&deg;</span></div>
+                            </div>
+                            <div class="viz grad-viz">
+                                <button class="viz-dl" onclick="exportViz(this)" data-name="gradient-leg-1" title="Download high-resolution PNG">⤓ PNG</button>
+                                <canvas id="gradCanvas" class="grad-canvas"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn btn-add" onclick="addGradientLeg()">＋ Add Another Leg</button>
+            </div>
+        </section>
+
+        <!-- =====================================================
+             05 · HOLDING FOR ARC
+             ===================================================== -->
+        <!-- =====================================================
+             02R · REVERSAL & RACETRACK (cards 02-B … 02-D)
+             ===================================================== -->
+        <section id="tab-reversal" class="tab-content" style="display:none;">
+            <header class="page-header">
+                <div class="ph-main">
+                    <div class="ph-crumb">Holding &amp; Reversal / Sheet 02R</div>
+                    <h1 class="page-title">Reversal &amp; Racetrack</h1>
+                    <p class="page-subtitle">Procedure turn, reversal / racetrack template and base turn divergence</p>
+                </div>
+                <dl class="ph-block">
+                    <div><dt>Sheet</dt><dd>02R</dd></div>
+                    <div><dt>Reference</dt><dd>Doc 8168 Vol II I-4-3</dd></div>
+                </dl>
+            </header>
+
+            <div class="stack">
                 <!-- 02-B PROCEDURE TURN -->
                 <div class="card">
                     <div class="card-header minimizable" onclick="toggleCard(this)">
@@ -1867,245 +2253,15 @@
             </div>
         </section>
 
-        <!-- =====================================================
-             03 · TURN ANTICIPATION
-             ===================================================== -->
-        <section id="tab-turnviz" class="tab-content" style="display:none;">
-            <header class="page-header">
-                <div class="ph-main">
-                    <div class="ph-crumb">Aircraft Performance / Sheet 03</div>
-                    <h1 class="page-title">Turn Anticipation</h1>
-                    <p class="page-subtitle">Geometry visualisation for intercepting a course</p>
-                </div>
-                <dl class="ph-block">
-                    <div><dt>Sheet</dt><dd>03 / 09</dd></div>
-                    <div><dt>Reference</dt><dd>Doc 8168 Vol II</dd></div>
-                </dl>
-            </header>
-
-            <div class="card">
-                <div class="card-header minimizable" onclick="toggleCard(this)">
-                    <div class="card-heading"><span class="card-tag">03-A</span>
-                        <div class="card-title">Intercept Geometry</div>
-                    </div>
-                    <div class="card-actions">
-                        <button class="btn-reset"
-                            onclick="event.stopPropagation(); resetCard('card-turnviz-setup', ['viz-cur-trk', 'viz-fin-crs', 'viz-ias', 'viz-alt', 'viz-bank', 'viz-dir', 'viz-theta', 'viz-ta', 'viz-offset'], 'drawTurnViz');">↺ Reset</button>
-                    </div>
-                </div>
-                <div class="card-body split">
-                    <div class="col">
-                        <div class="form-grid">
-                            <div class="vp-row">
-                                <div class="vp-input-group">
-                                    <label>Current Track (&deg;)</label>
-                                    <input type="number" id="viz-cur-trk" value="270" oninput="drawTurnViz()">
-                                </div>
-                                <div class="vp-input-group">
-                                    <label>Next Track (&deg;)</label>
-                                    <input type="number" id="viz-fin-crs" value="180" oninput="drawTurnViz()">
-                                </div>
-                            </div>
-                            <div class="vp-input-group">
-                                <label>Turn Direction</label>
-                                <div class="segmented-control" id="viz-dir-toggle">
-                                    <button class="segment-item active"
-                                        onclick="setToggle('viz-dir', 'auto', this); drawTurnViz();">Auto</button>
-                                    <button class="segment-item"
-                                        onclick="setToggle('viz-dir', 'right', this); drawTurnViz();">Right</button>
-                                    <button class="segment-item"
-                                        onclick="setToggle('viz-dir', 'left', this); drawTurnViz();">Left</button>
-                                </div>
-                                <input type="hidden" id="viz-dir" value="auto">
-                            </div>
-                            <div class="vp-row">
-                                <div class="vp-input-group">
-                                    <label>IAS (kt)</label>
-                                    <input type="number" id="viz-ias" value="160" oninput="drawTurnViz()">
-                                </div>
-                                <div class="vp-input-group">
-                                    <label>Altitude (ft)</label>
-                                    <input type="number" id="viz-alt" value="3000" oninput="drawTurnViz()">
-                                </div>
-                                <div class="vp-input-group">
-                                    <label>Bank (&deg;)</label>
-                                    <input type="number" id="viz-bank" value="25" oninput="drawTurnViz()">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="results-panel flush">
-                            <div class="result-row">
-                                <span class="result-label">Intercept Angle (&theta;)</span>
-                                <span id="viz-theta" class="result-value">--- &deg;</span>
-                            </div>
-                            <div class="result-row">
-                                <span class="result-label">Turn Radius (r)</span>
-                                <span id="viz-radius" class="result-value c-cyan">--- NM</span>
-                            </div>
-                            <div class="result-row key">
-                                <span class="result-label">Turn Anticipation (Lead)</span>
-                                <span id="viz-ta" class="result-value c-warning">--- NM</span>
-                            </div>
-                            <div class="result-row">
-                                <span class="result-label">Offset Distance (if 180&deg;)</span>
-                                <span id="viz-offset" class="result-value c-primary">--- NM</span>
-                            </div>
-                        </div>
-
-                        <div class="legend">
-                            <span style="color: var(--text-main);"><i></i>Current track</span>
-                            <span class="c-warning"><i></i>Turn arc</span>
-                            <span class="c-success"><i></i>Next track</span>
-                            <span class="c-danger"><i class="dot"></i>Turn start / intersection</span>
-                            <span class="c-cyan"><i class="dash"></i>Radius</span>
-                        </div>
-                    </div>
-
-                    <div class="viz" style="max-width: 560px; justify-self: center;">
-                        <span class="viz-label">Plan view · to scale</span>
-                        <button class="viz-dl" onclick="exportViz(this)" data-name="turn-anticipation" title="Download high-resolution PNG">⤓ PNG</button>
-                        <canvas id="turnCanvas" width="400" height="400"></canvas>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- =====================================================
-             04 · IFP GRADIENT
-             ===================================================== -->
-        <section id="tab-gradient" class="tab-content" style="display:none;">
-            <header class="page-header">
-                <div class="ph-main">
-                    <div class="ph-crumb">Procedure Construction / Sheet 04</div>
-                    <h1 class="page-title">IFP Gradient</h1>
-                    <p class="page-subtitle">Chain climb / descent legs — enter any two values and the rest calculate</p>
-                </div>
-                <dl class="ph-block">
-                    <div><dt>Sheet</dt><dd>04 / 09</dd></div>
-                    <div><dt>Reference</dt><dd>Doc 8168 Vol II</dd></div>
-                </dl>
-            </header>
-
-            <div class="stack">
-                <div class="card">
-                    <div class="card-header minimizable" onclick="toggleCard(this)">
-                        <div class="card-heading"><span class="card-tag">04-0</span>
-                            <div class="card-title">Initial Parameters</div>
-                        </div>
-                        <div class="card-actions">
-                            <button class="btn-reset"
-                                onclick="event.stopPropagation(); resetCard('card-grad-initial', ['grad-rwy-elev', 'grad-tch', 'grad-type', 'grad-delta', 'grad-ftnm', 'grad-percent', 'grad-angle'], 'calcGradStart');">↺ Reset</button>
-                            <button class="btn-mini primary" onclick="event.stopPropagation(); calcGradStart()">＋ Set Leg 1</button>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="vp-row" style="align-items: flex-end;">
-                            <div class="vp-input-group">
-                                <label>RWY Elev (ft)</label>
-                                <input type="number" id="grad-rwy-elev" placeholder="e.g. 100" oninput="calcGradStart()">
-                            </div>
-                            <div class="vp-input-group">
-                                <label>TCH (ft)</label>
-                                <input type="number" id="grad-tch" value="50" oninput="calcGradStart()">
-                            </div>
-                            <div class="vp-input-group" style="flex: 0 0 auto; min-width: 0;">
-                                <label>Approach Offset</label>
-                                <button class="btn c-warning" style="width: 90px;" onclick="calcGradStart(-100)"
-                                    title="Subtract 100 ft from Threshold Crossing Height (simulation)">−100</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="grid-container" id="grad-legs-container">
-                    <!-- LEG 1 -->
-                    <div class="card" id="card-grad">
-                        <div class="card-header">
-                            <div class="card-heading"><span class="card-tag">LEG 1</span>
-                                <div class="card-title"><span id="grad-header-info" class="leg-info"></span></div>
-                            </div>
-                            <div class="card-actions">
-                                <button class="btn-reset" onclick="event.stopPropagation(); resetGradientLeg('grad');">↺ Reset</button>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div class="form-grid">
-                                <div class="vp-row">
-                                    <div class="vp-input-group">
-                                        <label>Start Alt (ft)</label>
-                                        <input type="number" id="grad-startAlt" placeholder="e.g. 2000"
-                                            oninput="calculateGradient('grad', 'sAlt')">
-                                    </div>
-                                    <div class="vp-input-group">
-                                        <label>End Alt (ft)</label>
-                                        <input type="number" id="grad-endAlt" placeholder="e.g. 5000"
-                                            oninput="calculateGradient('grad', 'eAlt')">
-                                    </div>
-                                </div>
-                                <div class="vp-row">
-                                    <div class="vp-input-group">
-                                        <label>Gradient (%)<span class="opt">OPT</span></label>
-                                        <input type="number" id="grad-pct-in" class="input-alt" placeholder="Calc"
-                                            onchange="calculateGradient('grad', 'pct')" step="0.01">
-                                    </div>
-                                    <div class="vp-input-group">
-                                        <label>Angle (&deg;)<span class="opt">OPT</span></label>
-                                        <input type="number" id="grad-angle-in" class="input-alt" placeholder="Calc"
-                                            onchange="calculateGradient('grad', 'angle')">
-                                    </div>
-                                </div>
-                                <div class="vp-row">
-                                    <div class="vp-input-group">
-                                        <label>Leg Dist (NM)</label>
-                                        <input type="number" id="grad-dist" placeholder="e.g. 5.0"
-                                            onchange="calculateGradient('grad', 'dist')">
-                                    </div>
-                                    <div class="vp-input-group">
-                                        <label>Start Dist (NM)</label>
-                                        <input type="number" id="grad-sdist" placeholder="--"
-                                            onchange="calculateGradient('grad', 'sDist')">
-                                    </div>
-                                    <div class="vp-input-group">
-                                        <label>End Dist (NM)</label>
-                                        <input type="number" id="grad-edist" placeholder="--"
-                                            onchange="calculateGradient('grad', 'eDist')">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="results-panel">
-                                <div class="result-row"><span class="result-label">Status</span><span id="grad-type" class="result-value">---</span></div>
-                                <div class="result-row"><span class="result-label">Alt Change</span><span id="grad-delta" class="result-value">0 ft</span></div>
-                                <hr>
-                                <div class="result-row"><span class="result-label">Gradient (ft/NM)</span><span id="grad-ftnm" class="result-value c-cyan">0</span></div>
-                                <div class="result-row"><span class="result-label">Gradient (%)</span><span id="grad-percent" class="result-value c-cyan">0.0%</span></div>
-                                <div class="result-row"><span class="result-label">Angle (&deg;)</span><span id="grad-angle" class="result-value c-cyan">0.00&deg;</span></div>
-                            </div>
-                            <div class="viz grad-viz">
-                                <button class="viz-dl" onclick="exportViz(this)" data-name="gradient-leg-1" title="Download high-resolution PNG">⤓ PNG</button>
-                                <canvas id="gradCanvas" class="grad-canvas"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <button class="btn btn-add" onclick="addGradientLeg()">＋ Add Another Leg</button>
-            </div>
-        </section>
-
-        <!-- =====================================================
-             05 · HOLDING FOR ARC
-             ===================================================== -->
         <section id="tab-holdb" class="tab-content" style="display:none;">
             <header class="page-header">
                 <div class="ph-main">
-                    <div class="ph-crumb">Procedure Construction / Sheet 05</div>
+                    <div class="ph-crumb">Holding &amp; Reversal / Sheet 05</div>
                     <h1 class="page-title">Holding</h1>
                     <p class="page-subtitle">Holding template and protected area (Doc 8168 II-4-1) and ATC holding point B on a DME arc</p>
                 </div>
                 <dl class="ph-block">
-                    <div><dt>Sheet</dt><dd>05 / 09</dd></div>
+                    <div><dt>Sheet</dt><dd>05</dd></div>
                     <div><dt>Reference</dt><dd>Doc 8168 Vol II</dd></div>
                 </dl>
             </header>
@@ -2428,12 +2584,12 @@
         <section id="tab-tol" class="tab-content" style="display:none;">
             <header class="page-header">
                 <div class="ph-main">
-                    <div class="ph-crumb">Procedure Construction / Sheet 06</div>
+                    <div class="ph-crumb">Segments / Sheet 06</div>
                     <h1 class="page-title">Tolerance, VEB &amp; PBN</h1>
                     <p class="page-subtitle">Fix tolerances, RNP AR vertical error budget and RNP containment</p>
                 </div>
                 <dl class="ph-block">
-                    <div><dt>Sheet</dt><dd>06 / 09</dd></div>
+                    <div><dt>Sheet</dt><dd>06</dd></div>
                     <div><dt>Reference</dt><dd>Doc 8168 · Doc 9905</dd></div>
                 </dl>
             </header>
@@ -2807,12 +2963,12 @@
         <section id="tab-desc" class="tab-content" style="display:none;">
             <header class="page-header">
                 <div class="ph-main">
-                    <div class="ph-crumb">Approach &amp; Vertical / Sheet 07</div>
+                    <div class="ph-crumb">Departure &amp; Approach / Sheet 07</div>
                     <h1 class="page-title">Departure &amp; Missed Approach</h1>
                     <p class="page-subtitle">Rate of descent, equivalent obstacle height, reaction distance and departure climb gradient</p>
                 </div>
                 <dl class="ph-block">
-                    <div><dt>Sheet</dt><dd>07 / 09</dd></div>
+                    <div><dt>Sheet</dt><dd>07</dd></div>
                     <div><dt>Reference</dt><dd>Doc 8168 Vol II</dd></div>
                 </dl>
             </header>
@@ -3042,12 +3198,12 @@
         <section id="tab-vnav-papi" class="tab-content" style="display:none;">
             <header class="page-header">
                 <div class="ph-main">
-                    <div class="ph-crumb">Approach &amp; Vertical / Sheet 08</div>
+                    <div class="ph-crumb">Departure &amp; Approach / Sheet 08</div>
                     <h1 class="page-title">VNAV vs PAPI &amp; DA Simulation</h1>
                     <p class="page-subtitle">How temperature moves the barometric VNAV path relative to the geometric PAPI corridor</p>
                 </div>
                 <dl class="ph-block">
-                    <div><dt>Sheet</dt><dd>08 / 09</dd></div>
+                    <div><dt>Sheet</dt><dd>08</dd></div>
                     <div><dt>Reference</dt><dd>Doc 8168 · Annex 14</dd></div>
                 </dl>
             </header>
@@ -3326,12 +3482,12 @@
         <section id="tab-pt" class="tab-content" style="display:none;">
             <header class="page-header">
                 <div class="ph-main">
-                    <div class="ph-crumb">Procedure Construction / Sheet 09</div>
+                    <div class="ph-crumb">Segments / Sheet 09</div>
                     <h1 class="page-title">Path Terminators</h1>
                     <p class="page-subtitle">RNAV leg coding: build a leg sequence and check it against the PANS-OPS coding rules</p>
                 </div>
                 <dl class="ph-block">
-                    <div><dt>Sheet</dt><dd>09 / 09</dd></div>
+                    <div><dt>Sheet</dt><dd>09</dd></div>
                     <div><dt>Reference</dt><dd>Doc 8168 Vol II III-2-5</dd></div>
                 </dl>
             </header>
@@ -3535,8 +3691,77 @@
             }
             const main = document.querySelector('main');
             if (main) main.scrollTop = 0;
+            if (window.innerWidth <= 768) window.scrollTo(0, 0);
             if (history.replaceState) history.replaceState(null, '', '#' + tabId.replace(/^tab-/, ''));
+            renderSectionNav(tabId);
         }
+
+        // ---------- section nav (phone): bottom bar = sections, strip = sheets; built from the sidebar ----------
+        const SECTION_ICONS = {
+            aircraft: '<path d="M2 16l20-6-20-6 3 6-3 6z"/><path d="M5 10h8"/>',
+            segments: '<path d="M3 19l6-8 5 4 7-10"/><circle cx="9" cy="11" r="1.6"/><circle cx="14" cy="15" r="1.6"/>',
+            holding: '<path d="M8 6h8a6 6 0 0 1 0 12H8A6 6 0 0 1 8 6z"/><path d="M14 3l3 3-3 3"/>',
+            depapp: '<path d="M2 20h20"/><path d="M4 18l8-7"/><path d="M13 9l7-5"/><path d="M15 4h5v5"/>',
+            qa: '<path d="M4 12l5 5L20 6"/><rect x="2" y="2" width="20" height="20" rx="1"/>'
+        };
+        function renderSectionNav(tabId) {
+            const bar = document.getElementById('mobile-bar'), sub = document.getElementById('mobile-sub');
+            if (!bar || !sub) return;
+            const groups = [...document.querySelectorAll('.nav-menu .nav-group')];
+            const cur = groups.find((g) => g.querySelector('.nav-item[data-tab="' + tabId + '"]')) || groups[0];
+            if (!bar.children.length) {
+                bar.innerHTML = groups.map((g) => '<button type="button" data-group="' + g.dataset.group + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
+                    (SECTION_ICONS[g.dataset.group] || '') + '</svg>' + g.dataset.short + '</button>').join('');
+                bar.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
+                    const g = groups.find((x) => x.dataset.group === b.dataset.group);
+                    const items = [...g.querySelectorAll('.nav-item')];
+                    const last = items.find((n) => n.dataset.tab === g.dataset.last) || items[0];
+                    switchTab(last.dataset.tab);
+                }));
+            }
+            cur.dataset.last = tabId;
+            bar.querySelectorAll('button').forEach((b) => b.classList.toggle('active', b.dataset.group === cur.dataset.group));
+            const items = [...cur.querySelectorAll('.nav-item')];
+            sub.innerHTML = items.map((n) => '<button type="button" role="tab" aria-selected="' + (n.dataset.tab === tabId) + '" class="' + (n.dataset.tab === tabId ? 'active' : '') +
+                '" data-tab="' + n.dataset.tab + '"><span class="ms-num">' + n.querySelector('.nav-num').textContent + '</span>' + n.dataset.short + '</button>').join('');
+            sub.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => switchTab(b.dataset.tab)));
+        }
+
+        function toggleProjectBar() {
+            const on = document.body.classList.toggle('show-project');
+            const b = document.getElementById('proj-btn');
+            if (b) { b.setAttribute('aria-expanded', on); b.textContent = on ? '✕ Project' : '☰ Project'; }
+        }
+
+        // ---------- card index: jump chips under each sheet header (3+ cards) ----------
+        function buildCardIndex() {
+            document.querySelectorAll('.tab-content').forEach((sec) => {
+                if (sec.querySelector('.card-index')) return;
+                const cards = [...sec.querySelectorAll('.card')].filter((c) => c.querySelector(':scope > .card-header .card-tag'));
+                if (cards.length < 3) return;
+                const box = document.createElement('nav');
+                box.className = 'card-index';
+                box.setAttribute('aria-label', 'Cards on this sheet');
+                cards.forEach((c) => {
+                    const tag = c.querySelector('.card-tag').textContent.trim();
+                    const title = (c.querySelector('.card-title') || {}).textContent || '';
+                    const chip = document.createElement('button');
+                    chip.type = 'button';
+                    chip.className = 'ci-chip';
+                    chip.innerHTML = '<b>' + tag + '</b>' + title.trim().replace(/[<>&]/g, '');
+                    chip.addEventListener('click', () => {
+                        const head = c.querySelector(':scope > .card-header');
+                        const body = c.querySelector('.card-body');
+                        if (head && body && body.style.display === 'none') toggleCard(head);
+                        c.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    });
+                    box.appendChild(chip);
+                });
+                const head = sec.querySelector('.page-header');
+                if (head) head.after(box);
+            });
+        }
+        document.addEventListener('DOMContentLoaded', () => { buildCardIndex(); renderSectionNav((document.querySelector('.nav-item.active') || {}).dataset ? document.querySelector('.nav-item.active').dataset.tab : 'tab-tas'); });
 
         // =========================================================
         // PANS-OPS CORE FORMULAS — ICAO Doc 8168 Vol II (7th ed.)
@@ -7445,7 +7670,7 @@
                 oldSwitch(id, el);
                 if (id === 'tab-turnviz') drawTurnViz();
                 if (id === 'tab-gradient') redrawGradients();
-                if (id === 'tab-turn') { calcPT(); calcBaseTurn(); }
+                if (id === 'tab-reversal') { calcPT(); calcBaseTurn(); }
                 if (id === 'tab-vnav-papi') calcVnavPapi();
                 if (id === 'tab-holdb') calcHoldArea();
                 if (id === 'tab-tol') calcIfix();
@@ -7516,6 +7741,8 @@
             setTimeout(updateThemeIcon, 100);
         })();
     </script>
+    <nav class="mobile-bar" id="mobile-bar" aria-label="Sections"></nav>
+
     <button class="theme-fab" id="theme-btn" onclick="toggleTheme()" title="Toggle Blueprint / Whiteprint">
         <svg id="theme-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="5"></circle>

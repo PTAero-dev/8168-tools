@@ -33,7 +33,8 @@ Guide for Claude Code sessions working on this repo. Read this first; details ar
 | No. | Sheet | `tab-…` | Cards |
 |---|---|---|---|
 | 01 | Speed & Temp Correction | `tas` | 01-A TAS, 01-B cold temp (Vol III) |
-| 02 | Turn Calculator | `turn` | 02-A turn, 02-B procedure turn (to-scale), 02-C reversal/racetrack template (Table I-4-3-App C-5), 02-D base turn φ + overshoot analysis |
+| 02 | Turn Calculator | `turn` | 02-A turn |
+| 02R | Reversal & Racetrack | `reversal` | 02-B procedure turn (to-scale), 02-C reversal/racetrack template (Table I-4-3-App C-5), 02-D base turn φ + overshoot analysis |
 | 03 | Turn Anticipation | `turnviz` | 03-A intercept geometry |
 | 04 | IFP Gradient | `gradient` | legs (dynamic, ids `grad`, `grad2`…) |
 | 05 | Holding | `holdb` | 05-A holding template & area (Table I-4-3-App C-4), 05-B ATC point B on ARC |
@@ -44,6 +45,12 @@ Guide for Claude Code sessions working on this repo. Read this first; details ar
 | QA | Doc 8168 Self-test | `selftest` | QA-1 reference checks, QA-2 formula audit list |
 
 URL hash deep links: `#turn`, `#holdb`, `#pt`, …
+
+**Navigation (since 2 Nov 2026):** sheets are grouped in 5 sections in the sidebar markup (`.nav-group[data-group][data-short]`, items carry `data-short`):
+Aircraft (01, 02, 03) · Segments & Fixes (04, 06, 09) · Holding & Reversal (02R, 05) · Departure & Approach (07, 08) · Quality (QA).
+On phones (≤ 768 px) the sidebar list is hidden; `renderSectionNav()` builds the fixed bottom section bar `#mobile-bar` and the sheet strip `#mobile-sub` from that markup (a section remembers its last sheet).
+The project bar is behind `☰ Project` (`toggleProjectBar`, `body.show-project`); the theme button sits in the header. `buildCardIndex()` adds jump chips (`.card-index`) under the header of sheets with 3+ cards.
+To add a sheet: add a `.nav-item` to the right group — both navs pick it up.
 
 ## Code map (search these markers in `index.html`)
 - `PANS-OPS CORE FORMULAS` — `const PANS = {…}`: all Doc formulas (pure functions, refs in comments).
@@ -59,7 +66,7 @@ URL hash deep links: `#turn`, `#holdb`, `#pt`, …
 2. Add pure function(s) to `PANS` (insert before the `// ROD (ft/min)` line) and test cases to `PANS_TESTS` (insert before the `'Missed app.', n: 'ha ↔ hma round trip` entry).
 3. Write `calcX()` (+ `drawX()` using the engine). Inputs need `id`s (autosave). Use `oninput="calcX()"`.
 4. Card markup: `.card > .card-header(.minimizable) + .card-body`, tag like `07-D`, `.results-panel`, `.viz` + `⤓ PNG` button, `.note` with the Doc reference.
-5. Hooks: add `'calcX'` to the `recalcAll` list; add to the `switchTab` wrapper (`if (id === 'tab-…') calcX();`), `toggleTheme` and `redrawDiagrams` if it draws.
+5. Hooks: add the sheet to a `.nav-group` (with `data-short`) if it is new; add `'calcX'` to the `recalcAll` list; add to the `switchTab` wrapper (`if (id === 'tab-…') calcX();`), `toggleTheme` and `redrawDiagrams` if it draws.
 6. Add a line to the QA-2 audit list and update `HANDOVER.md`.
 7. Verify (below), then commit + push.
 
@@ -80,7 +87,7 @@ URL hash deep links: `#turn`, `#holdb`, `#pt`, …
 - Tools available: Python 3.14 (+ Pillow, PyMuPDF), Node, pdftotext, Git Bash, PowerShell.
 
 ## Current status (2 Nov 2026)
-Last commit: holding omnidirectional entry area (05-A) drawn per I-4-3-App C §3.3.3.2.1; template i1–i4 side fix. Earlier: 07-D departure PDG card.
+Last commit: navigation restructured into 5 sections with a phone bottom bar, sheet strip and card jump chips; 02-B…02-D moved to new sheet 02R. Before that: holding omnidirectional entry area (05-A).
 
 ### Done — 07-D Departure Climb Gradient (PDG)
 Card in `tab-desc` (sheet 07 renamed "Departure & Missed Approach"): `PANS.depStd/depPdgFor/depAnalyse/rocFor`, `calcDeparture()`, `drawDepViz()`, obstacle list in hidden `#dep-json`. Details in `HANDOVER.md`.
@@ -98,6 +105,15 @@ Card in `tab-desc` (sheet 07 renamed "Departure & Missed Approach"): `PANS.depSt
 - VNAV vs PAPI: compute true VPA with the Vol II III-3-4 App A method (currently temperature-ratio approximation).
 - Polish: ⓘ per result showing formula + Doc paragraph; ft/NM ↔ m/km toggle; "using TAS from Sheet 01" labels.
 - Real-device testing by the user (install, offline, print to PDF on phone).
+
+### Proposed additions (NOT agreed yet — ask before starting; "continue" does not pick these)
+- Holding: VOR/DME holding area + along-radial entry (I-4-3-App C §3.3.4); entry area for radial-intersection fixes (§3.3.3.2.2); sector-1 area reduction (§3.3.3.3); RNAV holding.
+- Racetrack protected area on sheet 02R from the same template (primary + 2.5 NM secondary, §3.3.1.3).
+- Turn area construction for departure / missed approach turns (wind spiral, turn at altitude / at a TP).
+- Circling area (radii by category, Table I-4-7-1) and visual segment surface check.
+- OCA/H helper for non-precision approaches (MOC per segment + controlling obstacle).
+- MSA / TAA sector tool.
+- Optional: renumber sheets/cards to the new section order (currently original numbers kept; 02R added).
 
 ### Known approximations (documented in UI)
 - Holding basic area = convex envelope of the template wind circles swept around a quadrilateral fix area (approximation of the TTT construction).
