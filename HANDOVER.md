@@ -125,9 +125,10 @@ Contains 3 collapsible sub-sections:
 - Canvas visualization (`ptVizCanvas`) drawn by JS
 - Function: `calcPT()`
 
-**Base Turn (Protected Area)**
-- Inputs: IAS, Wind, Altitude, Turn time
-- Outputs: xmax (NM), ymin, ymax (protected area extents)
+**Reversal & Racetrack Template (02-C)**
+- Procedure: base turn, 45°/180°, 80°/260°, racetrack (Table I-4-3-App C-5, non-SI equations)
+- Inputs: max IAS, altitude, outbound time, wind (default ICAO 2h+47), facility (VOR 50° / NDB 40° cone) + elevation
+- TAS = IAS at **ISA+15** (I-4-3-App C line 1). Outputs xmax/ymax/ymin (+xmin racetrack), fix error, template plotting values; warns outside validity (TAS 90–290 kt, w ≤ 65 kt, t 1–3 min)
 - Canvas visualization (`baseVizCanvas`)
 - Function: `calcBaseTurn()`
 
@@ -181,25 +182,21 @@ Used for ATC: Calculate the holding fix (Point B) from a DME arc start point (Po
 
 Three cards:
 
-**PBN / RNP Parameters**
-- Select RNP value (0.3 to 10 NM) and phase of flight
-- Outputs: Lateral accuracy (95%), Containment limit (1×RNP), Protection area (2×RNP), MOC
+**PBN Area Semi-width (06-A)**
+- Inputs: XTT (RNP value), phase of flight → buffer value (Table III-1-1-3), CAT A–E / H, segment MOC
+- Outputs: XTT, ATT = 0.8·XTT, BV, ½A/W = 1.5·XTT + BV (III-1-1 §1.5.1), primary semi-width, MOC
 - Function: `calcPBN()`
 
 **Fix Tolerance (Doc 8168)**
-- NavAid types: DME, VOR (intersecting/overhead), NDB
-- For DME: input distance → Along Track Tolerance (ATT)
-- For VOR/NDB: input distance → ATT + tracking tolerance (°)
-- Formula per Doc 8168 Vol.2:
-  - DME: `ATT = ±(0.085 × D + 0.25)` NM
-  - VOR: `ATT = D × tan(tracking_tolerance)` where tracking_tol varies
-  - NDB: `ATT = D × tan(tracking_tolerance)` (larger angles)
+- DME: `±(0.25 NM + 1.25 % × D)` (I-2-2 §2.4.4)
+- VOR / NDB overhead: cone radius `z = 0.164 × h(thousands ft) × tan α`, α = 50° VOR / 40° NDB (I-2-2 §2.5); entry ±5° VOR / ±15° NDB, tracking ±5°
+- System use accuracy (Table I-2-2-1) shown as reference: VOR ±5.2°/±4.5°, NDB ±6.9°/±6.2°, ILS ±2.4°/±1.4°
 - Function: `calcTolerance()`
 
 **Vertical Error Budget (Doc 9905)**
 - Inputs: RNP value (0.1 or 0.3), LNE (ft), ASE (ft), FTE (ft)
 - Outputs: Lateral protection (semi-width NM), VEB MOC (ft)
-- Formula: `VEB_MOC = sqrt(ASE² + FTE² + LNE²) × tan(glide_slope) × lateral_factor`
+- Formula in code: `RSS(ASE, FTE, LNE) × 4/3` — **not verified**: RNP AR VEB is defined in Doc 9905, not Vol II. Card is flagged "do not use for design".
 - Function: `calcVEB()`
 
 ---
@@ -212,9 +209,9 @@ Three cards:
 - Formula: `ROD = GS × gradient_decimal × 6076.12` ft/min
 - Function: `calcDescent()`
 
-**Equivalent Obstacle Height (ha/hma)**
-- Converts between approach obstacle height (ha) and missed approach equivalent height (hma)
-- Inputs: Obstacle dist from SOC (NM), Approach gradient Z%, Missed App gradient Z%, Input height, Direction
+**Equivalent Approach Obstacle (07-B)**
+- `ha = [hma·cot Z + (xz + x)] / (cot Z + cot θ)` (II-1-1 §1.4.8.8.2.1; III-3-4 §4.4.3), and its inverse
+- Inputs: GP/VPA θ, MA gradient Z %, xz (900 m, 700 m Cat H), obstacle x from THR (m, + before / − after), height (ft)
 - Function: `calcEqObs()`
 
 **Dynamic Reaction Distance (Doc 8168 parameters)**
@@ -246,6 +243,12 @@ The most complex tab — simulates how barometric VNAV deviates from geometric P
 Function: `calcVnavPapi()`
 
 ---
+
+## 5b. PANS core formulas & self-test
+
+All Doc 8168 formulas live in one object, `PANS` (search `PANS-OPS CORE FORMULAS`), each with its paragraph reference.
+Calculators call `PANS.*`; the **QA · Doc 8168 Self-test** sheet (`#selftest`) runs `PANS_TESTS` — 28 reference values from Vol II
+worked examples and tables — and shows the pass count in the sidebar badge. **Add a test whenever a formula is added or changed.**
 
 ## 6. Shared Utility Functions
 

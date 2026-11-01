@@ -988,6 +988,33 @@
         }
 
         /* =========================================================
+           SELF-TEST
+           ========================================================= */
+        .nav-badge {
+            margin-left: auto;
+            padding: 0 5px;
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            font-family: var(--font-mono);
+            font-size: 0.62rem;
+        }
+        .nav-badge.ok { color: var(--accent-success); border-color: var(--accent-success); }
+        .nav-badge.bad { color: var(--accent-danger); border-color: var(--accent-danger); }
+
+        .table-wrap { overflow-x: auto; }
+        .qa-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        .qa-table th, .qa-table td { padding: 7px 8px; border-bottom: 1px dashed var(--line-soft); text-align: left; vertical-align: top; }
+        .qa-table th {
+            font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase;
+            color: var(--accent-primary); border-bottom: 1px solid var(--line); white-space: nowrap;
+        }
+        .qa-table td.num { font-family: var(--font-mono); text-align: right; white-space: nowrap; }
+        .qa-table tr.fail td { background: rgba(255, 122, 133, 0.08); }
+        .audit-list { margin: 0; padding-left: 18px; font-size: 0.84rem; line-height: 1.6; color: var(--text-muted); }
+        .audit-list b { color: var(--text-main); }
+        .audit-list li { margin-bottom: 6px; }
+
+        /* =========================================================
            INSTALL (PWA)
            ========================================================= */
         .install-btn { margin-left: auto; }
@@ -1083,6 +1110,10 @@
                 <div class="nav-group-title">Approach &amp; Vertical</div>
                 <div class="nav-item" data-tab="tab-desc" onclick="switchTab('tab-desc', this)"><span class="nav-num">07</span>Descent &amp; Missed App</div>
                 <div class="nav-item" data-tab="tab-vnav-papi" onclick="switchTab('tab-vnav-papi', this)"><span class="nav-num">08</span>VNAV vs PAPI</div>
+            </div>
+            <div class="nav-group">
+                <div class="nav-group-title">Quality</div>
+                <div class="nav-item" data-tab="tab-selftest" onclick="switchTab('tab-selftest', this)"><span class="nav-num">QA</span>Doc 8168 Self-test<span id="selftest-badge" class="nav-badge">…</span></div>
             </div>
         </nav>
 
@@ -1372,7 +1403,7 @@
 
                             <div class="results-panel flush">
                                 <div class="result-row">
-                                    <span class="result-label">TAS &amp; Wind (w)</span>
+                                    <span class="result-label">TAS (ISA+15) &amp; Wind (w)</span>
                                     <span id="pt-tas-wind" class="result-value">--- kt</span>
                                 </div>
                                 <div class="result-row">
@@ -1402,66 +1433,111 @@
                 <div class="card">
                     <div class="card-header minimizable" onclick="toggleCard(this)">
                         <div class="card-heading"><span class="card-tag">02-C</span>
-                            <div class="card-title">Base Turn (Protected Area)</div>
+                            <div class="card-title">Reversal &amp; Racetrack Template</div>
                         </div>
                         <div class="card-actions">
                             <button class="btn-reset"
-                                onclick="event.stopPropagation(); resetCard('card-base-turn', ['base-tas', 'base-wind', 'base-alt', 'base-time', 'base-xmax', 'base-ymax', 'base-ymin'], 'calcBaseTurn');">↺ Reset</button>
+                                onclick="event.stopPropagation(); resetCard('card-base-turn', ['base-tas', 'base-wind', 'base-alt', 'base-fac-elev', 'base-tasout', 'base-xmax', 'base-ymax', 'base-ymin', 'base-xmin', 'base-fixerr', 'base-plot'], 'calcBaseTurn');">↺ Reset</button>
                         </div>
                     </div>
                     <div class="card-body split">
                         <div class="col">
                             <div class="form-grid">
+                                <div class="vp-input-group">
+                                    <label>Procedure</label>
+                                    <select id="base-type" onchange="calcBaseTurn()">
+                                        <option value="base">Base turn</option>
+                                        <option value="45/180">45°/180° procedure turn</option>
+                                        <option value="80/260">80°/260° procedure turn</option>
+                                        <option value="racetrack">Racetrack</option>
+                                    </select>
+                                </div>
                                 <div class="vp-row">
                                     <div class="vp-input-group">
-                                        <label>IAS (kt)</label>
+                                        <label>Max IAS (kt)</label>
                                         <input type="number" id="base-tas" placeholder="e.g. 140" oninput="calcBaseTurn()">
                                     </div>
                                     <div class="vp-input-group">
-                                        <label>Wind (kt)</label>
-                                        <input type="number" id="base-wind" placeholder="Auto" oninput="calcBaseTurn()">
+                                        <label>Altitude (ft)</label>
+                                        <input type="number" id="base-alt" placeholder="e.g. 6000" oninput="calcBaseTurn()">
                                     </div>
                                 </div>
                                 <div class="vp-row">
                                     <div class="vp-input-group">
-                                        <label>Altitude (ft)</label>
-                                        <input type="number" id="base-alt" placeholder="For wind" oninput="calcBaseTurn()">
-                                    </div>
-                                    <div class="vp-input-group">
-                                        <label>Turn Time (min)</label>
+                                        <label>Outbound Time (min)</label>
                                         <select id="base-time" onchange="calcBaseTurn()">
                                             <option value="1">1.0 min</option>
-                                            <option value="1.25">1.25 min</option>
                                             <option value="1.5">1.5 min</option>
-                                            <option value="1.75">1.75 min</option>
                                             <option value="2" selected>2.0 min</option>
-                                            <option value="2.25">2.25 min</option>
                                             <option value="2.5">2.5 min</option>
                                             <option value="3">3.0 min</option>
                                         </select>
+                                    </div>
+                                    <div class="vp-input-group">
+                                        <label>Wind (kt)<span class="opt">OPT</span></label>
+                                        <input type="number" id="base-wind" placeholder="ICAO 2h+47" oninput="calcBaseTurn()">
+                                    </div>
+                                </div>
+                                <div class="vp-row">
+                                    <div class="vp-input-group">
+                                        <label>Facility (fix error)</label>
+                                        <select id="base-fac" onchange="calcBaseTurn()">
+                                            <option value="none">None</option>
+                                            <option value="vor">VOR · cone 50°</option>
+                                            <option value="ndb">NDB · cone 40°</option>
+                                        </select>
+                                    </div>
+                                    <div class="vp-input-group">
+                                        <label>Facility Elev (ft)<span class="opt">OPT</span></label>
+                                        <input type="number" id="base-fac-elev" placeholder="0" oninput="calcBaseTurn()">
                                     </div>
                                 </div>
                             </div>
 
                             <div class="results-panel flush">
+                                <div class="result-row">
+                                    <span class="result-label">TAS (ISA+15) &amp; Wind</span>
+                                    <span id="base-tasout" class="result-value">---</span>
+                                </div>
                                 <div class="result-row key">
-                                    <span class="result-label">Distance x<sub>max</sub></span>
+                                    <span class="result-label">x<sub>max</sub></span>
                                     <span id="base-xmax" class="result-value c-cyan">--- NM</span>
                                 </div>
+                                <div class="result-row" id="base-xmin-row" style="display:none;">
+                                    <span class="result-label">x<sub>min</sub></span>
+                                    <span id="base-xmin" class="result-value">--- NM</span>
+                                </div>
                                 <div class="result-row">
-                                    <span class="result-label">Distance y<sub>max</sub></span>
+                                    <span class="result-label">y<sub>max</sub></span>
                                     <span id="base-ymax" class="result-value">--- NM</span>
                                 </div>
                                 <div class="result-row">
-                                    <span class="result-label">Distance y<sub>min</sub></span>
+                                    <span class="result-label">y<sub>min</sub></span>
                                     <span id="base-ymin" class="result-value">--- NM</span>
                                 </div>
+                                <div class="result-row">
+                                    <span class="result-label">Fix error</span>
+                                    <span id="base-fixerr" class="result-value">---</span>
+                                </div>
+                                <hr>
+                                <div class="result-row key">
+                                    <span class="result-label">Template plotting values</span>
+                                    <span id="base-plot" class="result-value c-warning" style="font-size: 0.86rem;">---</span>
+                                </div>
+                                <div id="base-warn" class="warn-text" style="display:none;">
+                                    &#9888; Outside Table I-4-3-App C-5 validity (TAS 90–290 kt, wind ≤ 65 kt, t 1–3 min)
+                                </div>
+                            </div>
+                            <div class="note">
+                                <div class="note-title">Reference</div>
+                                Doc 8168 Vol II, I-4-3-App C, Table I-4-3-App C-5 (non-SI). TAS from max IAS at ISA+15 °C;
+                                plotting values add the fix error to x<sub>max</sub>/y<sub>max</sub> and subtract it from y<sub>min</sub>/x<sub>min</sub>.
                             </div>
                         </div>
 
                         <div class="viz">
                             <span class="viz-label">Plan view · to scale</span>
-                            <button class="viz-dl" onclick="exportViz(this)" data-name="base-turn" title="Download high-resolution PNG">⤓ PNG</button>
+                            <button class="viz-dl" onclick="exportViz(this)" data-name="reversal-template" title="Download high-resolution PNG">⤓ PNG</button>
                             <canvas id="baseVizCanvas" width="600" height="250"></canvas>
                         </div>
                     </div>
@@ -1499,7 +1575,7 @@
                                 <div class="vp-row">
                                     <div class="vp-input-group">
                                         <label>IAS (kt)</label>
-                                        <input type="number" id="btp-ias" value="200" oninput="calcBaseTurnPhi()">
+                                        <input type="number" id="btp-ias" value="240" oninput="calcBaseTurnPhi()">
                                     </div>
                                     <div class="vp-input-group">
                                         <label>Altitude (ft)</label>
@@ -1549,7 +1625,7 @@
 
                             <div class="results-panel flush">
                                 <div class="result-row">
-                                    <span class="result-label">True Airspeed (TAS)</span>
+                                    <span class="result-label">TAS (ISA+15)</span>
                                     <span id="btp-res-tas" class="result-value">--- kt</span>
                                 </div>
                                 <div class="result-row key">
@@ -1998,53 +2074,84 @@
                 <div class="card">
                     <div class="card-header minimizable" onclick="toggleCard(this)">
                         <div class="card-heading"><span class="card-tag">06-A</span>
-                            <div class="card-title">PBN / RNP Parameters</div>
+                            <div class="card-title">PBN Area Semi-width</div>
                         </div>
                         <div class="card-actions">
                             <button class="btn-reset"
-                                onclick="event.stopPropagation(); resetCard('card-pbn-params', ['pbn-rnp', 'pbn-phase', 'pbn-acc', 'pbn-limit-1', 'pbn-limit-2', 'pbn-moc'], 'calcPBN');">↺ Reset</button>
+                                onclick="event.stopPropagation(); resetCard('card-pbn-params', ['pbn-rnp', 'pbn-phase', 'pbn-cat', 'pbn-seg', 'pbn-acc', 'pbn-limit-1', 'pbn-bv', 'pbn-limit-2', 'pbn-primary', 'pbn-moc'], 'calcPBN');">↺ Reset</button>
                         </div>
                     </div>
                     <div class="card-body">
                         <div class="form-grid">
                             <div class="vp-input-group">
-                                <label>RNP Value (NM)</label>
+                                <label>Navigation Accuracy · XTT</label>
                                 <select id="pbn-rnp" onchange="calcPBN()">
-                                    <option value="0.3">RNP 0.3 (Final/Initial)</option>
-                                    <option value="1">RNP 1 (Terminal)</option>
-                                    <option value="2">RNP 2 (En-route)</option>
-                                    <option value="4">RNP 4</option>
-                                    <option value="5">RNP 5 (Basic-RNP 1)</option>
-                                    <option value="10">RNP 10 (Oceanic)</option>
+                                    <option value="0.3">RNP 0.3 · RNP APCH final (0.30 NM)</option>
+                                    <option value="1">RNP 1 · RNP APCH IAF/IF, RNAV 1 GNSS (1.00 NM)</option>
+                                    <option value="2">RNP 2 (2.00 NM)</option>
+                                    <option value="4">RNP 4 (4.00 NM)</option>
                                 </select>
                             </div>
                             <div class="vp-input-group">
-                                <label>Phase of Flight</label>
+                                <label>Phase of Flight · Buffer Value</label>
                                 <select id="pbn-phase" onchange="calcPBN()">
-                                    <option value="non-precision">Non-Precision / Terminal</option>
-                                    <option value="precision">RNP AR / Precision</option>
-                                    <option value="enroute">En-Route</option>
+                                    <option value="final">Final approach</option>
+                                    <option value="missed">Missed approach / SID &lt; 15 NM ARP</option>
+                                    <option value="terminal">Terminal &lt; 30 NM ARP (STAR, IAF/IF, SID/MA 15–30 NM)</option>
+                                    <option value="enroute">En-route / STAR / SID ≥ 30 NM ARP</option>
                                 </select>
+                            </div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>Category</label>
+                                    <select id="pbn-cat" onchange="calcPBN()">
+                                        <option value="AE">CAT A–E</option>
+                                        <option value="H">CAT H</option>
+                                    </select>
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Segment MOC</label>
+                                    <select id="pbn-seg" onchange="calcPBN()">
+                                        <option value="75|246">Final (with FAF)</option>
+                                        <option value="150|492">Intermediate</option>
+                                        <option value="300|984">Initial / en-route</option>
+                                        <option value="30|98">Missed app. · intermediate</option>
+                                        <option value="50|164">Missed app. · final</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
 
                         <div class="results-panel">
                             <div class="result-row">
-                                <span class="result-label">Lateral Accuracy (95%)</span>
+                                <span class="result-label">Cross-track tolerance (XTT)</span>
                                 <span id="pbn-acc" class="result-value">--- NM</span>
                             </div>
                             <div class="result-row">
-                                <span class="result-label">Containment (1&times;RNP)</span>
+                                <span class="result-label">Along-track tolerance (ATT)</span>
                                 <span id="pbn-limit-1" class="result-value c-cyan">--- NM</span>
                             </div>
                             <div class="result-row">
-                                <span class="result-label">Protection Area (2&times;RNP)</span>
+                                <span class="result-label">Buffer value (BV)</span>
+                                <span id="pbn-bv" class="result-value">--- NM</span>
+                            </div>
+                            <div class="result-row key">
+                                <span class="result-label">Area semi-width ½A/W</span>
                                 <span id="pbn-limit-2" class="result-value c-warning">--- NM</span>
                             </div>
                             <div class="result-row">
-                                <span class="result-label">Obstacle Clearance (MOC)</span>
+                                <span class="result-label">Primary area semi-width</span>
+                                <span id="pbn-primary" class="result-value">--- NM</span>
+                            </div>
+                            <div class="result-row">
+                                <span class="result-label">Minimum obstacle clearance</span>
                                 <span id="pbn-moc" class="result-value">--- ft</span>
                             </div>
+                        </div>
+                        <div class="note" style="margin-top: 12px;">
+                            <div class="note-title">Reference</div>
+                            ½A/W = 1.5·XTT + BV (III-1-1 §1.5.1) · ATT = 0.8·XTT (III-1-2) · BV Table III-1-1-3.
+                            RNP AR is not covered (Doc 9905).
                         </div>
                     </div>
                 </div>
@@ -2064,9 +2171,9 @@
                             <div class="vp-input-group">
                                 <label>Navigation Aid</label>
                                 <select id="tol-navaid" onchange="calcTolerance()">
-                                    <option value="dme">DME</option>
-                                    <option value="vor">VOR (Intersecting/Overhead)</option>
-                                    <option value="ndb">NDB (Intersecting/Overhead)</option>
+                                    <option value="dme">DME distance</option>
+                                    <option value="vor">VOR overhead (cone 50°)</option>
+                                    <option value="ndb">NDB overhead (cone 40°)</option>
                                 </select>
                             </div>
                             <div class="vp-input-group" id="tol-dist-grp">
@@ -2081,13 +2188,19 @@
 
                         <div class="results-panel">
                             <div class="result-row key">
-                                <span class="result-label" id="tol-res-lbl">Along Track Tolerance (ATT)</span>
+                                <span class="result-label" id="tol-res-lbl">DME tolerance</span>
                                 <span id="tol-res-val" class="result-value c-warning">--- NM</span>
                             </div>
                             <div class="result-row" id="tol-res-row2" style="display:none;">
-                                <span class="result-label">Tracking Tolerance</span>
-                                <span id="tol-res-val2" class="result-value c-cyan">--- &deg;</span>
+                                <span class="result-label">Entry / tracking accuracy</span>
+                                <span id="tol-res-val2" class="result-value c-cyan">---</span>
                             </div>
+                        </div>
+                        <div class="note" style="margin-top: 12px;">
+                            <div class="note-title">Reference</div>
+                            DME ±(0.25 NM + 1.25 % D) — I-2-2 §2.4.4. Overhead cone z = 0.164·h·tanα — I-2-2 §2.5.
+                            System use accuracy (Table I-2-2-1): VOR ±5.2° track guidance / ±4.5° intersecting ·
+                            NDB ±6.9° / ±6.2° · ILS ±2.4° / ±1.4°.
                         </div>
                     </div>
                 </div>
@@ -2102,6 +2215,7 @@
                                 onclick="event.stopPropagation(); resetCard('card-tol-veb', ['veb-rnp', 'veb-ase', 'veb-fte', 'veb-lne', 'veb-lat-prot', 'veb-moc'], 'calcVEB');">↺ Reset</button>
                         </div>
                     </div>
+                    <div class="card-desc"><div class="note bad"><div class="note-title">Not verified · do not use for design</div>RNP AR VEB is defined in Doc 9905, not Doc 8168 Vol II. This card is a simplified RSS × 4/3 estimate kept for orientation only.</div></div>
                     <div class="card-body">
                         <div class="form-grid">
                             <div class="vp-row">
@@ -2198,48 +2312,57 @@
                 <div class="card">
                     <div class="card-header minimizable" onclick="toggleCard(this)">
                         <div class="card-heading"><span class="card-tag">07-B</span>
-                            <div class="card-title">Equiv. Obstacle Height (ha/hma)</div>
+                            <div class="card-title">Equivalent Approach Obstacle</div>
                         </div>
                         <div class="card-actions">
                             <button class="btn-reset"
-                                onclick="event.stopPropagation(); resetCard('card-desc-eq', ['eq-dist', 'eq-app', 'eq-missed', 'eq-ht', 'eq-type', 'eq-res-lbl', 'eq-res-val'], 'calcEqObs');">↺ Reset</button>
+                                onclick="event.stopPropagation(); resetCard('card-desc-eq', ['eq-x', 'eq-ht', 'eq-type', 'eq-res-val'], 'calcEqObs');">↺ Reset</button>
                         </div>
                     </div>
                     <div class="card-body">
                         <div class="form-grid">
                             <div class="vp-row">
                                 <div class="vp-input-group">
-                                    <label>Obstacle Dist (NM)</label>
-                                    <input type="number" id="eq-dist" placeholder="From SOC" oninput="calcEqObs()">
+                                    <label>GP / VPA θ (°)</label>
+                                    <input type="number" id="eq-theta" value="3.0" step="0.1" oninput="calcEqObs()">
                                 </div>
                                 <div class="vp-input-group">
-                                    <label>App Grad Z (%)</label>
-                                    <input type="number" id="eq-app" value="2.5" oninput="calcEqObs()">
+                                    <label>MA Gradient Z (%)</label>
+                                    <input type="number" id="eq-z" value="2.5" step="0.1" oninput="calcEqObs()">
                                 </div>
                                 <div class="vp-input-group">
-                                    <label>MA Grad Z (%)</label>
-                                    <input type="number" id="eq-missed" value="2.5" oninput="calcEqObs()">
+                                    <label>Z Origin x<sub>z</sub> (m)</label>
+                                    <input type="number" id="eq-xz" value="900" oninput="calcEqObs()" title="Distance from threshold to origin of Z surface: 900 m (700 m Cat H), positive after threshold">
                                 </div>
                             </div>
                             <div class="vp-row">
                                 <div class="vp-input-group">
-                                    <label>Input Height (ft)</label>
-                                    <input type="number" id="eq-ht" placeholder="e.g. 500" oninput="calcEqObs()">
+                                    <label>Obstacle x from THR (m)</label>
+                                    <input type="number" id="eq-x" placeholder="+ before / − after" oninput="calcEqObs()">
                                 </div>
                                 <div class="vp-input-group">
-                                    <label>Evaluate As</label>
-                                    <select id="eq-type" onchange="calcEqObs()">
-                                        <option value="ha">Find Hma (from Ha)</option>
-                                        <option value="hma">Find Ha (from Hma)</option>
-                                    </select>
+                                    <label>Obstacle Height (ft)</label>
+                                    <input type="number" id="eq-ht" placeholder="above THR" oninput="calcEqObs()">
                                 </div>
+                            </div>
+                            <div class="vp-input-group">
+                                <label>Evaluate</label>
+                                <select id="eq-type" onchange="calcEqObs()">
+                                    <option value="ha">Height entered is hma → find ha</option>
+                                    <option value="hma">Height entered is ha → find hma</option>
+                                </select>
                             </div>
                         </div>
                         <div class="results-panel">
                             <div class="result-row key">
-                                <span class="result-label" id="eq-res-lbl">Equivalent Height</span>
+                                <span class="result-label" id="eq-res-lbl">Equivalent approach obstacle (ha)</span>
                                 <span id="eq-res-val" class="result-value c-cyan">--- ft</span>
                             </div>
+                        </div>
+                        <div class="note" style="margin-top: 12px;">
+                            <div class="note-title">Reference</div>
+                            h<sub>a</sub> = [h<sub>ma</sub>·cot Z + (x<sub>z</sub> + x)] / (cot Z + cot θ) —
+                            II-1-1 §1.4.8.8.2.1 (ILS) and III-3-4 §4.4.3 (Baro-VNAV). x<sub>z</sub> = 900 m (700 m Cat H).
                         </div>
                     </div>
                 </div>
@@ -2508,6 +2631,77 @@
                 </div>
             </div>
         </section>
+        <!-- =====================================================
+             QA · DOC 8168 SELF-TEST
+             ===================================================== -->
+        <section id="tab-selftest" class="tab-content" style="display:none;">
+            <header class="page-header">
+                <div class="ph-main">
+                    <div class="ph-crumb">Quality / Verification</div>
+                    <h1 class="page-title">Doc 8168 Self-test</h1>
+                    <p class="page-subtitle">The app's formulas re-computed against worked examples and tables in ICAO Doc 8168 Vol II</p>
+                </div>
+                <dl class="ph-block">
+                    <div><dt>Sheet</dt><dd>QA</dd></div>
+                    <div><dt>Reference</dt><dd>Doc 8168 Vol II · 7th ed.</dd></div>
+                </dl>
+            </header>
+
+            <div class="stack">
+                <div id="selftest-summary" class="note">Running…</div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-heading"><span class="card-tag">QA-1</span>
+                            <div class="card-title">Reference Checks</div>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-mini primary" onclick="renderSelfTest()">↻ Re-run</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-wrap">
+                            <table class="qa-table">
+                                <thead>
+                                    <tr><th>#</th><th>Area</th><th>Check</th><th>Doc 8168 reference</th><th>Expected</th><th>Computed</th><th>Tol.</th><th>Result</th></tr>
+                                </thead>
+                                <tbody id="selftest-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-heading"><span class="card-tag">QA-2</span>
+                            <div class="card-title">Formula Audit · 1 Nov 2026</div>
+                        </div>
+                    </div>
+                    <div class="card-body split">
+                        <div>
+                            <div class="section-label" style="margin-bottom: 8px;">Corrected</div>
+                            <ul class="audit-list">
+                                <li><b>02-A Turn rate</b> now limited to 3°/s (I-2-3 §3.1.2.2).</li>
+                                <li><b>02-B Procedure turn</b> TAS at ISA+15 °C (I-4-3-App C); 45° leg time by category (§3.5.4.1).</li>
+                                <li><b>02-C Template</b> converts max IAS to TAS at ISA+15 (it used IAS as TAS); adds 45/180, 80/260 and racetrack equations, fix error and validity check (Table I-4-3-App C-5).</li>
+                                <li><b>02-D Base turn φ</b> TAS from the Doc formula at ISA+15 (was IAS + 2 %/1 000 ft); Cat C/D/E presets 240/250/250 kt (Table I-4-1-2).</li>
+                                <li><b>06-A PBN</b> ½A/W = 1.5·XTT + BV, ATT = 0.8·XTT (III-1-1 §1.5); MOC by segment (was 2×RNP and undocumented MOC values).</li>
+                                <li><b>06-B Overhead fixes</b> use z = 0.164·h·tanα with entry/tracking accuracies (I-2-2 §2.5).</li>
+                                <li><b>07-B Equivalent obstacle</b> uses ha = [hma·cotZ + (xz + x)]/(cotZ + cotθ) (was a linear gradient difference).</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <div class="section-label" style="margin-bottom: 8px;">Confirmed / outside Vol II</div>
+                            <ul class="audit-list">
+                                <li><b>Confirmed:</b> TAS (I-2-1-App), r = V/(20πR), ICAO wind 2h+47, wind spiral E, φ = 36/t or 0.215·TAS/t, DME tolerance, turn anticipation, ROD.</li>
+                                <li><b>06-C VEB:</b> RNP AR VEB is in Doc 9905 — not verifiable here; card marked "do not use for design".</li>
+                                <li><b>01-B Cold temperature</b> and <b>08 true altitude</b> use the Doc 8168 Vol III altimeter correction formula (Vol III is not in this PDF).</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
 
     <script>
@@ -2525,6 +2719,150 @@
             const main = document.querySelector('main');
             if (main) main.scrollTop = 0;
             if (history.replaceState) history.replaceState(null, '', '#' + tabId.replace(/^tab-/, ''));
+        }
+
+        // =========================================================
+        // PANS-OPS CORE FORMULAS — ICAO Doc 8168 Vol II (7th ed.)
+        // Pure functions shared by the calculators and the self-test.
+        // Units: kt, ft, NM, minutes, degrees unless stated.
+        // =========================================================
+        const PANS = {
+            // I-2-1-App: TAS = IAS·171233·[(288+VAR) − 0.00198H]^0.5 / (288 − 0.00198H)^2.628
+            tas(ias, hFt, isaDev) {
+                const v = isaDev || 0;
+                return ias * 171233 * Math.sqrt((288 + v) - 0.00198 * hFt) / Math.pow(288 - 0.00198 * hFt, 2.628);
+            },
+            // I-4-3-App C line 1: reversal / racetrack / base turn templates use ISA + 15 °C
+            reversalTas(ias, hFt) { return PANS.tas(ias, hFt, 15); },
+            // I-2-3 §3.1.2.2 b): R = 3431·tanα / (πV), up to a maximum of 3°/s
+            rateRaw(tas, bankDeg) { return (3431 * Math.tan(bankDeg * Math.PI / 180)) / (Math.PI * tas); },
+            rate(tas, bankDeg) { return Math.min(3, PANS.rateRaw(tas, bankDeg)); },
+            // I-2-3 §3.1.2.2 c): r = V / (20πR)
+            radius(tas, R) { return tas / (20 * Math.PI * R); },
+            // I-4-3-App C line 7: ICAO standard wind w = 2h + 47 kt (h in thousands of ft)
+            wind(hFt) { return 2 * (hFt / 1000) + 47; },
+            // I-2-3 §3.3.2.1: E = (θ/R)·(w/3600)
+            windEffect(thetaDeg, R, w) { return (thetaDeg / R) * (w / 3600); },
+            // I-4-3 §3.5.4.3: base turn divergence φ
+            baseTurnPhi(tas, tMin) { return tas <= 170 ? 36 / tMin : (0.215 * tas) / tMin; },
+            // I-4-3 §3.5.4.1 c): 45° leg 1 min (Cat A, B, H) or 1 min 15 s (Cat C, D, E)
+            pt45LegMin(cat) { return /^[CDE]/i.test(cat || '') ? 1.25 : 1.0; },
+            // Table I-4-1-2: max IAS for reversal and racetrack procedures (initial approach)
+            catMaxIas: { A: 110, B: 140, C: 240, D: 250, E: 250 },
+            // Table I-4-3-App C-5 (non-SI): template rectangle equations
+            extents(type, V, W, t) {
+                switch (type) {
+                    case '45/180': return {
+                        xmax: V * (0.0165 * t + 0.0431) + W * (0.0165 * t + 0.0278) + 1.8,
+                        ymax: V * (0.002 * t + 0.022) + W * (0.002 * t + 0.0333) - 0.4,
+                        ymin: V * (-0.002 * t - 0.0137) + W * (-0.002 * t - 0.0594) + 0.9 };
+                    case '80/260': return {
+                        xmax: V * (0.0165 * t + 0.0421) + W * (0.0165 * t + 0.0489) - 1.8,
+                        ymax: V * (0.002 * t + 0.0263) + W * (0.002 * t + 0.0322) - 1.0,
+                        ymin: V * (-0.002 * t - 0.01) + W * (-0.002 * t - 0.0591) + 0.7 };
+                    case 'racetrack': return {
+                        xmax: V * (0.0167 * t + 0.0297) + W * (0.0167 * t + 0.0381) - 0.9,
+                        xmin: V * (-0.0241) + W * (-0.037) + 1.1,
+                        ymax: V * (0.0012 * t + 0.0266) + W * (0.0158 * t + 0.0368) + 0.455 * t - 2.9,
+                        ymin: V * (-0.0015 * t - 0.0202) + W * (-0.0167 * t - 0.027) + 0.7 };
+                    default: return { // base turn
+                        xmax: V * (0.0173 * t + 0.0181) + W * (0.0166 * t + 0.0209) - 0.5,
+                        ymax: V * (-0.0004 * t + 0.0373) + W * (-0.0072 * t + 0.0404) + 0.0887 * t - 1.7,
+                        ymin: V * (-0.0122) + W * (0.0151 * t - 0.0639) - 0.0996 * t + 0.8 };
+                }
+            },
+            // Table I-4-3-App C-5 warning: valid for TAS 90–290 kt, wind ≤ 65 kt, t 1–3 min
+            extentsValid(V, W, t) { return V >= 90 && V <= 290 && W <= 65 && t >= 1 && t <= 3; },
+            // I-2-2 §2.4.4: DME accuracy ±(0.25 NM + 1.25 % of distance)
+            dmeTol(dNm) { return 0.25 + 0.0125 * dNm; },
+            // I-2-2 §2.5: cone radius z = 0.164·h·tanα (h in thousands of ft); VOR α = 50°, NDB α = 40°
+            coneRadius(hFt, alphaDeg) { return 0.164 * (hFt / 1000) * Math.tan(alphaDeg * Math.PI / 180); },
+            // III-1-1 Table III-1-1-3: buffer values (NM)
+            bufferValue(phase, isH) {
+                const t = { enroute: [2.0, 1.0], terminal: [1.0, 0.7], final: [0.5, 0.35], missed: [0.5, 0.35] };
+                return (t[phase] || t.terminal)[isH ? 1 : 0];
+            },
+            // III-1-1 §1.5.1: ½A/W = 1.5·XTT + BV ; III-1-2: ATT = 0.8·XTT
+            pbnHalfWidth(xtt, bv) { return 1.5 * xtt + bv; },
+            pbnAtt(xtt) { return 0.8 * xtt; },
+            // II-1-1 §1.4.8.8.2.1 / III-3-4 §4.4.3: equivalent approach obstacle
+            // ha = [hma·cotZ + (xz + x)] / (cotZ + cotθ); same length unit for all terms
+            // x = obstacle distance from threshold (+ before, − after); xz = threshold to Z-surface origin
+            equivHa(hma, x, xz, zGradPct, thetaDeg) {
+                const cz = 100 / zGradPct, ct = 1 / Math.tan(thetaDeg * Math.PI / 180);
+                return (hma * cz + (xz + x)) / (cz + ct);
+            },
+            equivHma(ha, x, xz, zGradPct, thetaDeg) {
+                const cz = 100 / zGradPct, ct = 1 / Math.tan(thetaDeg * Math.PI / 180);
+                return (ha * (cz + ct) - (xz + x)) / cz;
+            },
+            // ROD (ft/min) = GS (kt) × 6076.12/60 × gradient
+            rod(gs, gradPct) { return gs * 101.2685 * gradPct / 100; }
+        };
+
+        // =========================================================
+        // SELF-TEST — Doc 8168 Vol II worked examples and tables
+        // =========================================================
+        const PANS_TESTS = [
+            { g: 'TAS', n: 'TAS factor 10 000 ft, ISA', ref: 'Table I-2-1-App-2', exp: 1.1637, tol: 0.0006, f: () => PANS.tas(1, 10000, 0) },
+            { g: 'TAS', n: 'TAS factor 10 000 ft, ISA+15', ref: 'Table I-2-1-App-2', exp: 1.1958, tol: 0.0006, f: () => PANS.tas(1, 10000, 15) },
+            { g: 'TAS', n: 'TAS factor 6 000 ft, ISA+15', ref: 'I-4-3-App C, line 1', exp: 1.1231, tol: 0.0006, f: () => PANS.tas(1, 6000, 15) },
+            { g: 'TAS', n: 'TAS factor 20 000 ft, ISA−30', ref: 'Table I-2-1-App-2', exp: 1.2846, tol: 0.0006, f: () => PANS.tas(1, 20000, -30) },
+            { g: 'TAS', n: 'TAS factor 24 000 ft, ISA+30', ref: 'Table I-2-1-App-2', exp: 1.5566, tol: 0.0006, f: () => PANS.tas(1, 24000, 30) },
+            { g: 'Turn', n: 'Rate of turn, V 157.23 kt, 25° (3°/s limit)', ref: 'I-4-3-App C, line 4', exp: 3.00, tol: 0.005, f: () => PANS.rate(157.23, 25) },
+            { g: 'Turn', n: 'Rate of turn uncapped, V 157.23 kt, 25°', ref: 'R = 509.26 / V', exp: 509.26 / 157.23, tol: 0.01, f: () => PANS.rateRaw(157.23, 25) },
+            { g: 'Turn', n: 'Radius, V 157.23 kt, R 3°/s', ref: 'I-4-3-App C, line 5', exp: 0.83, tol: 0.005, f: () => PANS.radius(157.23, 3) },
+            { g: 'Turn', n: 'ICAO wind at 6 000 ft', ref: 'I-4-3-App C, line 7', exp: 59, tol: 0.01, f: () => PANS.wind(6000) },
+            { g: 'Turn', n: 'Wind effect E per degree, w 59 kt, R 3°/s', ref: 'I-4-3-App C, line 9', exp: 0.00546, tol: 0.00002, f: () => PANS.windEffect(1, 3, 59) },
+            { g: 'Reversal', n: 'Base turn φ, V ≤ 170 kt, t = 2 min', ref: 'I-4-3-App C, line 10', exp: 18, tol: 0.01, f: () => PANS.baseTurnPhi(157.23, 2) },
+            { g: 'Reversal', n: '45/180 xmax (157 kt, w 59, 1 min)', ref: 'I-4-3-App C example', exp: 13.77, tol: 0.006, f: () => PANS.extents('45/180', 157, 59, 1).xmax },
+            { g: 'Reversal', n: '45/180 ymax', ref: 'I-4-3-App C example', exp: 5.45, tol: 0.006, f: () => PANS.extents('45/180', 157, 59, 1).ymax },
+            { g: 'Reversal', n: '45/180 ymin', ref: 'I-4-3-App C example', exp: -5.19, tol: 0.006, f: () => PANS.extents('45/180', 157, 59, 1).ymin },
+            { g: 'Reversal', n: 'NDB fix error, h 6 000 ft', ref: 'I-4-3-App C example', exp: 0.83, tol: 0.005, f: () => PANS.coneRadius(6000, 40) },
+            { g: 'Reversal', n: '45/180 template xmax incl. fix error', ref: 'I-4-3-App C example', exp: 14.6, tol: 0.05, f: () => PANS.extents('45/180', 157, 59, 1).xmax + PANS.coneRadius(6000, 40) },
+            { g: 'Reversal', n: '45/180 template ymin incl. fix error', ref: 'I-4-3-App C example', exp: -6.0, tol: 0.05, f: () => PANS.extents('45/180', 157, 59, 1).ymin - PANS.coneRadius(6000, 40) },
+            { g: 'Fixes', n: 'DME tolerance at 20 NM', ref: 'I-2-2 §2.4.4', exp: 0.50, tol: 0.001, f: () => PANS.dmeTol(20) },
+            { g: 'PBN', n: 'RNP APCH ½A/W at FAF (XTT 0.3, BV 1.0)', ref: 'Table III-1-2-14', exp: 1.45, tol: 0.001, f: () => PANS.pbnHalfWidth(0.3, PANS.bufferValue('terminal')) },
+            { g: 'PBN', n: 'RNP APCH ½A/W at MAPt (XTT 0.3, BV 0.5)', ref: 'Table III-1-2-14', exp: 0.95, tol: 0.001, f: () => PANS.pbnHalfWidth(0.3, PANS.bufferValue('final')) },
+            { g: 'PBN', n: 'RNP APCH ATT final', ref: 'Table III-1-2-14', exp: 0.24, tol: 0.001, f: () => PANS.pbnAtt(0.3) },
+            { g: 'PBN', n: 'RNP 1 ½A/W, terminal < 30 NM', ref: 'Table III-1-2-6', exp: 2.50, tol: 0.001, f: () => PANS.pbnHalfWidth(1, PANS.bufferValue('terminal')) },
+            { g: 'PBN', n: 'RNP 1 ½A/W, SID/MA < 15 NM', ref: 'Table III-1-2-6', exp: 2.00, tol: 0.001, f: () => PANS.pbnHalfWidth(1, PANS.bufferValue('missed')) },
+            { g: 'PBN', n: 'RNP 4 ½A/W en-route', ref: 'Table III-1-2-2', exp: 8.00, tol: 0.001, f: () => PANS.pbnHalfWidth(4, PANS.bufferValue('enroute')) },
+            { g: 'PBN', n: 'RNP 4 ATT en-route', ref: 'Table III-1-2-2', exp: 3.20, tol: 0.001, f: () => PANS.pbnAtt(4) },
+            { g: 'PBN', n: 'RNP APCH Cat H ½A/W at MAPt', ref: 'Table III-1-2-16', exp: 0.80, tol: 0.001, f: () => PANS.pbnHalfWidth(0.3, PANS.bufferValue('final', true)) },
+            { g: 'Missed app.', n: 'ha ↔ hma round trip (hma 100, x −1500, xz 900, Z 2.5 %, θ 3°)', ref: 'II-1-1 §1.4.8.8.2.1', exp: 100, tol: 1e-9, f: () => PANS.equivHma(PANS.equivHa(100, -1500, 900, 2.5, 3), -1500, 900, 2.5, 3) },
+            { g: 'Missed app.', n: 'Equivalent ha, same case (hand calc 57.548 m)', ref: 'II-1-1 §1.4.8.8.2.1', exp: 3400 / (40 + 1 / Math.tan(3 * Math.PI / 180)), tol: 1e-9, f: () => PANS.equivHa(100, -1500, 900, 2.5, 3) }
+        ];
+
+        function runPansTests() {
+            return PANS_TESTS.map((t) => {
+                let got = NaN;
+                try { got = t.f(); } catch (e) { got = NaN; }
+                return Object.assign({}, t, { got, ok: isFinite(got) && Math.abs(got - t.exp) <= t.tol });
+            });
+        }
+
+        function renderSelfTest() {
+            const res = runPansTests();
+            const pass = res.filter((r) => r.ok).length;
+            const badge = document.getElementById('selftest-badge');
+            if (badge) {
+                badge.textContent = pass + '/' + res.length;
+                badge.className = 'nav-badge ' + (pass === res.length ? 'ok' : 'bad');
+            }
+            const sum = document.getElementById('selftest-summary');
+            if (sum) {
+                sum.className = 'note ' + (pass === res.length ? 'ok' : 'bad');
+                sum.innerHTML = '<div class="note-title">' + (pass === res.length ? 'All checks passed' : (res.length - pass) + ' check(s) failed') + '</div>' +
+                    pass + ' of ' + res.length + ' reference values from ICAO Doc 8168 Vol II are reproduced by the formulas used in this app.';
+            }
+            const body = document.getElementById('selftest-body');
+            if (!body) return;
+            const fmt = (v) => (Math.abs(v) < 0.1 && v !== 0 ? v.toFixed(5) : (Math.round(v * 10000) / 10000).toString());
+            body.innerHTML = res.map((r, i) =>
+                '<tr class="' + (r.ok ? '' : 'fail') + '"><td>' + (i + 1) + '</td><td>' + r.g + '</td><td>' + r.n + '</td><td>' + r.ref +
+                '</td><td class="num">' + fmt(r.exp) + '</td><td class="num">' + (isFinite(r.got) ? fmt(r.got) : '—') + '</td><td class="num">±' + r.tol +
+                '</td><td class="' + (r.ok ? 'c-success' : 'c-danger') + '">' + (r.ok ? '✓ PASS' : '✕ FAIL') + '</td></tr>').join('');
         }
 
         // Blueprint palette, resolved from CSS variables at draw time (follows the theme)
@@ -2619,48 +2957,6 @@
         }
 
         // --- TOLERANCE & VEB CALCULATIONS ---
-        function calcTolerance() {
-            const navaid = document.getElementById('tol-navaid').value;
-            const distGrp = document.getElementById('tol-dist-grp');
-            const altGrp = document.getElementById('tol-alt-grp');
-            const row2 = document.getElementById('tol-res-row2');
-
-            // Toggle visibility based on navaid
-            if (navaid === 'dme') {
-                distGrp.style.display = 'block';
-                altGrp.style.display = 'none';
-                row2.style.display = 'none';
-            } else {
-                distGrp.style.display = 'none';
-                altGrp.style.display = 'block';
-                row2.style.display = 'flex';
-            }
-
-            if (navaid === 'dme') {
-                const dist = parseFloat(document.getElementById('tol-dist').value);
-                if (isNaN(dist)) return;
-                // DME ATT: +/- 0.25 NM + 1.25% distance
-                const att = 0.25 + (dist * 0.0125);
-                document.getElementById('tol-res-val').textContent = "± " + att.toFixed(2) + " NM";
-            } else if (navaid === 'vor') {
-                const alt = parseFloat(document.getElementById('tol-alt').value);
-                if (isNaN(alt)) return;
-                // VOR Overhead (50 deg cone): h * tan(50)
-                const attFt = alt * Math.tan(50 * Math.PI / 180);
-                const attNm = attFt / 6076.12;
-                document.getElementById('tol-res-val').textContent = "± " + attNm.toFixed(2) + " NM";
-                document.getElementById('tol-res-val2').textContent = "± 5.2 \u00B0";
-            } else if (navaid === 'ndb') {
-                const alt = parseFloat(document.getElementById('tol-alt').value);
-                if (isNaN(alt)) return;
-                // NDB Overhead (40 deg cone): h * tan(40)
-                const attFt = alt * Math.tan(40 * Math.PI / 180);
-                const attNm = attFt / 6076.12;
-                document.getElementById('tol-res-val').textContent = "± " + attNm.toFixed(2) + " NM";
-                document.getElementById('tol-res-val2').textContent = "± 6.9 \u00B0";
-            }
-        }
-
         function calcVEB() {
             const rnp = parseFloat(document.getElementById('veb-rnp').value);
             const rnpNm = isNaN(rnp) ? 0.3 : rnp;
@@ -2739,31 +3035,6 @@
             document.getElementById('desc-rod').textContent = rod.toFixed(0) + " ft/min";
         }
 
-        function calcEqObs() {
-            const distNm = parseFloat(document.getElementById('eq-dist').value);
-            const appZ = parseFloat(document.getElementById('eq-app').value);
-            const missedZ = parseFloat(document.getElementById('eq-missed').value);
-            const ht = parseFloat(document.getElementById('eq-ht').value);
-            const type = document.getElementById('eq-type').value;
-
-            if (isNaN(distNm) || isNaN(appZ) || isNaN(missedZ) || isNaN(ht)) return;
-
-            // Convert distance from NM to feet
-            const distFt = distNm * 6076.12;
-
-            if (type === 'ha') {
-                // Find Hma from Ha
-                const hma = ht + ((missedZ / 100) - (appZ / 100)) * distFt;
-                document.getElementById('eq-res-lbl').textContent = "Equivalent Missed App Obs (Hma)";
-                document.getElementById('eq-res-val').textContent = hma.toFixed(0) + " ft";
-            } else {
-                // Find Ha from Hma
-                const ha = ht - ((missedZ / 100) - (appZ / 100)) * distFt;
-                document.getElementById('eq-res-lbl').textContent = "Equivalent App Obs (Ha)";
-                document.getElementById('eq-res-val').textContent = ha.toFixed(0) + " ft";
-            }
-        }
-
         function calcReaction() {
             const spd = parseFloat(document.getElementById('react-spd').value);
             const tPilot = parseFloat(document.getElementById('react-pilot').value) || 0;
@@ -2812,9 +3083,10 @@
             if (isNaN(tas) || isNaN(bank)) return;
 
             // Rate of Turn R = (3431 * tan alpha) / (pi * V)
-            const alphaRad = bank * Math.PI / 180;
-            const R = (3431 * Math.tan(alphaRad)) / (Math.PI * tas);
-            document.getElementById('turn-rate-out').textContent = R.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " \u00B0/s";
+            // I-2-3 §3.1.2.2: R = 3431·tanα/(πV), up to a maximum of 3°/s
+            const R = PANS.rate(tas, bank);
+            const capped = PANS.rateRaw(tas, bank) > 3;
+            document.getElementById('turn-rate-out').textContent = R.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " \u00B0/s" + (capped ? " (3°/s limit)" : "");
 
             // Radius r = V / (20 * pi * R)
             const r = tas / (20 * Math.PI * R);
@@ -2885,26 +3157,14 @@
 
             if (isNaN(ias) || isNaN(alt)) return;
 
-            // TAS calc base on standard atmosphere
-            const t0 = 288.15;
-            const lapseRate = 0.0019812;
-            const tempAtAlt = t0 - lapseRate * alt;
-
-            // Simplified IAS to TAS for Doc 8168 
-            // V = IAS * 171233 * sqrt(T) / T^2.628
-            const numerator = 171233 * Math.sqrt(tempAtAlt);
-            const denominator = Math.pow(tempAtAlt, 2.628);
-            const tas = ias * (numerator / denominator);
-
-            // Wind w = 2h + 47
-            const w = 2 * (alt / 1000) + 47;
+            // I-4-3-App C: TAS at ISA+15 °C, ICAO standard wind
+            const tas = PANS.reversalTas(ias, alt);
+            const w = PANS.wind(alt);
 
             document.getElementById('pt-tas-wind').textContent = Math.round(tas) + " kt / " + Math.round(w) + " kt";
 
-            // Rate R = 3 deg/s or 25 deg bank, whichever less
-            const bankMaxRad = 25 * Math.PI / 180;
-            const rateBank = (3431 * Math.tan(bankMaxRad)) / (Math.PI * tas);
-            const R = Math.min(3, rateBank);
+            // R = 3°/s or 25° bank, whichever is less
+            const R = PANS.rate(tas, 25);
             const r = tas / (20 * Math.PI * R);
 
             document.getElementById('pt-radius').textContent = r.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " NM";
@@ -2914,7 +3174,10 @@
 
             // Details
             if (type === "45/180") {
-                const legTime = ias < 170 ? 1.0 : 1.25;
+                // I-4-3 §3.5.4.1 c): 1 min Cat A/B, 1 min 15 s Cat C/D/E
+                const catEl = document.querySelector('input[name="pt-cat"]:checked');
+                const cat = catEl ? catEl.id.slice(-1).toUpperCase() : (ias <= 140 ? 'B' : 'C');
+                const legTime = PANS.pt45LegMin(cat);
                 document.getElementById('pt-details').textContent = "45\u00B0 leg: " + legTime + " min";
             } else {
                 const turn80Time = 80 / R;
@@ -2922,15 +3185,16 @@
                 document.getElementById('pt-details').innerHTML = "80\u00B0/" + Math.round(turn80Time) + "s &nbsp;|&nbsp; 260\u00B0/" + Math.round(turn260Time) + "s";
             }
 
-            drawPTViz(tas, r, t, type, ias);
+            const catSel = document.querySelector('input[name="pt-cat"]:checked');
+            drawPTViz(tas, r, t, type, PANS.pt45LegMin(catSel ? catSel.id.slice(-1).toUpperCase() : (ias <= 140 ? 'B' : 'C')));
         }
 
         // --- BASE TURN DIVERGENCE (φ) CALCULATOR ---
         const btpCatPresets = {
             'A': { ias: 110, time: 1 },
             'B': { ias: 140, time: 1 },
-            'C': { ias: 200, time: 1.25 },
-            'D': { ias: 240, time: 1.5 },
+            'C': { ias: 240, time: 1.25 },   // Table I-4-1-2 max IAS
+            'D': { ias: 250, time: 1.5 },
             'E': { ias: 250, time: 1.5 }
         };
 
@@ -2956,7 +3220,7 @@
 
         function resetBaseTurnPhi() {
             document.getElementById('btp-cat-c').checked = true;
-            document.getElementById('btp-ias').value = 200;
+            document.getElementById('btp-ias').value = 240;
             document.getElementById('btp-alt').value = 5000;
             document.getElementById('btp-bank').value = 25;
             document.getElementById('btp-limit-time').checked = true;
@@ -2990,8 +3254,8 @@
             if (isNaN(ias) || isNaN(alt)) return;
             if (isNaN(obValue) || obValue <= 0) return;
 
-            // 1. Calculate TAS (same simplified formula as standalone)
-            const tas = ias + (ias * 0.02 * (alt / 1000));
+            // 1. TAS at ISA+15 °C (I-4-3-App C, line 1)
+            const tas = PANS.reversalTas(ias, alt);
 
             // 2. Calculate active outbound time
             let activeTime = obValue;
@@ -3023,11 +3287,8 @@
                 }
             }
 
-            // 5. Calculate Turn Radius
-            const vMs = tas * 0.514444; // kt to m/s
-            const bankRad = bank * (Math.PI / 180);
-            const radiusM = (vMs * vMs) / (9.81 * Math.tan(bankRad));
-            const radiusNm = radiusM / 1852;
+            // 5. Turn radius: R = 3431·tanα/(πV) up to 3°/s, r = V/(20πR)
+            const radiusNm = PANS.radius(tas, PANS.rate(tas, bank));
 
             // --- Update DOM ---
             const pad3 = (n) => String(Math.round(n)).padStart(3, '0');
@@ -3342,63 +3603,7 @@
         }
 
         // --- BASE TURN CALCULATOR ---
-        function calcBaseTurn() {
-            const tasIn = parseFloat(document.getElementById('base-tas').value);
-            const windIn = parseFloat(document.getElementById('base-wind').value);
-            const alt = parseFloat(document.getElementById('base-alt').value);
-            const t = parseFloat(document.getElementById('base-time').value);
-
-            let tas = tasIn;
-            if (isNaN(tas)) {
-                const autoTasStr = document.getElementById('tas-out').textContent.replace(' kt', '');
-                const autoTas = parseFloat(autoTasStr);
-                if (!isNaN(autoTas)) tas = autoTas;
-            }
-
-            let wind = windIn;
-            if (isNaN(wind) && !isNaN(alt)) {
-                wind = 2 * (alt / 1000) + 47;
-            }
-
-            if (isNaN(tas) || isNaN(t)) return;
-            if (isNaN(wind)) wind = 0;
-
-            // Doc 8168 Vol 2 formulas (NM)
-            const xmax = tas * (0.0173 * t + 0.0181) + wind * (0.0166 * t + 0.0209) - 0.5;
-            const ymax = tas * (-0.0004 * t + 0.0373) + wind * (-0.0072 * t + 0.0404) + 0.0887 * t - 1.7;
-            const ymin = tas * (-0.0122) + wind * (0.0151 * t - 0.0639) - 0.0996 * t + 0.8;
-
-            document.getElementById('base-xmax').textContent = xmax.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " NM";
-            document.getElementById('base-ymax').textContent = ymax.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " NM";
-            document.getElementById('base-ymin').textContent = ymin.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " NM";
-
-            drawBaseTurnViz(tas, t, wind, xmax, ymax, ymin);
-        }
-
         // --- PBN CALCULATOR ---
-        function calcPBN() {
-            const rnp = parseFloat(document.getElementById('pbn-rnp').value);
-            const phase = document.getElementById('pbn-phase').value;
-
-            if (isNaN(rnp)) return;
-
-            document.getElementById('pbn-acc').textContent = rnp.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + " NM";
-            document.getElementById('pbn-limit-1').textContent = rnp.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + " NM";
-            document.getElementById('pbn-limit-2').textContent = (2 * rnp).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + " NM";
-
-            let moc = 984; // 300m default
-            if (phase === 'non-precision') {
-                if (rnp <= 0.3) moc = 246; // 75m
-                else moc = 492; // 150m
-            } else if (phase === 'precision') {
-                moc = 164; // 50m (variable, but 50m typical RNP AR)
-            } else if (phase === 'enroute') {
-                moc = 984; // 300m
-            }
-            const mocM = Math.round(moc * 0.3048);
-            document.getElementById('pbn-moc').textContent = moc.toLocaleString() + " ft (" + mocM.toLocaleString() + " m)";
-        }
-
         // --- TEMP CORRECTION CALCULATOR ---
         function calcTempCorr() {
             const tAD = parseFloat(document.getElementById('temp-ad-temp').value);
@@ -4020,7 +4225,7 @@
         // =========================================================
         // 02-B PROCEDURE TURN — nominal track to scale (no wind)
         // =========================================================
-        function drawPTViz(tas, radius, timeOut, type, ias) {
+        function drawPTViz(tas, radius, timeOut, type, legMin) {
             const canvas = document.getElementById('ptVizCanvas');
             if (!canvas) return;
             const { ctx, w, h } = setupCanvas(canvas, 0.66, 460, 260);
@@ -4030,7 +4235,7 @@
             const T = makeTurtle(0, 0, 0); // fix at origin, outbound = north
             let legNote = '', turnCtr;
             if (type === '45/180') {
-                const legT = (ias || tas) < 170 ? 1.0 : 1.25;
+                const legT = legMin || 1.0;
                 const dLeg = tas * legT / 60;
                 T.fwd(dOut).turn(45, r, true).fwd(dLeg).turn(180, r, false);
                 const probe = makeTurtle(0, 0, 225).turn(45, r, false);
@@ -4077,59 +4282,65 @@
         // =========================================================
         // 02-C BASE TURN — nominal track + Doc 8168 extents to scale
         // =========================================================
-        function drawBaseTurnViz(tas, t, wind, xmax, ymax, ymin) {
+        function drawBaseTurnViz(tas, t, wind, xmax, ymax, ymin, type, xmin, fixErr) {
             const canvas = document.getElementById('baseVizCanvas');
             if (!canvas) return;
             const { ctx, w, h } = setupCanvas(canvas, 0.75, 520, 280);
             const C = bpColors();
+            type = type || 'base';
+            const isBase = type === 'base';
+            const names = { base: 'Base turn', '45/180': '45°/180° procedure turn', '80/260': '80°/260° procedure turn', racetrack: 'Racetrack' };
 
-            const phi = tas <= 170 ? 36 / t : (0.215 * tas) / t;
-            const rate = Math.min(3, (3431 * Math.tan(25 * DEG)) / (Math.PI * tas));
-            const r = tas / (20 * Math.PI * rate);
+            // nominal track (base turn only; drawn in the template x/y frame)
+            let T = null, phi = 0, r = 0;
             const dOut = tas * t / 60;
-
-            const T = makeTurtle(0, 0, phi).fwd(dOut).turn(180 + phi, r, false);
-            T.fwd(Math.max(0, T.y));
+            if (isBase) {
+                phi = PANS.baseTurnPhi(tas, t);
+                r = PANS.radius(tas, PANS.rate(tas, 25));
+                T = makeTurtle(0, 0, phi).fwd(dOut).turn(180 + phi, r, false);
+                T.fwd(Math.max(0, T.y));
+            }
 
             const hasBox = isFinite(xmax) && isFinite(ymax) && isFinite(ymin);
+            const y0 = (xmin !== undefined && isFinite(xmin)) ? Math.min(xmin, 0) : 0;
             const bx1 = Math.min(ymin, ymax), bx2 = Math.max(ymin, ymax);
-            const pts = T.pts.concat(hasBox ? [[bx1, 0], [bx2, xmax]] : []);
-            const B = boundsOf(pts.concat([[0, 0]]), 0.05);
+            const pts = (T ? T.pts : []).concat(hasBox ? [[bx1, y0], [bx2, xmax]] : []).concat([[0, 0]]);
+            const B = boundsOf(pts, 0.05);
             B.minY -= (B.maxY - B.minY) * 0.08;
             const V = vizView(B, w, h, { t: 50, b: 48, l: 28, r: 74 });
 
-            // protected extents box
             if (hasBox) {
-                const X1 = V.X(bx1), X2 = V.X(bx2), Y1 = V.Y(0), Y2 = V.Y(xmax);
+                const X1 = V.X(bx1), X2 = V.X(bx2), Y1 = V.Y(y0), Y2 = V.Y(xmax);
                 ctx.save();
                 ctx.fillStyle = C.fill; ctx.fillRect(X1, Y2, X2 - X1, Y1 - Y2);
                 ctx.setLineDash([7, 4]); ctx.strokeStyle = C.warning; ctx.lineWidth = 1.3;
                 ctx.strokeRect(X1, Y2, X2 - X1, Y1 - Y2);
                 ctx.restore();
-                cvDim(ctx, C, X2 + 18, Y1, X2 + 18, Y2, 'xmax ' + xmax.toFixed(2));
-                cvDim(ctx, C, V.X(0), Y2 - 14, X2, Y2 - 14, 'ymax ' + ymax.toFixed(2));
-                if (bx1 < 0) cvDim(ctx, C, X1, Y2 - 14, V.X(0), Y2 - 14, 'ymin ' + ymin.toFixed(2));
+                cvDim(ctx, C, X2 + 18, V.Y(0), X2 + 18, Y2, 'xmax ' + xmax.toFixed(1));
+                if (y0 < 0) cvDim(ctx, C, X2 + 18, Y1, X2 + 18, V.Y(0), 'xmin ' + y0.toFixed(1));
+                if (bx2 > 0) cvDim(ctx, C, Math.max(V.X(0), X1), Y2 - 14, X2, Y2 - 14, 'ymax ' + ymax.toFixed(1));
+                if (bx1 < 0) cvDim(ctx, C, X1, Y2 - 14, Math.min(V.X(0), X2), Y2 - 14, 'ymin ' + ymin.toFixed(1));
             }
 
-            // course line + track
+            // course line
             cvStroke(ctx, C, V, [[0, B.minY], [0, B.maxY]], C.muted, 1, [6, 6]);
-            cvStroke(ctx, C, V, T.pts, C.primary, 2.4);
-            cvArrowsAlong(ctx, V, T.pts, [0.15, 0.45, 0.62, 0.8, 0.95], C.primary, 11);
 
-            // divergence angle at the fix
-            const R0 = 34;
-            ctx.save(); ctx.strokeStyle = C.warning; ctx.lineWidth = 1.2;
-            ctx.beginPath(); ctx.arc(V.X(0), V.Y(0), R0, -Math.PI / 2, -Math.PI / 2 + phi * DEG); ctx.stroke(); ctx.restore();
-            cvLabel(ctx, C, 'φ ' + phi.toFixed(1) + '°', V.X(0) + R0 + 6, V.Y(0) - R0 + 4, { align: 'left', size: 10, color: C.warning });
-
-            // turn radius
-            const [cx, cy] = T.centers[0];
-            cvDot(ctx, C, V.X(cx), V.Y(cy), C.cyan, 2.5);
-            cvLabel(ctx, C, 'r ' + r.toFixed(2), V.X(cx), V.Y(cy) + 14, { size: 10, color: C.cyan, box: false });
+            if (T) {
+                cvStroke(ctx, C, V, T.pts, C.primary, 2.4);
+                cvArrowsAlong(ctx, V, T.pts, [0.15, 0.45, 0.62, 0.8, 0.95], C.primary, 11);
+                const R0 = 34;
+                ctx.save(); ctx.strokeStyle = C.warning; ctx.lineWidth = 1.2;
+                ctx.beginPath(); ctx.arc(V.X(0), V.Y(0), R0, -Math.PI / 2, -Math.PI / 2 + phi * DEG); ctx.stroke(); ctx.restore();
+                cvLabel(ctx, C, 'φ ' + phi.toFixed(1) + '°', V.X(0) + R0 + 6, V.Y(0) - R0 + 4, { align: 'left', size: 10, color: C.warning });
+                const [cx, cy] = T.centers[0];
+                cvDot(ctx, C, V.X(cx), V.Y(cy), C.cyan, 2.5);
+                cvLabel(ctx, C, 'r ' + r.toFixed(2), V.X(cx), V.Y(cy) + 14, { size: 10, color: C.cyan, box: false });
+            }
 
             cvFix(ctx, C, V.X(0), V.Y(0), 'FIX');
-            cvLabel(ctx, C, '▭ protected extents (Doc 8168)', 10, 34, { align: 'left', size: 9, box: false, color: C.warning });
-            cvFooter(ctx, C, V, w, h, 'Outbound ' + t + ' min · ' + dOut.toFixed(2) + ' NM · w ' + Math.round(wind) + ' kt');
+            cvLabel(ctx, C, '▭ template extents' + (fixErr ? ' incl. fix error ' + fixErr.toFixed(2) + ' NM' : ''), 10, 34,
+                { align: 'left', size: 9, box: false, color: C.warning });
+            cvFooter(ctx, C, V, w, h, names[type] + ' · ' + t + ' min · TAS ' + Math.round(tas) + ' kt · w ' + Math.round(wind) + ' kt');
         }
 
         // =========================================================
@@ -4601,6 +4812,106 @@
             _vizResizeTimer = setTimeout(redrawDiagrams, 150);
         });
 
+        // --- REVERSAL / RACETRACK TEMPLATE EXTENTS (Table I-4-3-App C-5) ---
+        function calcBaseTurn() {
+            const ias = parseFloat(document.getElementById('base-tas').value);
+            const windIn = parseFloat(document.getElementById('base-wind').value);
+            const alt = parseFloat(document.getElementById('base-alt').value);
+            const t = parseFloat(document.getElementById('base-time').value);
+            const type = document.getElementById('base-type').value;
+            const fac = document.getElementById('base-fac').value;
+            const facElev = parseFloat(document.getElementById('base-fac-elev').value) || 0;
+            const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+
+            document.getElementById('base-xmin-row').style.display = type === 'racetrack' ? 'flex' : 'none';
+            if (isNaN(ias) || isNaN(alt) || isNaN(t)) return;
+
+            const tas = PANS.reversalTas(ias, alt);                 // ISA + 15 °C
+            const wind = isNaN(windIn) ? PANS.wind(alt) : windIn;   // ICAO standard wind
+            const e = PANS.extents(type, tas, wind, t);
+            const alpha = fac === 'vor' ? 50 : (fac === 'ndb' ? 40 : 0);
+            const fixErr = alpha ? PANS.coneRadius(Math.max(0, alt - facElev), alpha) : 0;
+            const f2 = (n) => n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+            set('base-tasout', Math.round(tas) + ' kt / ' + Math.round(wind) + ' kt');
+            set('base-xmax', f2(e.xmax) + ' NM');
+            set('base-ymax', f2(e.ymax) + ' NM');
+            set('base-ymin', f2(e.ymin) + ' NM');
+            set('base-xmin', e.xmin !== undefined ? f2(e.xmin) + ' NM' : '---');
+            set('base-fixerr', alpha ? f2(fixErr) + ' NM (cone ' + alpha + '°)' : 'none');
+            const plot = 'xmax ' + (e.xmax + fixErr).toFixed(1) + ' · ymax ' + (e.ymax + fixErr).toFixed(1) + ' · ymin ' + (e.ymin - fixErr).toFixed(1) +
+                (e.xmin !== undefined ? ' · xmin ' + (e.xmin - fixErr).toFixed(1) : '') + ' NM';
+            set('base-plot', plot);
+            document.getElementById('base-warn').style.display = PANS.extentsValid(tas, wind, t) ? 'none' : 'block';
+
+            drawBaseTurnViz(tas, t, wind, e.xmax + fixErr, e.ymax + fixErr, e.ymin - fixErr, type, e.xmin !== undefined ? e.xmin - fixErr : undefined, fixErr);
+        }
+
+        // --- PBN AREA (Part III, Section 1) ---
+        function calcPBN() {
+            const xtt = parseFloat(document.getElementById('pbn-rnp').value);
+            const phase = document.getElementById('pbn-phase').value;
+            const isH = document.getElementById('pbn-cat').value === 'H';
+            const seg = document.getElementById('pbn-seg').value.split('|');
+            if (isNaN(xtt)) return;
+
+            const bv = PANS.bufferValue(phase, isH);
+            const half = PANS.pbnHalfWidth(xtt, bv);
+            const f2 = (n) => n.toFixed(2);
+            document.getElementById('pbn-acc').textContent = f2(xtt) + ' NM';
+            document.getElementById('pbn-limit-1').textContent = '± ' + f2(PANS.pbnAtt(xtt)) + ' NM';
+            document.getElementById('pbn-bv').textContent = f2(bv) + ' NM';
+            document.getElementById('pbn-limit-2').textContent = f2(half) + ' NM';
+            document.getElementById('pbn-primary').textContent = f2(half / 2) + ' NM';
+            const mocM = parseFloat(seg[0]), mocFt = parseFloat(seg[1]);
+            document.getElementById('pbn-moc').textContent = mocFt.toLocaleString() + ' ft (' + mocM + ' m)';
+        }
+
+        // --- FIX TOLERANCE (Part I, Section 2, Chapter 2) ---
+        function calcTolerance() {
+            const navaid = document.getElementById('tol-navaid').value;
+            const isDme = navaid === 'dme';
+            document.getElementById('tol-dist-grp').style.display = isDme ? 'flex' : 'none';
+            document.getElementById('tol-alt-grp').style.display = isDme ? 'none' : 'flex';
+            document.getElementById('tol-res-row2').style.display = isDme ? 'none' : 'flex';
+            document.getElementById('tol-res-lbl').textContent = isDme ? 'DME tolerance' : 'Cone radius z (fix tolerance)';
+
+            if (isDme) {
+                const dist = parseFloat(document.getElementById('tol-dist').value);
+                if (isNaN(dist)) return;
+                document.getElementById('tol-res-val').textContent = '± ' + PANS.dmeTol(dist).toFixed(2) + ' NM';
+            } else {
+                const h = parseFloat(document.getElementById('tol-alt').value);
+                const isVor = navaid === 'vor';
+                document.getElementById('tol-res-val2').textContent = isVor ? 'entry ±5° · tracking ±5°' : 'entry ±15° · tracking ±5°';
+                if (isNaN(h)) return;
+                document.getElementById('tol-res-val').textContent = PANS.coneRadius(h, isVor ? 50 : 40).toFixed(2) + ' NM';
+            }
+        }
+
+        // --- EQUIVALENT APPROACH OBSTACLE (II-1-1 §1.4.8.8.2.1 / III-3-4 §4.4.3) ---
+        function calcEqObs() {
+            const theta = parseFloat(document.getElementById('eq-theta').value);
+            const z = parseFloat(document.getElementById('eq-z').value);
+            const xz = parseFloat(document.getElementById('eq-xz').value);
+            const x = parseFloat(document.getElementById('eq-x').value);
+            const ht = parseFloat(document.getElementById('eq-ht').value);
+            const type = document.getElementById('eq-type').value;
+            if ([theta, z, xz, x, ht].some(isNaN) || z <= 0 || theta <= 0) return;
+
+            const M2FT = 3.28084;
+            const xFt = x * M2FT, xzFt = xz * M2FT;   // distances in m → ft so all terms share one unit
+            if (type === 'ha') {
+                const ha = PANS.equivHa(ht, xFt, xzFt, z, theta);
+                document.getElementById('eq-res-lbl').textContent = 'Equivalent approach obstacle (ha)';
+                document.getElementById('eq-res-val').textContent = Math.round(ha).toLocaleString() + ' ft';
+            } else {
+                const hma = PANS.equivHma(ht, xFt, xzFt, z, theta);
+                document.getElementById('eq-res-lbl').textContent = 'Missed approach obstacle height (hma)';
+                document.getElementById('eq-res-val').textContent = Math.round(hma).toLocaleString() + ' ft';
+            }
+        }
+
         // Setup init drawing event hook
         document.addEventListener("DOMContentLoaded", () => {
             const oldSwitch = window.switchTab;
@@ -4611,6 +4922,8 @@
                 if (id === 'tab-turn') { calcPT(); calcBaseTurn(); }
                 if (id === 'tab-vnav-papi') calcVnavPapi();
             }
+
+            renderSelfTest();
 
             // Open the sheet named in the URL hash, e.g. #vnav-papi
             const hashTab = 'tab-' + location.hash.replace(/^#/, '');
