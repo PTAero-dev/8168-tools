@@ -2186,6 +2186,15 @@
                                     <input type="number" id="hold-fac-elev" placeholder="0" oninput="calcHoldArea()">
                                 </div>
                             </div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>Entry Area</label>
+                                    <select id="hold-entry-area" onchange="calcHoldArea()">
+                                        <option value="omni">Omnidirectional (§3.3.3.2.1)</option>
+                                        <option value="off">Basic area only</option>
+                                    </select>
+                                </div>
+                            </div>
                             <div class="vp-row" id="hold-custom-grp" style="display:none;">
                                 <div class="vp-input-group">
                                     <label>Along-track ± (NM)</label>
@@ -2240,6 +2249,10 @@
                                 <span class="result-label">Basic area (length × width)</span>
                                 <span id="hold-res-area" class="result-value c-warning">---</span>
                             </div>
+                            <div class="result-row key">
+                                <span class="result-label">Holding area with entry (L × W)</span>
+                                <span id="hold-res-holdarea" class="result-value c-violet">---</span>
+                            </div>
                             <div class="result-row">
                                 <span class="result-label">Entry allowances XE / YE</span>
                                 <span id="hold-res-xe" class="result-value">---</span>
@@ -2268,7 +2281,11 @@
                             <div class="note-title">Reference</div>
                             Doc 8168 Vol II II-4-1 (speeds Table II-4-1-2, 25° bank, ISA+15, timing §1.3.2.2, buffer MOC Table II-4-1-1)
                             and I-4-3-App C §3.3 (template Table I-4-3-App C-4). The drawn basic area is the template swept around the fix
-                            tolerance area (convex envelope of the wind circles); the omnidirectional entry area is not drawn — use XE/YE per §3.3.3.2.
+                            tolerance area (convex envelope of the wind circles). The omnidirectional entry area follows §3.3.3.2.1 (overhead a VOR/NDB):
+                            curve 5 = template with point E on the circle through A1/A3; curves 6–7 = template on the 70° sector 1/3 line at the entry
+                            fix area, curve 8 their mirror; arc about A to curve 1. Only the template ahead of "a" is used for curves 6–8, and the
+                            outline is the convex envelope — an approximation of the hand construction. The 5 NM buffer is drawn around basic + entry area
+                            (II-4-1 §1.3.12.1). For radial-intersection or RNAV fixes use the entry construction for that fix type instead.
                         </div>
                     </div>
 
@@ -3291,7 +3308,7 @@
                             <ul class="audit-list">
                                 <li><b>Confirmed:</b> TAS (I-2-1-App), r = V/(20πR), ICAO wind 2h+47, wind spiral E, φ = 36/t or 0.215·TAS/t, DME tolerance, turn anticipation, ROD.</li>
                                 <li><b>01-B Cold temperature</b> and <b>08 true altitude:</b> confirmed against Doc 8168 Vol III 2-4 §4.3.3 and Table 2-4-1 b); both now share one function.</li>
-                                <li><b>05-A Holding</b> (new): Table II-4-1-2 speeds, ISA+15, ICAO wind, template Table I-4-3-App C-4 (all 33 lines), entry sectors, buffer MOC.</li>
+                                <li><b>05-A Holding</b> (new): Table II-4-1-2 speeds, ISA+15, ICAO wind, template Table I-4-3-App C-4 (all 33 lines), entry sectors, buffer MOC. Omnidirectional entry area §3.3.3.2.1 (curves 5–8, convex-envelope approximation); template extents checked against Diagram I-4-3-App C-6.</li>
                                 <li><b>07-D Departure PDG</b> (new): OIS 2.5 %/4.2 % from 16 ft above DER, MOC 0.8 %, PDG end point and close-in rule (I-3-2 §2.7).</li>
                                 <li><b>09-D MSD</b> (new): fly-by / fly-over minimum stabilization distance (III-2-1 §1.4), leg checks §1.2.5 and Table III-2-1-21.</li>
                                 <li><b>09 Path terminators</b> (new): Tables III-2-5-App-1/App-2 and coding rules a–e, RNP subset.</li>
@@ -3896,6 +3913,10 @@
             { g: 'Departure', n: 'Close-in 0.3 NM, 80 ft: PDG not promulgated (stays 3.3 %)', ref: 'I-3-2 §2.7.5', exp: 0.033, tol: 1e-9, f: () => PANS.depAnalyse([{ n: 'C', d: 0.3, h: 80 }], false).P },
             { g: 'Departure', n: 'Close-in 0.3 NM, 80 ft classed close-in', ref: 'I-3-2 §2.7.5', exp: 1, tol: 0, f: () => +(PANS.depAnalyse([{ n: 'C', d: 0.3, h: 80 }], false).rows[0].cls === 'close-in') },
             { g: 'Departure', n: 'Climb rate 3.3 % at 150 kt GS', ref: 'ROC = GS × 101.27 × grad', exp: 501.3, tol: 0.5, f: () => PANS.rocFor(0.033, 150) },
+            { g: 'Holding', n: 'Template extent, D side (220 kt, 10 000 ft, 1 min)', ref: 'Diagram I-4-3-App C-6 (scaled ≈ 5.4 NM)', exp: 5.43, tol: 0.25, f: () => { const h = circlesHull(holdingTemplateGeometry(HOLD_SAMPLE()).circles, [[0, 0]], 0); return -Math.min(...h.map((q) => q[0])); } },
+            { g: 'Holding', n: 'Template extent, C side', ref: 'Diagram I-4-3-App C-6 (scaled ≈ 11.3 NM)', exp: 11.30, tol: 0.25, f: () => { const h = circlesHull(holdingTemplateGeometry(HOLD_SAMPLE()).circles, [[0, 0]], 0); return -Math.min(...h.map((q) => q[1])); } },
+            { g: 'Holding', n: 'Template extent, B (holding) side', ref: 'Diagram I-4-3-App C-6 (scaled ≈ 8.0 NM)', exp: 7.98, tol: 0.25, f: () => { const h = circlesHull(holdingTemplateGeometry(HOLD_SAMPLE()).circles, [[0, 0]], 0); return Math.max(...h.map((q) => q[0])); } },
+            { g: 'Holding', n: 'Entry area contains point E placed on every fix-area corner', ref: 'I-4-3-App C §3.3.3.2.1.2', exp: 1, tol: 0, f: () => { const tp = HOLD_SAMPLE(), geo = holdingTemplateGeometry(tp), fa = holdingFixArea('vor', 10000, NaN, NaN), basic = circlesHull(geo.circles, fa.corners, 0), en = holdingEntryArea(tp, geo, fa, basic); const ext = (pts, ux, uy) => Math.max(...pts.map((q) => q[0] * ux + q[1] * uy)); return [[0, -1], [-1, 0], [-0.7071, -0.7071]].every(([ux, uy]) => ext(en.area, ux, uy) >= ext(en.c5, ux, uy) - 1e-9 && ext(en.area, ux, uy) >= ext(basic, ux, uy) - 1e-9) ? 1 : 0; } },
             { g: 'Missed app.', n: 'ha ↔ hma round trip (hma 100, x −1500, xz 900, Z 2.5 %, θ 3°)', ref: 'II-1-1 §1.4.8.8.2.1', exp: 100, tol: 1e-9, f: () => PANS.equivHma(PANS.equivHa(100, -1500, 900, 2.5, 3), -1500, 900, 2.5, 3) },
             { g: 'Cold temp', n: '−10 °C, 1 000 ft above SL source (rounded up 10 ft)', ref: 'Vol III Table 2-4-1 b)', exp: 100, tol: 0, f: () => Math.ceil(PANS.coldTempCorr(1000, -10, 0) / 10) * 10 },
             { g: 'Cold temp', n: '−30 °C, 2 000 ft', ref: 'Vol III Table 2-4-1 b)', exp: 380, tol: 0, f: () => Math.ceil(PANS.coldTempCorr(2000, -30, 0) / 10) * 10 },
@@ -6453,7 +6474,8 @@
             const d = onTurn(c, 0, 45), e = onTurn(c, 0, 90), f = onTurn(c, 0, 135), g = onTurn(c, 0, 180);
             const h = onTurn(b, 0, 180), o = onTurn(b, 0, 225), p = onTurn(b, 0, 270);
             const leg = (dist, hdg) => [g[0] + dist * Math.sin(hdg * D), g[1] + dist * Math.cos(hdg * D)];
-            const i1 = leg(tp.gi1, 185), i2 = leg(tp.gi2, 185), i3 = leg(tp.gi1, 175), i4 = leg(tp.gi2, 175);
+            // i1, i2 on the holding side of the outbound leg, i3, i4 on the procedure-axis side (Diagram I-4-3-App C-6)
+            const i1 = leg(tp.gi1, 175), i2 = leg(tp.gi2, 175), i3 = leg(tp.gi1, 185), i4 = leg(tp.gi2, 185);
             const j = onTurn(i2, 180, 45), k = onTurn(i2, 180, 90);
             const l = onTurn(i4, 180, 90), m = onTurn(i4, 180, 135), n4 = onTurn(i4, 180, 180), n3 = onTurn(i3, 180, 180);
             const circles = [
@@ -6474,6 +6496,51 @@
             }
             if (type === 'custom' && att >= 0 && xtt >= 0) return { z: att, corners: [[-xtt, -att], [xtt, -att], [xtt, att], [-xtt, att]] };
             return { z: 0, corners: [[0, 0]] };
+        }
+
+        // I-4-3-App C §3.3.3.2.1: omnidirectional entry area overhead a VOR/NDB (local frame, right turns).
+        // Returns the outline pieces; the holding area is the convex envelope of basic area + entry curves.
+        function holdingEntryArea(tp, geo, fa, basic) {
+            const D = Math.PI / 180;
+            const tpl = circlesHull(geo.circles, [[0, 0]], 0);
+            const minX = Math.min(...tpl.map((q) => q[0])), minY = Math.min(...tpl.map((q) => q[1]));
+            // point E (§3.3.2.2.4.7): XE back from the C-axis extreme, YE in from the D-axis extreme
+            const E = [minX + tp.YE, minY + tp.XE];
+            // curve 5 (§3.3.3.2.1.1–.2): E moved round the circle centred on A through A1 and A3, template axis parallel to inbound
+            const rho = Math.max(...fa.corners.map(([x, y]) => Math.hypot(x, y)));
+            const ring = [];
+            for (let k = 0; k < 36; k++) ring.push([rho * Math.sin(k * 10 * D) - E[0], rho * Math.cos(k * 10 * D) - E[1]]);
+            const c5 = circlesHull(geo.circles, ring, 0);
+            // curves 6, 7 (§3.3.3.2.1.3–.4): entry along the 70° sector 1/3 line, template axis on that line, point "a" on the
+            // entry fix tolerance area. Only the template ahead of "a" (spiral a): circles a, c–g) reaches past the basic area.
+            // Curve 8 (§3.3.3.2.1.6) is their mirror image about the 70° line (the same curves for a left turn).
+            const P = geo.pts;
+            const fwd = [[...P.a, 0], [...P.c, tp.Wc], [...P.d, tp.Wd], [...P.e, tp.We], [...P.f, tp.Wf], [...P.g, tp.Wg]];
+            const u = [Math.sin(290 * D), Math.cos(290 * D)];           // along the 70° line, away from the holding side
+            const toL = (x, y, m) => [m * x * u[1] + y * u[0], -m * x * u[0] + y * u[1]];
+            const efa = fa.corners.map(([x, y]) => toL(x, y, 1));
+            const curve = (m) => circlesHull(fwd.map(([x, y, w]) => [...toL(x, y, m), w]), efa, 0);
+            const c67 = curve(1), c8 = curve(-1);
+            // §3.3.3.2.1.5: arc centred on A, tangent to curve 6, until it meets curve 1
+            const far = c67.reduce((q, v) => (Math.hypot(v[0], v[1]) > Math.hypot(q[0], q[1]) ? v : q));
+            const r6 = Math.hypot(far[0], far[1]);
+            const inside = (pt, poly) => {
+                let c = false;
+                for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+                    const [xi, yi] = poly[i], [xj, yj] = poly[j];
+                    if ((yi > pt[1]) !== (yj > pt[1]) && pt[0] < (xj - xi) * (pt[1] - yi) / (yj - yi) + xi) c = !c;
+                }
+                return c;
+            };
+            const arc = [];
+            const b0 = Math.atan2(far[0], far[1]) / D;
+            for (let k = 0; k <= 180; k++) {
+                const q = [r6 * Math.sin((b0 + k) * D), r6 * Math.cos((b0 + k) * D)];
+                arc.push(q);
+                if (inside(q, basic)) break;
+            }
+            const area = convexHull(basic.concat(c5, c67, c8, arc));
+            return { E, rho, c5, c67, c8, arc, area };
         }
 
         function calcHoldArea() {
@@ -6511,10 +6578,17 @@
             const fa = holdingFixArea(fixType, alt - facElev, g('hold-att'), g('hold-xtt'));
             document.getElementById('hold-custom-grp').style.display = fixType === 'custom' ? 'flex' : 'none';
             const basic = circlesHull(geo.circles, fa.corners, 0);
-            const buffer = circlesHull(geo.circles, fa.corners, 5);
-            const ys = basic.map((p) => p[1]), xs = basic.map((p) => p[0]);
-            const len = Math.max(...ys) - Math.min(...ys), wid = Math.max(...xs) - Math.min(...xs);
-            set('hold-res-area', f2(len) + ' × ' + f2(wid) + ' NM');
+            const omni = document.getElementById('hold-entry-area').value === 'omni';
+            const entry = omni ? holdingEntryArea(tp, geo, fa, basic) : null;
+            const holdArea = entry ? entry.area : basic;
+            // II-4-1 §1.3.12.1 c): buffer 5 NM beyond the holding area (basic + entry)
+            const buffer = circlesHull(holdArea.map(([x, y]) => [x, y, 0]), [[0, 0]], 5);
+            const dims = (poly) => {
+                const ys = poly.map((p) => p[1]), xs = poly.map((p) => p[0]);
+                return f2(Math.max(...ys) - Math.min(...ys)) + ' × ' + f2(Math.max(...xs) - Math.min(...xs)) + ' NM';
+            };
+            set('hold-res-area', dims(basic));
+            set('hold-res-holdarea', entry ? dims(entry.area) : 'entry area off');
             set('hold-res-fix', fa.z ? '± ' + f2(fa.z) + ' NM' : 'not applied');
 
             // entry sector for a given heading
@@ -6541,7 +6615,7 @@
                 ['32 XE', f2(tp.XE)], ['33 YE', f2(tp.YE)]];
             document.getElementById('hold-lines').innerHTML = L.map(([k, v]) => '<tr><td>' + k + '</td><td class="num">' + v + '</td></tr>').join('');
 
-            drawHoldViz({ tp, geo, fa, basic, buffer, inbound, left, T, V, wind });
+            drawHoldViz({ tp, geo, fa, basic, entry, buffer, inbound, left, T, V, wind });
         }
 
         function drawHoldViz(o) {
@@ -6561,9 +6635,24 @@
             // buffer
             ctx.save(); path(poly(o.buffer), true);
             ctx.setLineDash([6, 5]); ctx.strokeStyle = C.muted; ctx.lineWidth = 1; ctx.stroke(); ctx.restore();
+            // holding area with omnidirectional entry (§3.3.3.2.1): outline + the construction curves 5–8
+            if (o.entry) {
+                ctx.save(); path(poly(o.entry.area), true);
+                ctx.fillStyle = C.fill; ctx.fill(); ctx.strokeStyle = C.violet; ctx.lineWidth = 1.6; ctx.stroke(); ctx.restore();
+                ctx.save(); ctx.setLineDash([2, 3]); ctx.strokeStyle = C.violet; ctx.lineWidth = 0.8;
+                [o.entry.c5, o.entry.c67, o.entry.c8].forEach((c) => { path(poly(c), true); ctx.stroke(); });
+                ctx.restore();
+                const lp = (pts, txt) => {          // label a curve at its point farthest from the fix
+                    const q = pts.reduce((a, v) => (Math.hypot(v[0], v[1]) > Math.hypot(a[0], a[1]) ? v : a));
+                    const p = W([q[0] * 0.93, q[1] * 0.93]);
+                    cvLabel(ctx, C, txt, V.X(p[0]), V.Y(p[1]), { size: 9, color: C.violet });
+                };
+                lp(o.entry.c5, '5'); lp(o.entry.c67, '6·7'); lp(o.entry.c8, '8');
+            }
             // basic area
             ctx.save(); path(poly(o.basic), true);
-            ctx.fillStyle = C.fill; ctx.fill(); ctx.strokeStyle = C.warning; ctx.lineWidth = 1.6; ctx.stroke(); ctx.restore();
+            if (!o.entry) { ctx.fillStyle = C.fill; ctx.fill(); }
+            ctx.strokeStyle = C.warning; ctx.lineWidth = 1.6; ctx.stroke(); ctx.restore();
             // template (at the fix)
             const tpl = circlesHull(o.geo.circles, [[0, 0]], 0);
             ctx.save(); path(poly(tpl), true); ctx.setLineDash([3, 3]); ctx.strokeStyle = C.cyan; ctx.lineWidth = 1; ctx.stroke(); ctx.restore();
@@ -6590,6 +6679,7 @@
 
             cvFix(ctx, C, V.X(0), V.Y(0), 'FIX');
             cvLabel(ctx, C, '▭ basic area', 10, 34, { align: 'left', size: 9, box: false, color: C.warning });
+            if (o.entry) cvLabel(ctx, C, '▭ basic + entry area (curves 5–8)', 90, 34, { align: 'left', size: 9, box: false, color: C.violet });
             cvLabel(ctx, C, '┄ template · ┄ 5 NM buffer · S1–S3 entry sectors', 10, 48, { align: 'left', size: 9, box: false, color: C.muted });
             cvFooter(ctx, C, V, w, h, String(Math.round(o.inbound)).padStart(3, '0') + '° inbound · ' + (o.left ? 'left' : 'right') + ' turns · TAS ' + Math.round(o.V) + ' kt · w ' + Math.round(o.wind) + ' kt');
         }

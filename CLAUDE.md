@@ -15,7 +15,7 @@ Guide for Claude Code sessions working on this repo. Read this first; details ar
 3. **Never commit the ICAO PDFs** (`*.pdf` is git-ignored; they are ICAO copyright). Don't delete them either.
 4. **Every formula must trace to a Doc paragraph** and live in the `PANS` object with a comment reference.
    Add a self-test case to `PANS_TESTS` for every new or changed formula, using Doc tables / worked examples where possible.
-   The QA sheet must stay 100 % passing (currently **97/97**).
+   The QA sheet must stay 100 % passing (currently **101/101**).
 5. **Verify against the PDFs**, not memory. If something can't be verified, say so in the UI and the QA audit card.
 6. The user tests on an **Android phone** and sends screenshots. Every change must work at ~360 px width with no horizontal overflow.
 7. Keep the **Blueprint theme** (CSS variables; drawings use `bpColors()` — never hard-code colours) and the light "Whiteprint" theme.
@@ -67,7 +67,7 @@ URL hash deep links: `#turn`, `#holdb`, `#pt`, …
   write the script with the Write tool into the session scratchpad and run it.
 - **Syntax check all scripts:**
   `node -e "const s=require('fs').readFileSync('index.html','utf8');const re=/<script>([\s\S]*?)<\/script>/g;let m;while((m=re.exec(s)))new Function(m[1]);console.log('ok')"`
-- **Run the self-test in Node:** slice from `const PANS = {` to `function renderSelfTest`, `eval` with `const`→`var`, call `runPansTests()`.
+- **Run the self-test in Node:** slice from `const PANS = {` to `function renderSelfTest`, `eval` with `const`→`var`; the holding geometry tests also need the slice from `// Convex hull (Andrew monotone chain)` to `function calcHoldArea()` (`function f(` → `var f = function(`); call `runPansTests()`.
 - **ID check:** every `getElementById('x')` and every id in `resetCard([...])` lists must exist in the markup.
 - **Browser tests:** headless Edge `"/c/Program Files (x86)/Microsoft/Edge/Application/msedge.exe" --headless=new --dump-dom` / `--screenshot`.
   Make a copy of `index.html` in the scratchpad with an injected test `<script>` (set inputs, dispatch `input` events, write results to `document.title`),
@@ -78,8 +78,8 @@ URL hash deep links: `#turn`, `#holdb`, `#pt`, …
   `Get-CimInstance Win32_Process | ? { $_.CommandLine -like '*-m http.server 876*' } | % { Stop-Process -Id $_.ProcessId -Force }`
 - Tools available: Python 3.14 (+ Pillow, PyMuPDF), Node, pdftotext, Git Bash, PowerShell.
 
-## Current status (1 Nov 2026)
-Last commit: 07-D departure PDG card finished (verified in browser, light/dark themes and 360 px; `wip/` removed).
+## Current status (2 Nov 2026)
+Last commit: holding omnidirectional entry area (05-A) drawn per I-4-3-App C §3.3.3.2.1; template i1–i4 side fix. Earlier: 07-D departure PDG card.
 
 ### Done — 07-D Departure Climb Gradient (PDG)
 Card in `tab-desc` (sheet 07 renamed "Departure & Missed Approach"): `PANS.depStd/depPdgFor/depAnalyse/rocFor`, `calcDeparture()`, `drawDepViz()`, obstacle list in hidden `#dep-json`. Details in `HANDOVER.md`.
@@ -94,13 +94,13 @@ Card in `tab-desc` (sheet 07 renamed "Departure & Missed Approach"): `PANS.depSt
 
 ### Backlog (agreed with the user, in rough priority)
 - Limit warnings on all sheets (IAS > category max, outbound time outside 1–3 min, VPA/gradient limits, fix tolerance limits) with Doc refs.
-- Holding: draw the omnidirectional entry area (I-4-3-App C §3.3.3.2); currently only XE/YE are given.
 - VNAV vs PAPI: compute true VPA with the Vol II III-3-4 App A method (currently temperature-ratio approximation).
 - Polish: ⓘ per result showing formula + Doc paragraph; ft/NM ↔ m/km toggle; "using TAS from Sheet 01" labels.
 - Real-device testing by the user (install, offline, print to PDF on phone).
 
 ### Known approximations (documented in UI)
 - Holding basic area = convex envelope of the template wind circles swept around a quadrilateral fix area (approximation of the TTT construction).
+- Holding entry area = convex envelope of basic area + curves 5–8 and the arc about A; curves 6–8 use only the template ahead of "a". Only the VOR/NDB overhead construction is built.
 - Fix tolerance area for VOR/NDB overhead is an approximation of the I-2-2 §2.5 construction.
 - MSD tables: the 25° fly-by table's 130 kt column in the Doc appears computed without the 3°/s limit; the app applies the footnote rule.
 - PAPI units modelled at nominal ±10′/±30′; PAPI 1 000 ft past THR, TCH 50 ft fixed on sheet 08.

@@ -173,9 +173,9 @@ Contains 3 collapsible sub-sections:
 **05-A Holding Template & Area** (`calcHoldArea`, `drawHoldViz`)
 - Speeds Table II-4-1-2 (`PANS.holdingIas`), timing 1 / 1.5 min (`PANS.holdingTime`), ISA+15, ICAO wind, 25° bank
 - Template = Table I-4-3-App C-4, all 33 lines (`PANS.holdingTemplate`), shown in a collapsible table
-- Geometry: template points a…n4 with wind circles → template = convex envelope of circles; basic area = template swept around the fix tolerance area (VOR 50° / NDB 40° cone or custom ATT×XTT); 5 NM buffer = envelope + 5 NM
+- Geometry: template points a…n4 with wind circles → template = convex envelope of circles; basic area = template swept around the fix tolerance area (VOR 50° / NDB 40° cone or custom ATT×XTT); 5 NM buffer = (basic + entry area) + 5 NM (II-4-1 §1.3.12.1). Points i1/i2 are on the holding side of the outbound leg, i3/i4 on the axis side (fixed 2 Nov 2026; template extents checked against Diagram I-4-3-App C-6)
 - Entry sector from aircraft heading (`PANS.holdingEntry`, Fig. II-4-1-2), XE/YE entry allowances, minimum holding level from area MOC 984 ft and buffer MOC Table II-4-1-1 (`PANS.bufferMoc`)
-- Omnidirectional entry area is **not drawn** (XE/YE given for manual construction)
+- Omnidirectional entry area §3.3.3.2.1 (`holdingEntryArea`, selector `#hold-entry-area`): curve 5 = template with point E (XE/YE) moved round the circle through A1/A3; curves 6–7 = forward part of the template (circles a, c–g) on the 70° sector 1/3 line at the entry fix area, curve 8 = mirror; arc about A to curve 1; outline = convex envelope (approximation). Radial-intersection entry (§3.3.3.2.2) and VOR/DME (§3.3.4) are not built
 
 **05-B Holding Point B · ATC delay on ARC** (original calculator)
 
@@ -381,6 +381,7 @@ Key development milestones from previous sessions:
 | 2026-05-01 | Coordinate Converter mobile UI redesigned (within FISB Tools project, separate app). Nested card-in-card layout replaced with fluid full-page scroll. |
 | 2026-05-02 | Context imported from Claude session. Session context continuity maintained. |
 | 2026-05-08 | Folder rename from `FVP Tools` → `8168 Tools` initiated. Handover document created. |
+| 2026-11-02 | Holding omnidirectional entry area drawn (§3.3.3.2.1), buffer now around basic + entry; template i1/i2 ↔ i3/i4 side fixed (D-side extent was ≈1 NM short); 4 new checks → 101. |
 | 2026-11-01 | Departure PDG card 07-D (8 checks → 97); sheet 07 renamed Departure & Missed Approach; browser + 360 px verified. |
 | 2026-11-01 | MSD card 09-D (11 checks → 89); base turn overshoot analysis fixed. |
 | 2026-11-01 | Path Terminators sheet 09 (10 new checks → 74). Clear/Reset buttons on drawing cards. VNAV chart → PAPI lights view. |
