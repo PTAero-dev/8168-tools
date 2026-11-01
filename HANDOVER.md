@@ -84,7 +84,7 @@ Every card has a `.btn-reset` in its header (uses `event.stopPropagation()` so i
 | | 02 | Turn Calculator | `tab-turn` |
 | | 03 | Turn Anticipation | `tab-turnviz` |
 | Procedure Construction | 04 | IFP Gradient | `tab-gradient` |
-| | 05 | Holding for ARC | `tab-holdb` |
+| | 05 | Holding | `tab-holdb` |
 | | 06 | Tolerance, VEB & PBN | `tab-tol` |
 | Approach & Vertical | 07 | Descent & Missed App | `tab-desc` |
 | | 08 | VNAV vs PAPI | `tab-vnav-papi` |
@@ -165,7 +165,16 @@ Contains 3 collapsible sub-sections:
 
 ---
 
-### Tab 5: Holding for ARC (`tab-holdb`)
+### Tab 5: Holding (`tab-holdb`)
+
+**05-A Holding Template & Area** (`calcHoldArea`, `drawHoldViz`)
+- Speeds Table II-4-1-2 (`PANS.holdingIas`), timing 1 / 1.5 min (`PANS.holdingTime`), ISA+15, ICAO wind, 25° bank
+- Template = Table I-4-3-App C-4, all 33 lines (`PANS.holdingTemplate`), shown in a collapsible table
+- Geometry: template points a…n4 with wind circles → template = convex envelope of circles; basic area = template swept around the fix tolerance area (VOR 50° / NDB 40° cone or custom ATT×XTT); 5 NM buffer = envelope + 5 NM
+- Entry sector from aircraft heading (`PANS.holdingEntry`, Fig. II-4-1-2), XE/YE entry allowances, minimum holding level from area MOC 984 ft and buffer MOC Table II-4-1-1 (`PANS.bufferMoc`)
+- Omnidirectional entry area is **not drawn** (XE/YE given for manual construction)
+
+**05-B Holding Point B · ATC delay on ARC** (original calculator)
 
 Used for ATC: Calculate the holding fix (Point B) from a DME arc start point (Point A) to create a delay circuit.
 
@@ -252,8 +261,8 @@ Cold temperature correction (01-B, 08 true altitude) = Vol III 2-4 §4.3.3 via `
 ## 5b. PANS core formulas & self-test
 
 All Doc 8168 formulas live in one object, `PANS` (search `PANS-OPS CORE FORMULAS`), each with its paragraph reference.
-Calculators call `PANS.*`; the **QA · Doc 8168 Self-test** sheet (`#selftest`) runs `PANS_TESTS` — 40 reference values from Doc 8168 Vol II,
-Vol III (Table 2-4-1 b) and Doc 9905 (Appendix B sample) — and shows the pass count in the sidebar badge. **Add a test whenever a formula is added or changed.**
+Calculators call `PANS.*`; the **QA · Doc 8168 Self-test** sheet (`#selftest`) runs `PANS_TESTS` — 58 reference values from Doc 8168 Vol II
+(incl. holding Table I-4-3-App C-4), Vol III (Table 2-4-1 b) and Doc 9905 (Appendix B sample) — and shows the pass count in the sidebar badge. **Add a test whenever a formula is added or changed.**
 
 ## 5c. Save, scenarios and print
 
@@ -348,6 +357,7 @@ Key development milestones from previous sessions:
 | 2026-05-01 | Coordinate Converter mobile UI redesigned (within FISB Tools project, separate app). Nested card-in-card layout replaced with fluid full-page scroll. |
 | 2026-05-02 | Context imported from Claude session. Session context continuity maintained. |
 | 2026-05-08 | Folder rename from `FVP Tools` → `8168 Tools` initiated. Handover document created. |
+| 2026-11-01 | Holding sheet 05-A (template, basic area, entries, MHL; 18 new checks → 58). VNAV chart deviation view. |
 | 2026-11-01 | Added Vol III + Doc 9905: VEB card rebuilt to Doc 9905 App B, cold temperature confirmed vs Vol III Table 2-4-1 b); self-test now 40 checks. |
 | 2026-11-01 | Formula audit vs Doc 8168 Vol II (7 corrections, VEB flagged), PANS core + 28-check self-test sheet. Autosave, named scenarios, JSON export/import, print/PDF calculation sheet with title block. |
 | 2026-11-01 | Installable PWA (manifest, service worker, icons). Diagrams rebuilt: HiDPI, to-scale plan views, PNG export. Mobile overflow audit of all 8 pages at 360 px; VNAV chart compact layout. |

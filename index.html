@@ -1108,6 +1108,11 @@
         }
         .qa-table td.num { font-family: var(--font-mono); text-align: right; white-space: nowrap; }
         .qa-table tr.fail td { background: rgba(255, 122, 133, 0.08); }
+        .lines-detail summary {
+            cursor: pointer; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.08em;
+            text-transform: uppercase; color: var(--accent-primary); padding: 6px 0;
+        }
+        .lines-detail .qa-table td { padding: 3px 8px; }
         .audit-list { margin: 0; padding-left: 18px; font-size: 0.84rem; line-height: 1.6; color: var(--text-muted); }
         .audit-list b { color: var(--text-main); }
         .audit-list li { margin-bottom: 6px; }
@@ -1203,7 +1208,7 @@
             <div class="nav-group">
                 <div class="nav-group-title">Procedure Construction</div>
                 <div class="nav-item" data-tab="tab-gradient" onclick="switchTab('tab-gradient', this)"><span class="nav-num">04</span>IFP Gradient</div>
-                <div class="nav-item" data-tab="tab-holdb" onclick="switchTab('tab-holdb', this)"><span class="nav-num">05</span>Holding for ARC</div>
+                <div class="nav-item" data-tab="tab-holdb" onclick="switchTab('tab-holdb', this)"><span class="nav-num">05</span>Holding</div>
                 <div class="nav-item" data-tab="tab-tol" onclick="switchTab('tab-tol', this)"><span class="nav-num">06</span>Tolerance, VEB &amp; PBN</div>
             </div>
             <div class="nav-group">
@@ -2054,8 +2059,8 @@
             <header class="page-header">
                 <div class="ph-main">
                     <div class="ph-crumb">Procedure Construction / Sheet 05</div>
-                    <h1 class="page-title">Holding for ARC</h1>
-                    <p class="page-subtitle">Determine holding location (B), track to A and turn anticipation</p>
+                    <h1 class="page-title">Holding</h1>
+                    <p class="page-subtitle">Holding template and protected area (Doc 8168 II-4-1) and ATC holding point B on a DME arc</p>
                 </div>
                 <dl class="ph-block">
                     <div><dt>Sheet</dt><dd>05 / 08</dd></div>
@@ -2063,10 +2068,180 @@
                 </dl>
             </header>
 
-            <div class="card">
+            <div class="card" style="margin-bottom: 22px;">
                 <div class="card-header minimizable" onclick="toggleCard(this)">
                     <div class="card-heading"><span class="card-tag">05-A</span>
-                        <div class="card-title">Holding Point B</div>
+                        <div class="card-title">Holding Template &amp; Area</div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-reset"
+                            onclick="event.stopPropagation(); resetCard('card-hold-area', ['hold-alt', 'hold-ias', 'hold-time', 'hold-wind', 'hold-hdg', 'hold-fac-elev', 'hold-att', 'hold-xtt', 'hold-obs', 'hold-obs-buf', 'hold-obs-dist'], 'calcHoldArea');">↺ Reset</button>
+                    </div>
+                </div>
+                <div class="card-body split">
+                    <div class="col">
+                        <div class="form-grid">
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>Holding Level (ft)</label>
+                                    <input type="number" id="hold-alt" placeholder="e.g. 10000" oninput="calcHoldArea()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Speed Conditions</label>
+                                    <select id="hold-cond" onchange="calcHoldArea()">
+                                        <option value="normal">Normal</option>
+                                        <option value="turb">Turbulence (280 kt)</option>
+                                        <option value="ab">Cat A/B only (170 kt)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>IAS (kt)<span class="opt">OPT</span></label>
+                                    <input type="number" id="hold-ias" placeholder="Auto" oninput="calcHoldArea()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Outbound (min)<span class="opt">OPT</span></label>
+                                    <input type="number" id="hold-time" placeholder="Auto" step="0.5" oninput="calcHoldArea()">
+                                </div>
+                            </div>
+                            <div id="hold-ias-note" class="coord-hint" style="text-align: left; margin-top: -6px;">Table II-4-1-2</div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>Temp (ISA +°C)</label>
+                                    <input type="number" id="hold-isa" value="15" oninput="calcHoldArea()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Wind (kt)<span class="opt">OPT</span></label>
+                                    <input type="number" id="hold-wind" placeholder="ICAO 2h+47" oninput="calcHoldArea()">
+                                </div>
+                            </div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>Turns</label>
+                                    <select id="hold-dir" onchange="calcHoldArea()">
+                                        <option value="right">Right (standard)</option>
+                                        <option value="left">Left</option>
+                                    </select>
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Inbound Track (°)</label>
+                                    <input type="number" id="hold-crs" value="360" oninput="calcHoldArea()">
+                                </div>
+                            </div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>Holding Fix</label>
+                                    <select id="hold-fix" onchange="calcHoldArea()">
+                                        <option value="vor">VOR overhead (cone 50°)</option>
+                                        <option value="ndb">NDB overhead (cone 40°)</option>
+                                        <option value="custom">Fix area ATT × XTT</option>
+                                        <option value="none">No fix tolerance</option>
+                                    </select>
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Facility Elev (ft)<span class="opt">OPT</span></label>
+                                    <input type="number" id="hold-fac-elev" placeholder="0" oninput="calcHoldArea()">
+                                </div>
+                            </div>
+                            <div class="vp-row" id="hold-custom-grp" style="display:none;">
+                                <div class="vp-input-group">
+                                    <label>Along-track ± (NM)</label>
+                                    <input type="number" id="hold-att" placeholder="e.g. 1.2" step="0.01" oninput="calcHoldArea()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Cross-track ± (NM)</label>
+                                    <input type="number" id="hold-xtt" placeholder="e.g. 0.8" step="0.01" oninput="calcHoldArea()">
+                                </div>
+                            </div>
+                            <div class="section-label">Entry &amp; minimum holding level</div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>Aircraft Heading to Fix (°)</label>
+                                    <input type="number" id="hold-hdg" placeholder="e.g. 150" oninput="calcHoldArea()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Obstacle in Area (ft)</label>
+                                    <input type="number" id="hold-obs" placeholder="elevation" oninput="calcHoldArea()">
+                                </div>
+                            </div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>Buffer Obstacle (ft)</label>
+                                    <input type="number" id="hold-obs-buf" placeholder="elevation" oninput="calcHoldArea()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Beyond Area (NM)</label>
+                                    <input type="number" id="hold-obs-dist" placeholder="0 – 5" step="0.1" oninput="calcHoldArea()">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="results-panel flush">
+                            <div class="result-row">
+                                <span class="result-label">TAS · rate · radius</span>
+                                <span id="hold-res-tas" class="result-value">---</span>
+                            </div>
+                            <div class="result-row">
+                                <span class="result-label">Wind · E45</span>
+                                <span id="hold-res-wind" class="result-value">---</span>
+                            </div>
+                            <div class="result-row">
+                                <span class="result-label">Outbound leg L</span>
+                                <span id="hold-res-leg" class="result-value">---</span>
+                            </div>
+                            <div class="result-row">
+                                <span class="result-label">Fix tolerance (cone z / ATT)</span>
+                                <span id="hold-res-fix" class="result-value">---</span>
+                            </div>
+                            <div class="result-row key">
+                                <span class="result-label">Basic area (length × width)</span>
+                                <span id="hold-res-area" class="result-value c-warning">---</span>
+                            </div>
+                            <div class="result-row">
+                                <span class="result-label">Entry allowances XE / YE</span>
+                                <span id="hold-res-xe" class="result-value">---</span>
+                            </div>
+                            <hr>
+                            <div class="result-row key">
+                                <span class="result-label">Entry</span>
+                                <span id="hold-res-entry" class="result-value c-violet">---</span>
+                            </div>
+                            <div class="result-row">
+                                <span class="result-label">Buffer MOC</span>
+                                <span id="hold-res-bufmoc" class="result-value">---</span>
+                            </div>
+                            <div class="result-row key">
+                                <span class="result-label">Minimum holding level</span>
+                                <span id="hold-res-mhl" class="result-value c-success">---</span>
+                            </div>
+                        </div>
+
+                        <details class="lines-detail">
+                            <summary>Template parameters · Table I-4-3-App C-4 (33 lines)</summary>
+                            <div class="table-wrap"><table class="qa-table"><tbody id="hold-lines"></tbody></table></div>
+                        </details>
+
+                        <div class="note">
+                            <div class="note-title">Reference</div>
+                            Doc 8168 Vol II II-4-1 (speeds Table II-4-1-2, 25° bank, ISA+15, timing §1.3.2.2, buffer MOC Table II-4-1-1)
+                            and I-4-3-App C §3.3 (template Table I-4-3-App C-4). The drawn basic area is the template swept around the fix
+                            tolerance area (convex envelope of the wind circles); the omnidirectional entry area is not drawn — use XE/YE per §3.3.3.2.
+                        </div>
+                    </div>
+
+                    <div class="viz">
+                        <span class="viz-label">Plan view · to scale</span>
+                        <button class="viz-dl" onclick="exportViz(this)" data-name="holding-area" title="Download high-resolution PNG">⤓ PNG</button>
+                        <canvas id="holdVizCanvas" width="600" height="540"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header minimizable" onclick="toggleCard(this)">
+                    <div class="card-heading"><span class="card-tag">05-B</span>
+                        <div class="card-title">Holding Point B · ATC delay on ARC</div>
                     </div>
                     <div class="card-actions">
                         <button class="btn-reset"
@@ -2878,6 +3053,7 @@
                             <ul class="audit-list">
                                 <li><b>Confirmed:</b> TAS (I-2-1-App), r = V/(20πR), ICAO wind 2h+47, wind spiral E, φ = 36/t or 0.215·TAS/t, DME tolerance, turn anticipation, ROD.</li>
                                 <li><b>01-B Cold temperature</b> and <b>08 true altitude:</b> confirmed against Doc 8168 Vol III 2-4 §4.3.3 and Table 2-4-1 b); both now share one function.</li>
+                                <li><b>05-A Holding</b> (new): Table II-4-1-2 speeds, ISA+15, ICAO wind, template Table I-4-3-App C-4 (all 33 lines), entry sectors, buffer MOC.</li>
                                 <li><b>06-C VEB</b> rebuilt to Doc 9905 Appendix B (was a simplified RSS × 4/3 of three terms); reproduces the Doc sample MOC, OAS gradient and origin.</li>
                             </ul>
                         </div>
@@ -2979,6 +3155,50 @@
                 const cz = 100 / zGradPct, ct = 1 / Math.tan(thetaDeg * Math.PI / 180);
                 return (ha * (cz + ct) - (xz + x)) / cz;
             },
+            // Doc 8168 Vol II, Table II-4-1-2: IAS for holding area construction
+            holdingIas(hFt, turb, catAB) {
+                if (catAB && hFt <= 14000) return { ias: 170, note: 'Cat A/B only (note 4)' };
+                if (hFt <= 14000) return { ias: turb ? 280 : 230, note: turb ? 'turbulence' : '' };
+                if (hFt <= 20000) return { ias: turb ? 280 : 240, note: turb ? 'turbulence' : '' };
+                if (hFt <= 34000) return { ias: turb ? 280 : 265, note: turb ? '280 kt or M0.80, whichever is less' : '' };
+                return { ias: NaN, note: 'M0.83 above FL340: enter IAS' };
+            },
+            // II-4-1 §1.3.2.2.1: outbound timing 1 min up to 14 000 ft, 1.5 min above
+            holdingTime(hFt) { return hFt <= 14000 ? 1 : 1.5; },
+            // Table II-4-1-1: MOC in the buffer area over low flat terrain (ft), d = NM beyond the holding area
+            bufferMoc(dNm) {
+                if (dNm < 0) return 984;
+                const t = [[1, 984], [2, 492], [3, 394], [4, 294], [5, 197]];
+                for (const [lim, moc] of t) if (dNm <= lim) return moc;
+                return 0;
+            },
+            // I-4-3-App C, Table I-4-3-App C-4: holding / racetrack template (non-SI). V = TAS kt, w = wind kt, T = min
+            holdingTemplate(V, w, T) {
+                const D = Math.PI / 180;
+                const v = V / 3600, R = PANS.rate(V, 25), r = PANS.radius(V, R), wp = w / 3600, E45 = 45 * wp / R;
+                const t = 60 * T, L = v * t;
+                const ab = 5 * v, ac = 11 * v, gi1 = (t - 5) * v, gi2 = (t + 21) * v;
+                const Wb = 5 * wp, Wc = 11 * wp;
+                const Wd = Wc + E45, We = Wc + 2 * E45, Wf = Wc + 3 * E45, Wg = Wc + 4 * E45;
+                const Wh = Wb + 4 * E45, Wo = Wb + 5 * E45, Wp = Wb + 6 * E45;
+                const Wi1 = (t + 6) * wp + 4 * E45, Wi2 = Wi1 + 14 * wp;
+                const Wj = Wi2 + E45, Wk = Wi2 + 2 * E45, Wm = Wi2 + 3 * E45, Wn3 = Wi1 + 4 * E45, Wn4 = Wi2 + 4 * E45;
+                const XE = 2 * r + (t + 15) * v + (t + 26 + 195 / R) * wp;
+                const YE = 11 * v * Math.cos(20 * D) + r * (1 + Math.sin(20 * D)) + (t + 15) * v * Math.tan(5 * D) + (t + 26 + 125 / R) * wp;
+                return { V, v, R, r, w, wp, E45, t, L, ab, ac, gi1, gi2, Wb, Wc, Wd, We, Wf, Wg, Wh, Wo, Wp, Wi1, Wi2, Wj, Wk, Wl: Wk, Wm, Wn3, Wn4, XE, YE };
+            },
+            // II-4-1 §1.2.1 / Figure II-4-1-2: entry sector from aircraft heading (5° flexibility at boundaries)
+            holdingEntry(inbound, heading, left) {
+                let rel = ((heading - inbound) % 360 + 360) % 360;
+                if (left) rel = (360 - rel) % 360;
+                let sector, name;
+                if (rel > 110 && rel <= 180) { sector = 2; name = 'Sector 2 · offset entry'; }
+                else if (rel > 180 && rel < 290) { sector = 1; name = 'Sector 1 · parallel entry'; }
+                else { sector = 3; name = 'Sector 3 · direct entry'; }
+                const near = [110, 180, 290].some((b) => Math.abs(rel - b) <= 5);
+                const offsetTrack = ((inbound + 180 + (left ? 30 : -30)) % 360 + 360) % 360;
+                return { sector, name, rel, near, offsetTrack };
+            },
             // ROD (ft/min) = GS (kt) × 6076.12/60 × gradient
             rod(gs, gradPct) { return gs * 101.2685 * gradPct / 100; },
 
@@ -3018,6 +3238,8 @@
         // Doc 9905 Appendix B sample: RNP 0.14, VPA 3°, LTP 1 200 ft, FAP 4 500 ft, RDH 55 ft, ISA −20, RF bank 18°
         const VEB_SAMPLE = { rnp: 0.14, vpa: 3, ltp: 1200, fap: 4500, rdh: 55, isaLow: -20, rf: true, bank: 18 };
 
+        const HOLD_SAMPLE = () => PANS.holdingTemplate(PANS.tas(220, 10000, 15), PANS.wind(10000), 1);
+
         const PANS_TESTS = [
             { g: 'TAS', n: 'TAS factor 10 000 ft, ISA', ref: 'Table I-2-1-App-2', exp: 1.1637, tol: 0.0006, f: () => PANS.tas(1, 10000, 0) },
             { g: 'TAS', n: 'TAS factor 10 000 ft, ISA+15', ref: 'Table I-2-1-App-2', exp: 1.1958, tol: 0.0006, f: () => PANS.tas(1, 10000, 15) },
@@ -3045,6 +3267,24 @@
             { g: 'PBN', n: 'RNP 4 ½A/W en-route', ref: 'Table III-1-2-2', exp: 8.00, tol: 0.001, f: () => PANS.pbnHalfWidth(4, PANS.bufferValue('enroute')) },
             { g: 'PBN', n: 'RNP 4 ATT en-route', ref: 'Table III-1-2-2', exp: 3.20, tol: 0.001, f: () => PANS.pbnAtt(4) },
             { g: 'PBN', n: 'RNP APCH Cat H ½A/W at MAPt', ref: 'Table III-1-2-16', exp: 0.80, tol: 0.001, f: () => PANS.pbnHalfWidth(0.3, PANS.bufferValue('final', true)) },
+            { g: 'Holding', n: 'Holding IAS ≤ 14 000 ft, normal', ref: 'Table II-4-1-2', exp: 230, tol: 0, f: () => PANS.holdingIas(10000, false, false).ias },
+            { g: 'Holding', n: 'Outbound timing above 14 000 ft', ref: 'II-4-1 §1.3.2.2.1', exp: 1.5, tol: 0, f: () => PANS.holdingTime(15000) },
+            { g: 'Holding', n: 'Buffer MOC 2–3 NM beyond area', ref: 'Table II-4-1-1', exp: 394, tol: 0, f: () => PANS.bufferMoc(2.5) },
+            { g: 'Holding', n: 'Template V (220 kt, 10 000 ft, ISA+15)', ref: 'Table I-4-3-App C-4, line 2', exp: 263.08, tol: 0.05, f: () => HOLD_SAMPLE().V },
+            { g: 'Holding', n: 'Template R', ref: 'Table I-4-3-App C-4, line 4', exp: 1.94, tol: 0.005, f: () => HOLD_SAMPLE().R },
+            { g: 'Holding', n: 'Template r', ref: 'Table I-4-3-App C-4, line 5', exp: 2.16, tol: 0.005, f: () => HOLD_SAMPLE().r },
+            { g: 'Holding', n: 'Template w', ref: 'Table I-4-3-App C-4, line 7', exp: 67, tol: 0.01, f: () => HOLD_SAMPLE().w },
+            { g: 'Holding', n: 'Template E45 (Doc rounds R to 1.94)', ref: 'Table I-4-3-App C-4, line 9', exp: 0.431, tol: 0.002, f: () => HOLD_SAMPLE().E45 },
+            { g: 'Holding', n: 'Template L', ref: 'Table I-4-3-App C-4, line 11', exp: 4.38, tol: 0.005, f: () => HOLD_SAMPLE().L },
+            { g: 'Holding', n: 'Template gi2 = gi4', ref: 'Table I-4-3-App C-4, line 15', exp: 5.92, tol: 0.005, f: () => HOLD_SAMPLE().gi2 },
+            { g: 'Holding', n: 'Template Wg', ref: 'Table I-4-3-App C-4, line 21', exp: 1.93, tol: 0.006, f: () => HOLD_SAMPLE().Wg },
+            { g: 'Holding', n: 'Template Wi1 = Wi3', ref: 'Table I-4-3-App C-4, line 25', exp: 2.96, tol: 0.006, f: () => HOLD_SAMPLE().Wi1 },
+            { g: 'Holding', n: 'Template Wi2 = Wi4', ref: 'Table I-4-3-App C-4, line 26', exp: 3.22, tol: 0.006, f: () => HOLD_SAMPLE().Wi2 },
+            { g: 'Holding', n: 'Template Wn4 (Doc rounds E45)', ref: 'Table I-4-3-App C-4, line 31', exp: 4.94, tol: 0.012, f: () => HOLD_SAMPLE().Wn4 },
+            { g: 'Holding', n: 'Entry allowance XE', ref: 'Table I-4-3-App C-4, line 32', exp: 13.27, tol: 0.015, f: () => HOLD_SAMPLE().XE },
+            { g: 'Holding', n: 'Entry allowance YE', ref: 'Table I-4-3-App C-4, line 33', exp: 6.93, tol: 0.012, f: () => HOLD_SAMPLE().YE },
+            { g: 'Holding', n: 'Entry: inbound 360°, right, heading 150° → sector', ref: 'II-4-1 Fig. II-4-1-2', exp: 2, tol: 0, f: () => PANS.holdingEntry(360, 150, false).sector },
+            { g: 'Holding', n: 'Offset entry track (30° from reciprocal, holding side)', ref: 'II-4-1 §1.2.1.3', exp: 150, tol: 0, f: () => PANS.holdingEntry(360, 150, false).offsetTrack },
             { g: 'Missed app.', n: 'ha ↔ hma round trip (hma 100, x −1500, xz 900, Z 2.5 %, θ 3°)', ref: 'II-1-1 §1.4.8.8.2.1', exp: 100, tol: 1e-9, f: () => PANS.equivHma(PANS.equivHa(100, -1500, 900, 2.5, 3), -1500, 900, 2.5, 3) },
             { g: 'Cold temp', n: '−10 °C, 1 000 ft above SL source (rounded up 10 ft)', ref: 'Vol III Table 2-4-1 b)', exp: 100, tol: 0, f: () => Math.ceil(PANS.coldTempCorr(1000, -10, 0) / 10) * 10 },
             { g: 'Cold temp', n: '−30 °C, 2 000 ft', ref: 'Vol III Table 2-4-1 b)', exp: 380, tol: 0, f: () => Math.ceil(PANS.coldTempCorr(2000, -30, 0) / 10) * 10 },
@@ -5126,6 +5366,7 @@
             if (typeof drawTurnViz === 'function') drawTurnViz();
             if (typeof redrawGradients === 'function') redrawGradients();
             if (typeof calcVnavPapi === 'function') calcVnavPapi();
+            if (typeof calcHoldArea === 'function') calcHoldArea();
         }
 
         function exportViz(btn) {
@@ -5316,7 +5557,7 @@
             if (lim) document.getElementById('btp-ob-unit').textContent = lim.checked ? 'min' : 'DME';
             run('toggleVnpIls');
             ['calcTAS', 'calcTempCorr', 'calcTurn', 'calcPT', 'calcBaseTurn', 'calcBaseTurnPhi', 'drawTurnViz', 'calcHoldB',
-                'calcPBN', 'calcTolerance', 'calcVEB', 'calcDescent', 'calcEqObs', 'calcReaction', 'calcVnavPapi'].forEach((f) => run(f));
+                'calcPBN', 'calcTolerance', 'calcVEB', 'calcDescent', 'calcEqObs', 'calcReaction', 'calcVnavPapi', 'calcHoldArea'].forEach((f) => run(f));
             gradLegIds().forEach((id) => run('calculateGradient', id));
         }
 
@@ -5528,6 +5769,183 @@
             }
         });
 
+        // =========================================================
+        // 05-A HOLDING TEMPLATE & AREA (II-4-1, I-4-3-App C §3.3)
+        // =========================================================
+        // Convex hull (Andrew monotone chain)
+        function convexHull(pts) {
+            const p = pts.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+            const cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+            const lo = [], up = [];
+            for (const q of p) { while (lo.length >= 2 && cross(lo[lo.length - 2], lo[lo.length - 1], q) <= 0) lo.pop(); lo.push(q); }
+            for (let i = p.length - 1; i >= 0; i--) { const q = p[i]; while (up.length >= 2 && cross(up[up.length - 2], up[up.length - 1], q) <= 0) up.pop(); up.push(q); }
+            up.pop(); lo.pop();
+            return lo.concat(up);
+        }
+
+        // Hull of circles [[x, y, radius], ...] (optionally translated by offsets, radius + extra)
+        function circlesHull(circles, offsets, extra) {
+            const pts = [];
+            (offsets || [[0, 0]]).forEach(([ox, oy]) => circles.forEach(([x, y, w]) => {
+                const rr = w + (extra || 0);
+                if (rr <= 0) { pts.push([x + ox, y + oy]); return; }
+                for (let k = 0; k < 72; k++) { const a = k * Math.PI / 36; pts.push([x + ox + rr * Math.cos(a), y + oy + rr * Math.sin(a)]); }
+            }));
+            return convexHull(pts);
+        }
+
+        // Template points in the local frame (fix at origin, inbound direction +y, holding side +x for right turns)
+        function holdingTemplateGeometry(tp) {
+            const D = Math.PI / 180, r = tp.r;
+            const onTurn = (start, hdg, phi) => {           // right turn from start point at heading hdg, after phi degrees
+                const cx = start[0] + r * Math.sin((hdg + 90) * D), cy = start[1] + r * Math.cos((hdg + 90) * D);
+                return [cx - r * Math.sin((hdg + phi + 90) * D), cy - r * Math.cos((hdg + phi + 90) * D)];
+            };
+            const a = [0, 0], b = [0, tp.ab], c = [0, tp.ac];
+            const d = onTurn(c, 0, 45), e = onTurn(c, 0, 90), f = onTurn(c, 0, 135), g = onTurn(c, 0, 180);
+            const h = onTurn(b, 0, 180), o = onTurn(b, 0, 225), p = onTurn(b, 0, 270);
+            const leg = (dist, hdg) => [g[0] + dist * Math.sin(hdg * D), g[1] + dist * Math.cos(hdg * D)];
+            const i1 = leg(tp.gi1, 185), i2 = leg(tp.gi2, 185), i3 = leg(tp.gi1, 175), i4 = leg(tp.gi2, 175);
+            const j = onTurn(i2, 180, 45), k = onTurn(i2, 180, 90);
+            const l = onTurn(i4, 180, 90), m = onTurn(i4, 180, 135), n4 = onTurn(i4, 180, 180), n3 = onTurn(i3, 180, 180);
+            const circles = [
+                [...a, 0], [...c, tp.Wc], [...d, tp.Wd], [...e, tp.We], [...f, tp.Wf], [...g, tp.Wg],
+                [...i1, tp.Wi1], [...i2, tp.Wi2], [...i3, tp.Wi1], [...i4, tp.Wi2],
+                [...j, tp.Wj], [...k, tp.Wk], [...l, tp.Wl], [...m, tp.Wm], [...n3, tp.Wn3], [...n4, tp.Wn4]
+            ];
+            return { pts: { a, b, c, d, e, f, g, h, o, p, i1, i2, i3, i4, j, k, l, m, n3, n4 }, circles };
+        }
+
+        // Fix tolerance area corners (local frame); approximation of I-2-2 §2.5 construction
+        function holdingFixArea(type, hFt, att, xtt) {
+            if (type === 'vor' || type === 'ndb') {
+                const z = PANS.coneRadius(Math.max(0, hFt), type === 'vor' ? 50 : 40);
+                const q = z * Math.sin((type === 'vor' ? 5 : 15) * Math.PI / 180);
+                const s = q + 2 * z * Math.tan(5 * Math.PI / 180);
+                return { z, corners: [[-q, -z], [q, -z], [s, z], [-s, z]] };
+            }
+            if (type === 'custom' && att >= 0 && xtt >= 0) return { z: att, corners: [[-xtt, -att], [xtt, -att], [xtt, att], [-xtt, att]] };
+            return { z: 0, corners: [[0, 0]] };
+        }
+
+        function calcHoldArea() {
+            const g = (id) => parseFloat(document.getElementById(id).value);
+            const set = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+            const alt = g('hold-alt');
+            if (isNaN(alt)) return;
+            const turb = document.getElementById('hold-cond').value === 'turb';
+            const catAB = document.getElementById('hold-cond').value === 'ab';
+            const preset = PANS.holdingIas(alt, turb, catAB);
+            const iasIn = g('hold-ias');
+            const ias = isNaN(iasIn) ? preset.ias : iasIn;
+            document.getElementById('hold-ias').placeholder = isNaN(preset.ias) ? 'enter IAS' : 'Auto ' + preset.ias;
+            set('hold-ias-note', 'Table II-4-1-2: ' + (isNaN(preset.ias) ? '' : preset.ias + ' kt') + (preset.note ? ' · ' + preset.note : ''));
+            const T = isNaN(g('hold-time')) ? PANS.holdingTime(alt) : g('hold-time');
+            document.getElementById('hold-time').placeholder = 'Auto ' + PANS.holdingTime(alt);
+            const isa = isNaN(g('hold-isa')) ? 15 : g('hold-isa');
+            const wind = isNaN(g('hold-wind')) ? PANS.wind(alt) : g('hold-wind');
+            const left = document.getElementById('hold-dir').value === 'left';
+            const inbound = isNaN(g('hold-crs')) ? 360 : g('hold-crs');
+            if (isNaN(ias)) return;
+
+            const V = PANS.tas(ias, alt, isa);
+            const tp = PANS.holdingTemplate(V, wind, T);
+            const f2 = (n) => n.toFixed(2);
+            set('hold-res-tas', Math.round(V) + ' kt · R ' + tp.R.toFixed(2) + '°/s · r ' + f2(tp.r) + ' NM');
+            set('hold-res-wind', Math.round(wind) + ' kt · E45 ' + tp.E45.toFixed(3) + ' NM');
+            set('hold-res-leg', f2(tp.L) + ' NM (' + T + ' min)');
+            set('hold-res-xe', f2(tp.XE) + ' / ' + f2(tp.YE) + ' NM');
+
+            // geometry
+            const geo = holdingTemplateGeometry(tp);
+            const fixType = document.getElementById('hold-fix').value;
+            const facElev = g('hold-fac-elev') || 0;
+            const fa = holdingFixArea(fixType, alt - facElev, g('hold-att'), g('hold-xtt'));
+            document.getElementById('hold-custom-grp').style.display = fixType === 'custom' ? 'flex' : 'none';
+            const basic = circlesHull(geo.circles, fa.corners, 0);
+            const buffer = circlesHull(geo.circles, fa.corners, 5);
+            const ys = basic.map((p) => p[1]), xs = basic.map((p) => p[0]);
+            const len = Math.max(...ys) - Math.min(...ys), wid = Math.max(...xs) - Math.min(...xs);
+            set('hold-res-area', f2(len) + ' × ' + f2(wid) + ' NM');
+            set('hold-res-fix', fa.z ? '± ' + f2(fa.z) + ' NM' : 'not applied');
+
+            // entry sector for a given heading
+            const hdg = g('hold-hdg');
+            if (!isNaN(hdg)) {
+                const en = PANS.holdingEntry(inbound, hdg, left);
+                set('hold-res-entry', en.name + (en.sector === 2 ? ' · track ' + String(Math.round(en.offsetTrack)).padStart(3, '0') + '°' : '') + (en.near ? ' (±5° zone)' : ''));
+            } else set('hold-res-entry', 'enter heading');
+
+            // minimum holding level
+            const oA = g('hold-obs'), oB = g('hold-obs-buf'), dB = g('hold-obs-dist');
+            const cand = [];
+            if (!isNaN(oA)) cand.push(oA + 984);
+            if (!isNaN(oB) && !isNaN(dB)) cand.push(oB + PANS.bufferMoc(dB));
+            set('hold-res-mhl', cand.length ? Math.ceil(Math.max(...cand) / 100) * 100 + ' ft (' + Math.round(Math.max(...cand)).toLocaleString() + ' ft)' : '---');
+            set('hold-res-bufmoc', !isNaN(dB) ? PANS.bufferMoc(dB) + ' ft at ' + dB + ' NM' : '---');
+
+            // template line table
+            const L = [['1 K', (V / ias).toFixed(4)], ['2 V', V.toFixed(2) + ' kt'], ['3 v', tp.v.toFixed(5) + ' NM/s'], ['4 R', tp.R.toFixed(2) + ' °/s'], ['5 r', f2(tp.r)],
+                ['6 h', (alt / 1000).toFixed(2)], ['7 w', wind.toFixed(1) + ' kt'], ["8 w'", tp.wp.toFixed(4) + ' NM/s'], ['9 E45', tp.E45.toFixed(3)], ['10 t', tp.t + ' s'],
+                ['11 L', f2(tp.L)], ['12 ab', f2(tp.ab)], ['13 ac', f2(tp.ac)], ['14 gi1=gi3', f2(tp.gi1)], ['15 gi2=gi4', f2(tp.gi2)], ['16 Wb', f2(tp.Wb)], ['17 Wc', f2(tp.Wc)],
+                ['18 Wd', f2(tp.Wd)], ['19 We', f2(tp.We)], ['20 Wf', f2(tp.Wf)], ['21 Wg', f2(tp.Wg)], ['22 Wh', f2(tp.Wh)], ['23 Wo', f2(tp.Wo)], ['24 Wp', f2(tp.Wp)],
+                ['25 Wi1=Wi3', f2(tp.Wi1)], ['26 Wi2=Wi4', f2(tp.Wi2)], ['27 Wj', f2(tp.Wj)], ['28 Wk=Wl', f2(tp.Wk)], ['29 Wm', f2(tp.Wm)], ['30 Wn3', f2(tp.Wn3)], ['31 Wn4', f2(tp.Wn4)],
+                ['32 XE', f2(tp.XE)], ['33 YE', f2(tp.YE)]];
+            document.getElementById('hold-lines').innerHTML = L.map(([k, v]) => '<tr><td>' + k + '</td><td class="num">' + v + '</td></tr>').join('');
+
+            drawHoldViz({ tp, geo, fa, basic, buffer, inbound, left, T, V, wind });
+        }
+
+        function drawHoldViz(o) {
+            const canvas = document.getElementById('holdVizCanvas');
+            if (!canvas) return;
+            const { ctx, w, h } = setupCanvas(canvas, 0.9, 620, 320);
+            const C = bpColors();
+            const sx = o.left ? -1 : 1;
+            const th = o.inbound * DEG;
+            // local (x: holding side, y: inbound direction) -> world (east, north)
+            const W = ([x, y]) => { const X = x * sx; return [y * Math.sin(th) + X * Math.cos(th), y * Math.cos(th) - X * Math.sin(th)]; };
+            const poly = (pts) => pts.map(W);
+            const B = boundsOf(poly(o.buffer), 0.04);
+            const V = vizView(B, w, h, { t: 40, b: 44, l: 20, r: 20 });
+            const path = (pts, close) => { cvPath(ctx, V, pts); if (close) ctx.closePath(); };
+
+            // buffer
+            ctx.save(); path(poly(o.buffer), true);
+            ctx.setLineDash([6, 5]); ctx.strokeStyle = C.muted; ctx.lineWidth = 1; ctx.stroke(); ctx.restore();
+            // basic area
+            ctx.save(); path(poly(o.basic), true);
+            ctx.fillStyle = C.fill; ctx.fill(); ctx.strokeStyle = C.warning; ctx.lineWidth = 1.6; ctx.stroke(); ctx.restore();
+            // template (at the fix)
+            const tpl = circlesHull(o.geo.circles, [[0, 0]], 0);
+            ctx.save(); path(poly(tpl), true); ctx.setLineDash([3, 3]); ctx.strokeStyle = C.cyan; ctx.lineWidth = 1; ctx.stroke(); ctx.restore();
+            // fix tolerance area
+            if (o.fa.corners.length > 1) {
+                ctx.save(); path(poly(o.fa.corners), true); ctx.strokeStyle = C.ink; ctx.lineWidth = 1; ctx.stroke(); ctx.restore();
+            }
+            // entry sector lines (70° line and inbound track line) — local bearings 110/290 and 0/180
+            const Lsec = Math.max(B.maxX - B.minX, B.maxY - B.minY);
+            const ray = (brgLocal) => W([Math.sin(brgLocal * DEG) * Lsec, Math.cos(brgLocal * DEG) * Lsec]);
+            ctx.save(); ctx.setLineDash([2, 5]); ctx.strokeStyle = C.violet; ctx.lineWidth = 1;
+            [[110, 290], [0, 180]].forEach(([a1, a2]) => { cvPath(ctx, V, [ray(a1), [0, 0], ray(a2)]); ctx.stroke(); });
+            ctx.restore();
+            const secLbl = (brg, txt) => { const p = W([Math.sin(brg * DEG) * Lsec * 0.18, Math.cos(brg * DEG) * Lsec * 0.18]); cvLabel(ctx, C, txt, V.X(p[0]), V.Y(p[1]), { size: 10, bold: true, color: C.violet }); };
+            secLbl(55, 'S1'); secLbl(325, 'S2'); secLbl(200, 'S3');
+
+            // nominal pattern
+            const T = makeTurtle(0, 0, 0).turn(180, o.tp.r, true).fwd(o.tp.L).turn(180, o.tp.r, true).fwd(o.tp.L);
+            const nom = poly(T.pts);
+            cvStroke(ctx, C, V, nom, C.primary, 2.4);
+            cvArrowsAlong(ctx, V, nom, [0.2, 0.5, 0.75, 0.97], C.primary, 11);
+            // inbound lead-in
+            cvStroke(ctx, C, V, [W([0, -o.tp.L * 1.6]), [0, 0]], C.primary, 1.2, [6, 4]);
+
+            cvFix(ctx, C, V.X(0), V.Y(0), 'FIX');
+            cvLabel(ctx, C, '▭ basic area', 10, 34, { align: 'left', size: 9, box: false, color: C.warning });
+            cvLabel(ctx, C, '┄ template · ┄ 5 NM buffer · S1–S3 entry sectors', 10, 48, { align: 'left', size: 9, box: false, color: C.muted });
+            cvFooter(ctx, C, V, w, h, String(Math.round(o.inbound)).padStart(3, '0') + '° inbound · ' + (o.left ? 'left' : 'right') + ' turns · TAS ' + Math.round(o.V) + ' kt · w ' + Math.round(o.wind) + ' kt');
+        }
+
         // Setup init drawing event hook
         document.addEventListener("DOMContentLoaded", () => {
             const oldSwitch = window.switchTab;
@@ -5537,6 +5955,7 @@
                 if (id === 'tab-gradient') redrawGradients();
                 if (id === 'tab-turn') { calcPT(); calcBaseTurn(); }
                 if (id === 'tab-vnav-papi') calcVnavPapi();
+                if (id === 'tab-holdb') calcHoldArea();
             }
 
             renderSelfTest();
@@ -5566,6 +5985,7 @@
             if (typeof drawTurnViz === 'function') drawTurnViz();
             if (typeof calcVnavPapi === 'function') calcVnavPapi();
             if (typeof calcBaseTurnPhi === 'function') calcBaseTurnPhi();
+            if (typeof calcHoldArea === 'function') calcHoldArea();
             redrawGradients();
         }
 
