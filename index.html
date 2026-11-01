@@ -1116,6 +1116,8 @@
         .msd-table input, .msd-table select { height: 30px; font-size: 0.78rem; min-width: 70px; }
         .msd-table tr.short td { background: rgba(255, 122, 133, 0.08); }
         .msd-table td.num { font-family: var(--font-mono); white-space: nowrap; }
+        .dep-table tr.pdg td { background: rgba(255, 122, 133, 0.08); }
+        .dep-table tr.close-in td { background: rgba(255, 196, 87, 0.08); }
         .pt-presets { display: flex; flex-wrap: wrap; gap: 6px; }
         .pt-legs { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
         .pt-leg {
@@ -1252,7 +1254,7 @@
             </div>
             <div class="nav-group">
                 <div class="nav-group-title">Approach &amp; Vertical</div>
-                <div class="nav-item" data-tab="tab-desc" onclick="switchTab('tab-desc', this)"><span class="nav-num">07</span>Descent &amp; Missed App</div>
+                <div class="nav-item" data-tab="tab-desc" onclick="switchTab('tab-desc', this)"><span class="nav-num">07</span>Departure &amp; Missed App</div>
                 <div class="nav-item" data-tab="tab-vnav-papi" onclick="switchTab('tab-vnav-papi', this)"><span class="nav-num">08</span>VNAV vs PAPI</div>
             </div>
             <div class="nav-group">
@@ -2788,8 +2790,8 @@
             <header class="page-header">
                 <div class="ph-main">
                     <div class="ph-crumb">Approach &amp; Vertical / Sheet 07</div>
-                    <h1 class="page-title">Descent &amp; Missed Approach</h1>
-                    <p class="page-subtitle">Rate of descent, equivalent obstacle height and dynamic reaction distance</p>
+                    <h1 class="page-title">Departure &amp; Missed Approach</h1>
+                    <p class="page-subtitle">Rate of descent, equivalent obstacle height, reaction distance and departure climb gradient</p>
                 </div>
                 <dl class="ph-block">
                     <div><dt>Sheet</dt><dd>07 / 09</dd></div>
@@ -2944,6 +2946,72 @@
                                     <span id="react-res-total" class="stat-value c-cyan" style="font-size: 1.3rem;">--- NM</span>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card span-all" id="card-dep">
+                    <div class="card-header minimizable" onclick="toggleCard(this)">
+                        <div class="card-heading"><span class="card-tag">07-D</span>
+                            <div class="card-title">Departure Climb Gradient (PDG)</div>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-reset"
+                                onclick="event.stopPropagation(); resetCard('card-dep', ['dep-der', 'dep-cat', 'dep-gs', 'dep-json'], 'calcDeparture');">↺ Reset</button>
+                        </div>
+                    </div>
+                    <div class="card-desc">Obstacles against the departure OIS: required PDG, where it ends, and close-in obstacles to publish.</div>
+                    <div class="card-body">
+                        <div class="vp-row">
+                            <div class="vp-input-group">
+                                <label>DER Elevation (ft)</label>
+                                <input type="number" id="dep-der" placeholder="e.g. 10" oninput="calcDeparture()">
+                            </div>
+                            <div class="vp-input-group">
+                                <label>Category</label>
+                                <select id="dep-cat" onchange="calcDeparture()">
+                                    <option value="AE">Aeroplane (OIS 2.5 %)</option>
+                                    <option value="H">Helicopter (OIS 4.2 %)</option>
+                                </select>
+                            </div>
+                            <div class="vp-input-group">
+                                <label>Ground Speed (kt)</label>
+                                <input type="number" id="dep-gs" placeholder="e.g. 150" oninput="calcDeparture()">
+                            </div>
+                        </div>
+                        <input type="hidden" id="dep-json" value="">
+
+                        <div class="table-wrap" style="margin-top: 12px;">
+                            <table class="qa-table msd-table dep-table">
+                                <thead><tr><th>Obstacle</th><th>Dist DER (NM)</th><th>Elev (ft)</th><th>Ht above DER</th><th>OIS ht</th><th>Penetration</th><th>Check</th><th></th></tr></thead>
+                                <tbody id="dep-rows"></tbody>
+                            </table>
+                        </div>
+                        <button class="btn btn-add" style="margin-top: 8px;" onclick="depAdd()">＋ Add Obstacle</button>
+
+                        <div class="results-panel" style="margin-top: 12px;">
+                            <div class="result-row key"><span class="result-label">Published PDG</span><span id="dep-res-pdg" class="result-value c-cyan">---</span></div>
+                            <div class="result-row"><span class="result-label">Increased PDG up to</span><span id="dep-res-to" class="result-value">---</span></div>
+                            <div class="result-row"><span class="result-label">Gradient</span><span id="dep-res-ftnm" class="result-value">---</span></div>
+                            <div class="result-row"><span class="result-label">Rate of climb</span><span id="dep-res-roc" class="result-value">---</span></div>
+                            <div class="result-row"><span class="result-label">Earliest turn height</span><span id="dep-res-turn" class="result-value">---</span></div>
+                            <div class="result-row"><span class="result-label">Standard PDG</span><span id="dep-res-std" class="result-value">---</span></div>
+                            <div class="result-row"><span class="result-label">ROC table</span><span id="dep-res-table" class="result-value">---</span></div>
+                        </div>
+
+                        <div id="dep-note" class="note" style="margin-top: 12px;">—</div>
+
+                        <div class="viz" style="margin-top: 12px;">
+                            <span class="viz-label">Departure profile</span>
+                            <button class="viz-dl" onclick="exportViz(this)" data-name="departure-pdg" title="Download high-resolution PNG">⤓ PNG</button>
+                            <canvas id="depVizCanvas" width="600" height="300"></canvas>
+                        </div>
+                        <div class="note" style="margin-top: 12px;">
+                            <div class="note-title">Reference</div>
+                            Doc 8168 Vol II I-3-2 §2.2.4–2.2.8, §2.7: PDG and OIS from 5 m (16 ft) above DER; OIS 2.5 % (Cat H 4.2 %), MOC 0.8 % of distance from DER, standard PDG 3.3 % (Cat H 5.0 %).
+                            Required PDG = (h − 16 ft)/d + 0.8 %; it reduces to standard past the critical obstacle where 0.8 % clearance is kept (§2.7.4).
+                            Gradients needed only to 60 m (200 ft) or less are not promulgated; publish the close-in obstacles (§2.7.5, I-3-5).
+                            Turn not before 120 m (394 ft) (Cat H 90 m) above DER (§2.2.4).
                         </div>
                     </div>
                 </div>
@@ -3223,6 +3291,7 @@
                                 <li><b>Confirmed:</b> TAS (I-2-1-App), r = V/(20πR), ICAO wind 2h+47, wind spiral E, φ = 36/t or 0.215·TAS/t, DME tolerance, turn anticipation, ROD.</li>
                                 <li><b>01-B Cold temperature</b> and <b>08 true altitude:</b> confirmed against Doc 8168 Vol III 2-4 §4.3.3 and Table 2-4-1 b); both now share one function.</li>
                                 <li><b>05-A Holding</b> (new): Table II-4-1-2 speeds, ISA+15, ICAO wind, template Table I-4-3-App C-4 (all 33 lines), entry sectors, buffer MOC.</li>
+                                <li><b>07-D Departure PDG</b> (new): OIS 2.5 %/4.2 % from 16 ft above DER, MOC 0.8 %, PDG end point and close-in rule (I-3-2 §2.7).</li>
                                 <li><b>09-D MSD</b> (new): fly-by / fly-over minimum stabilization distance (III-2-1 §1.4), leg checks §1.2.5 and Table III-2-1-21.</li>
                                 <li><b>09 Path terminators</b> (new): Tables III-2-5-App-1/App-2 and coding rules a–e, RNP subset.</li>
                                 <li><b>06-D Intersection fix</b> (new): Table I-2-2-1 accuracies, VOR/NDB/LOC radial or DME intersections, along-track tolerance, §2.6 acceptance.</li>
@@ -3672,6 +3741,33 @@
                 if ((!turning(wp1) || !turning(wp2)) && dMin > req) { req = dMin; dApplied = true; }
                 return { a, b, req, dApplied };
             },
+            // ---------- Departures (Part I, Section 3, Chapter 2) ----------
+            // OIS 2.5 % (Cat H 4.2 %) from 5 m (16 ft) above DER; MOC 0.8 % of distance; standard PDG 3.3 % (Cat H 5.0 %)
+            depStd(catH) { return catH ? { ois: 0.042, pdg: 0.050 } : { ois: 0.025, pdg: 0.033 }; },
+            DEP_ORIGIN_FT: 16,
+            DEP_MOC: 0.008,
+            // Required PDG for one obstacle: clearance of 0.8 % of its distance above it (§2.7.2). d in ft, h = height above DER (ft)
+            depPdgFor(dFt, hFt) { return (hFt - PANS.DEP_ORIGIN_FT) / dFt + PANS.DEP_MOC; },
+            // Analyse an obstacle list: [{ n, d (NM), h (ft above DER) }]
+            depAnalyse(obs, catH) {
+                const S = PANS.depStd(catH), O = PANS.DEP_ORIGIN_FT;
+                const rows = obs.map((o) => {
+                    const dFt = o.d * 6076.12, oisH = O + S.ois * dFt, pen = o.h - oisH;
+                    if (!(dFt > 0) || isNaN(o.h)) return Object.assign({}, o, { dFt, oisH, pen: NaN, P: NaN, endH: NaN, cls: 'invalid' });
+                    if (pen <= 0) return Object.assign({}, o, { dFt, oisH, pen, P: S.pdg, endH: NaN, cls: 'clear' });
+                    const P = Math.max(S.pdg, PANS.depPdgFor(dFt, o.h));
+                    const endH = O + P * dFt;                                   // height where this obstacle alone lets the PDG return to standard
+                    return Object.assign({}, o, { dFt, oisH, pen, P, endH, cls: endH <= 200 ? 'close-in' : 'pdg' });  // §2.7.5: ≤ 60 m (200 ft) not promulgated
+                });
+                const governing = rows.filter((r) => r.cls === 'pdg');
+                const P = Math.max(S.pdg, ...governing.map((r) => r.P));
+                // §2.7.4 / II-3 §5.2 e): increased PDG ends where a standard gradient clears every governing obstacle with 0.8 % MOC
+                let endX = 0;
+                if (P > S.pdg + 1e-12) governing.forEach((r) => { endX = Math.max(endX, (r.h - O - S.ois * r.dFt) / (P - S.pdg)); });
+                return { rows, P, std: S, endX, endH: P > S.pdg + 1e-12 ? O + P * endX : NaN, closeIn: rows.filter((r) => r.cls === 'close-in') };
+            },
+            // climb rate (ft/min) for a gradient at a ground speed (kt)
+            rocFor(grad, gs) { return grad * gs * 101.2685; },
             // ROD (ft/min) = GS (kt) × 6076.12/60 × gradient
             rod(gs, gradPct) { return gs * 101.2685 * gradPct / 100; },
 
@@ -3791,6 +3887,14 @@
             { g: 'MSD', n: 'Two fly-by WPs: A1 + A2', ref: 'III-2-1 §1.2.5.1', exp: 2 * PANS_MSD_A, tol: 1e-9, f: () => PANS.msdLeg({ ty: 'flyby', cc: 90 }, { ty: 'flyby', cc: 90 }, 200, 15, false, 3).req },
             { g: 'MSD', n: 'Fly-by then fly-over: A1 + 0', ref: 'III-2-1 §1.2.5.2', exp: PANS_MSD_A, tol: 1e-9, f: () => PANS.msdLeg({ ty: 'flyby', cc: 90 }, { ty: 'flyover', cc: 90 }, 200, 15, false, 0).req },
             { g: 'MSD', n: 'Segment ending at a non-turning WP: at least D (1.5 NM final)', ref: 'Table III-2-1-21', exp: 1.5, tol: 1e-9, f: () => PANS.msdLeg({ ty: 'none', cc: 0 }, { ty: 'flyby', cc: 0 }, 140, 25, false, 1.5).req },
+            { g: 'Departure', n: 'Standard PDG = OIS 2.5 % + 0.8 %', ref: 'I-3-2 §2.2.6–2.2.7', exp: 0.033, tol: 1e-9, f: () => PANS.depStd(false).pdg },
+            { g: 'Departure', n: 'Standard PDG Cat H = 4.2 % + 0.8 %', ref: 'I-3-2 §2.2.6–2.2.7', exp: 0.050, tol: 1e-9, f: () => PANS.depStd(true).pdg },
+            { g: 'Departure', n: 'Distance to 120 m (394 ft) at 3.3 % ≈ 1.9 NM', ref: 'I-3-3 §3.2', exp: 1.9, tol: 0.05, f: () => (394 - PANS.DEP_ORIGIN_FT) / 0.033 / 6076.12 },
+            { g: 'Departure', n: 'Obstacle 2.0 NM, 500 ft → PDG = (h − 16)/d + 0.8 %', ref: 'I-3-2 §2.7.2', exp: 0.047828, tol: 1e-5, f: () => PANS.depAnalyse([{ n: 'A', d: 2, h: 500 }], false).P },
+            { g: 'Departure', n: 'Obstacle 2.0 NM, 500 ft → PDG ends ≈ 597 ft above DER', ref: 'I-3-2 §2.7.4', exp: 597.2, tol: 0.5, f: () => PANS.depAnalyse([{ n: 'A', d: 2, h: 500 }], false).endH },
+            { g: 'Departure', n: 'Close-in 0.3 NM, 80 ft: PDG not promulgated (stays 3.3 %)', ref: 'I-3-2 §2.7.5', exp: 0.033, tol: 1e-9, f: () => PANS.depAnalyse([{ n: 'C', d: 0.3, h: 80 }], false).P },
+            { g: 'Departure', n: 'Close-in 0.3 NM, 80 ft classed close-in', ref: 'I-3-2 §2.7.5', exp: 1, tol: 0, f: () => +(PANS.depAnalyse([{ n: 'C', d: 0.3, h: 80 }], false).rows[0].cls === 'close-in') },
+            { g: 'Departure', n: 'Climb rate 3.3 % at 150 kt GS', ref: 'ROC = GS × 101.27 × grad', exp: 501.3, tol: 0.5, f: () => PANS.rocFor(0.033, 150) },
             { g: 'Missed app.', n: 'ha ↔ hma round trip (hma 100, x −1500, xz 900, Z 2.5 %, θ 3°)', ref: 'II-1-1 §1.4.8.8.2.1', exp: 100, tol: 1e-9, f: () => PANS.equivHma(PANS.equivHa(100, -1500, 900, 2.5, 3), -1500, 900, 2.5, 3) },
             { g: 'Cold temp', n: '−10 °C, 1 000 ft above SL source (rounded up 10 ft)', ref: 'Vol III Table 2-4-1 b)', exp: 100, tol: 0, f: () => Math.ceil(PANS.coldTempCorr(1000, -10, 0) / 10) * 10 },
             { g: 'Cold temp', n: '−30 °C, 2 000 ft', ref: 'Vol III Table 2-4-1 b)', exp: 380, tol: 0, f: () => Math.ceil(PANS.coldTempCorr(2000, -30, 0) / 10) * 10 },
@@ -5905,6 +6009,7 @@
             if (typeof calcVnavPapi === 'function') calcVnavPapi();
             if (typeof calcHoldArea === 'function') calcHoldArea();
             if (typeof calcIfix === 'function') calcIfix();
+            if (typeof calcDeparture === 'function') calcDeparture();
         }
 
         function exportViz(btn) {
@@ -6095,7 +6200,7 @@
             if (lim) document.getElementById('btp-ob-unit').textContent = lim.checked ? 'min' : 'DME';
             run('toggleVnpIls');
             ['calcTAS', 'calcTempCorr', 'calcTurn', 'calcPT', 'calcBaseTurn', 'calcBaseTurnPhi', 'drawTurnViz', 'calcHoldB',
-                'calcPBN', 'calcTolerance', 'calcVEB', 'calcDescent', 'calcEqObs', 'calcReaction', 'calcVnavPapi', 'calcHoldArea', 'calcIfix', 'calcPathTerm', 'calcMsd'].forEach((f) => run(f));
+                'calcPBN', 'calcTolerance', 'calcVEB', 'calcDescent', 'calcEqObs', 'calcReaction', 'calcVnavPapi', 'calcHoldArea', 'calcIfix', 'calcPathTerm', 'calcMsd', 'calcDeparture'].forEach((f) => run(f));
             gradLegIds().forEach((id) => run('calculateGradient', id));
         }
 
@@ -6909,6 +7014,7 @@
             const card = btn.closest('.card');
             if (!card) return;
             card.querySelectorAll('.card-body input[type="number"], .card-body input[type="text"]').forEach((el) => { el.value = ''; });
+            if (card.id === 'card-dep' && DEP_ROWS) { DEP_ROWS.forEach((r) => { r.d = ''; r.e = ''; }); depSave(); }
             scheduleSave();
         }
 
@@ -6950,7 +7056,6 @@
         ];
 
         function msdLoad() {
-            if (MSD_ROWS) return;
             try { MSD_ROWS = JSON.parse(document.getElementById('msd-json').value || 'null'); } catch (e) { MSD_ROWS = null; }
             if (!Array.isArray(MSD_ROWS)) MSD_ROWS = MSD_DEFAULT.map((r) => Object.assign({}, r));
         }
@@ -7096,6 +7201,152 @@
             cvFooter(ctx, C, V2, w, h, isNaN(V) ? 'nominal route' : 'TAS ' + Math.round(V) + ' kt · ' + bank + '° bank' + (catH ? ' · Cat H' : ''));
         }
 
+        // =========================================================
+        // 07-D DEPARTURE CLIMB GRADIENT (I-3-2 §2.5–2.7, II-3 §5)
+        // =========================================================
+        let DEP_ROWS = null;
+        const DEP_DEFAULT = [
+            { n: 'Light pole', d: 0.3, e: '' },
+            { n: 'Mast', d: 2.0, e: '' },
+            { n: 'Ridge', d: 6.0, e: '' }
+        ];
+
+        function depLoad() {
+            try { DEP_ROWS = JSON.parse(document.getElementById('dep-json').value || 'null'); } catch (e) { DEP_ROWS = null; }
+            if (!Array.isArray(DEP_ROWS)) DEP_ROWS = DEP_DEFAULT.map((r) => Object.assign({}, r));
+        }
+
+        function depSave() {
+            const el = document.getElementById('dep-json');
+            el.value = JSON.stringify(DEP_ROWS);
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+
+        function depEdit(i, field, value) {
+            if (field === 'del') DEP_ROWS.splice(i, 1);
+            else DEP_ROWS[i][field] = field === 'n' ? value : (value === '' ? '' : parseFloat(value));
+            depSave();
+            calcDeparture();
+        }
+
+        function depAdd() {
+            DEP_ROWS.push({ n: 'Obstacle ' + (DEP_ROWS.length + 1), d: '', e: '' });
+            depSave();
+            calcDeparture();
+        }
+
+        function calcDeparture() {
+            if (!document.getElementById('dep-json')) return;
+            depLoad();
+            const g = (id) => parseFloat(document.getElementById(id).value);
+            const set = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+            const der = g('dep-der');
+            const catH = document.getElementById('dep-cat').value === 'H';
+            const gs = g('dep-gs');
+            const obs = DEP_ROWS.map((r, i) => ({ i, n: r.n, d: parseFloat(r.d), h: isNaN(der) ? NaN : parseFloat(r.e) - der, e: parseFloat(r.e) }));
+            const A = PANS.depAnalyse(obs.filter((o) => !isNaN(o.d) && !isNaN(o.h)), catH);
+            const S = A.std;
+            const pct = (x) => (x * 100).toFixed(1) + ' %';
+            const ft = (x) => Math.round(x).toLocaleString();
+
+            // obstacle table
+            const byIdx = new Map(A.rows.map((r) => [r.i, r]));
+            document.getElementById('dep-rows').innerHTML = DEP_ROWS.map((r, i) => {
+                const a = byIdx.get(i);
+                const cls = a ? a.cls : '';
+                const verdict = !a ? '—' : cls === 'clear' ? '✓ below OIS' : cls === 'close-in' ? '⚠ close-in · publish obstacle' : '✕ penetrates · PDG ' + pct(a.P);
+                return '<tr class="' + cls + '"><td><input type="text" value="' + escHtml(r.n) + '" onchange="depEdit(' + i + ', \'n\', this.value)"></td>' +
+                    '<td><input type="number" step="0.01" value="' + (r.d === '' ? '' : r.d) + '" placeholder="NM" onchange="depEdit(' + i + ', \'d\', this.value)"></td>' +
+                    '<td><input type="number" value="' + (r.e === '' ? '' : r.e) + '" placeholder="ft AMSL" onchange="depEdit(' + i + ', \'e\', this.value)"></td>' +
+                    '<td class="num">' + (a ? ft(a.h) : '—') + '</td>' +
+                    '<td class="num">' + (a ? ft(a.oisH) : '—') + '</td>' +
+                    '<td class="num">' + (a ? (a.pen > 0 ? '+' : '') + ft(a.pen) : '—') + '</td>' +
+                    '<td class="' + (cls === 'clear' ? 'c-success' : cls === 'close-in' ? 'c-warning' : cls === 'pdg' ? 'c-danger' : '') + '">' + verdict + '</td>' +
+                    '<td><button class="btn-mini danger" onclick="depEdit(' + i + ', \'del\')" title="Remove obstacle">✕</button></td></tr>';
+            }).join('');
+
+            // results
+            const raised = A.P > S.pdg + 1e-12;
+            set('dep-res-pdg', pct(A.P) + (raised ? ' (increased)' : ' (standard)'));
+            set('dep-res-to', raised ? ft(A.endH + (isNaN(der) ? 0 : der)) + ' ft AMSL (' + ft(A.endH) + ' ft above DER, ' + (A.endX / 6076.12).toFixed(2) + ' NM)' : '—');
+            set('dep-res-ftnm', ft(A.P * 6076.12) + ' ft/NM');
+            set('dep-res-roc', isNaN(gs) ? '—' : ft(PANS.rocFor(A.P, gs)) + ' ft/min at ' + gs + ' kt GS');
+            const turnH = catH ? 295 : 394;
+            set('dep-res-turn', (((turnH - PANS.DEP_ORIGIN_FT) / A.P) / 6076.12).toFixed(2) + ' NM to ' + turnH + ' ft (' + (catH ? 90 : 120) + ' m)');
+            set('dep-res-std', 'OIS ' + pct(S.ois) + ' + MOC 0.8 % = ' + pct(S.pdg));
+            const tbl = [100, 150, 200, 250, 300].map((v) => v + ' kt ' + ft(PANS.rocFor(A.P, v))).join(' · ');
+            set('dep-res-table', tbl + ' ft/min');
+
+            const notes = [];
+            if (raised) notes.push('PDG ' + pct(A.P) + ' up to ' + ft(A.endH + (isNaN(der) ? 0 : der)) + ' ft');
+            if (A.closeIn.length) notes.push('Close-in obstacles: ' + A.closeIn.map((r) => r.n + ' ' + ft(r.e) + ' ft, ' + r.d.toFixed(2) + ' NM from DER').join('; '));
+            const box = document.getElementById('dep-note');
+            box.className = 'note ' + (raised ? 'warn' : 'ok');
+            box.innerHTML = '<div class="note-title">Suggested chart notes</div>' + (notes.length ? notes.map(escHtml).join('<br>') : 'Standard 3.3 % PDG; no OIS penetrations.') +
+                (raised ? '<br><span class="c-muted">Consider an alternative VMC-only procedure with a lower PDG (II-3 §5.1 e).</span>' : '');
+
+            drawDepViz(A, der, catH);
+        }
+
+        function drawDepViz(A, der, catH) {
+            const canvas = document.getElementById('depVizCanvas');
+            if (!canvas) return;
+            const { ctx, w, h } = setupCanvas(canvas, 0.45, 380, 230);
+            const C = bpColors();
+            const S = A.std, O = PANS.DEP_ORIGIN_FT;
+            const maxD = Math.max(3, ...A.rows.map((r) => r.d * 1.15 || 0), A.endX / 6076.12 * 1.2 || 0);
+            const pdgEnd = maxD * 6076.12;
+            const pathH = (x) => (A.P > S.pdg && x <= A.endX) ? O + A.P * x : O + A.P * A.endX + S.pdg * (x - A.endX);
+            const maxH = Math.max(450, pathH(pdgEnd) * 1.05, ...A.rows.map((r) => r.h * 1.15 || 0));
+            const pad = { l: 58, r: 20, t: 30, b: 34 };
+            const X = (nm) => pad.l + (nm / maxD) * (w - pad.l - pad.r);
+            const Y = (hf) => h - pad.b - (hf / maxH) * (h - pad.t - pad.b);
+
+            // grid + axes
+            ctx.save(); ctx.strokeStyle = C.soft; ctx.lineWidth = 1;
+            const xs = maxD > 8 ? 2 : 1;
+            for (let n = 0; n <= maxD + 1e-9; n += xs) { ctx.beginPath(); ctx.moveTo(X(n), pad.t); ctx.lineTo(X(n), h - pad.b); ctx.stroke(); cvLabel(ctx, C, String(n), X(n), h - pad.b + 13, { size: 9, box: false, color: C.muted }); }
+            const ys = maxH > 3000 ? 1000 : maxH > 1200 ? 500 : 200;
+            for (let v = 0; v <= maxH; v += ys) { ctx.beginPath(); ctx.moveTo(pad.l, Y(v)); ctx.lineTo(w - pad.r, Y(v)); ctx.stroke(); cvLabel(ctx, C, String(v), pad.l - 6, Y(v), { size: 9, box: false, color: C.muted, align: 'right' }); }
+            ctx.restore();
+            // reference heights
+            [[200, '60 m / 200 ft · close-in limit'], [catH ? 295 : 394, (catH ? '90 m' : '120 m') + ' · min turn height']].forEach(([v, t]) => {
+                if (v > maxH) return;
+                ctx.save(); ctx.setLineDash([2, 4]); ctx.strokeStyle = C.muted; ctx.beginPath(); ctx.moveTo(pad.l, Y(v)); ctx.lineTo(w - pad.r, Y(v)); ctx.stroke(); ctx.restore();
+                cvLabel(ctx, C, t, w - pad.r - 4, Y(v) - 7, { size: 8.5, box: false, color: C.muted, align: 'right' });
+            });
+            // OIS and MOC band
+            ctx.save();
+            ctx.beginPath(); ctx.moveTo(X(0), Y(O)); ctx.lineTo(X(maxD), Y(O + S.ois * pdgEnd)); ctx.lineTo(X(maxD), Y(pathH(pdgEnd))); ctx.lineTo(X(0), Y(O)); ctx.closePath();
+            ctx.fillStyle = C.fill; ctx.fill();
+            ctx.setLineDash([6, 4]); ctx.strokeStyle = C.violet; ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.moveTo(X(0), Y(O)); ctx.lineTo(X(maxD), Y(O + S.ois * pdgEnd)); ctx.stroke();
+            ctx.setLineDash([3, 4]); ctx.strokeStyle = C.muted; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(X(0), Y(O)); ctx.lineTo(X(maxD), Y(O + S.pdg * pdgEnd)); ctx.stroke();
+            ctx.restore();
+            // flight path
+            const pts = [];
+            for (let i = 0; i <= 80; i++) { const x = pdgEnd * i / 80; pts.push([x, pathH(x)]); }
+            if (A.endX > 0) { pts.push([A.endX, pathH(A.endX)]); pts.sort((a, b) => a[0] - b[0]); }
+            const Vv = { X: (x) => X(x / 6076.12), Y: (y) => Y(y), k: 1 };
+            cvStroke(ctx, C, Vv, pts, A.P > S.pdg ? C.warning : C.success, 2.6);
+            if (A.endX > 0) {
+                cvDot(ctx, C, X(A.endX / 6076.12), Y(A.endH), C.warning, 4);
+                cvLabel(ctx, C, 'PDG ' + (A.P * 100).toFixed(1) + '% → ' + Math.round(A.endH + (isNaN(der) ? 0 : der)) + ' ft', X(A.endX / 6076.12), Y(A.endH) - 14, { size: 10, bold: true, color: C.warning, border: C.soft });
+            }
+            // obstacles
+            A.rows.forEach((r) => {
+                if (r.cls === 'invalid') return;
+                const col = r.cls === 'clear' ? C.success : r.cls === 'close-in' ? C.warning : C.danger;
+                const x = X(r.d), y = Y(r.h);
+                ctx.save(); ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + 5, Y(0)); ctx.lineTo(x - 5, Y(0)); ctx.closePath(); ctx.globalAlpha = 0.85; ctx.fill(); ctx.restore();
+                cvLabel(ctx, C, r.n, x, y - 9, { size: 9, color: col, box: false });
+            });
+            cvLabel(ctx, C, '- - OIS ' + (S.ois * 100).toFixed(1) + '%  · · ' + (S.pdg * 100).toFixed(1) + '% std  — flight path', pad.l + 4, pad.t - 14, { size: 9, align: 'left', box: false, color: C.muted });
+            cvLabel(ctx, C, 'ft above DER · NM from DER · vertical exaggerated', w - pad.r, pad.t - 14, { size: 8.5, align: 'right', box: false, color: C.muted });
+        }
+
+
         // Setup init drawing event hook
         document.addEventListener("DOMContentLoaded", () => {
             const oldSwitch = window.switchTab;
@@ -7108,6 +7359,7 @@
                 if (id === 'tab-holdb') calcHoldArea();
                 if (id === 'tab-tol') calcIfix();
                 if (id === 'tab-pt') { ptRenderReference(); calcPathTerm(); calcMsd(); }
+                if (id === 'tab-desc') calcDeparture();
             }
 
             renderSelfTest();
@@ -7141,6 +7393,7 @@
             if (typeof calcIfix === 'function') calcIfix();
             if (typeof calcPathTerm === 'function') calcPathTerm();
             if (typeof calcMsd === 'function') calcMsd();
+            if (typeof calcDeparture === 'function') calcDeparture();
             redrawGradients();
         }
 

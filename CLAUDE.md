@@ -15,7 +15,7 @@ Guide for Claude Code sessions working on this repo. Read this first; details ar
 3. **Never commit the ICAO PDFs** (`*.pdf` is git-ignored; they are ICAO copyright). Don't delete them either.
 4. **Every formula must trace to a Doc paragraph** and live in the `PANS` object with a comment reference.
    Add a self-test case to `PANS_TESTS` for every new or changed formula, using Doc tables / worked examples where possible.
-   The QA sheet must stay 100 % passing (currently **89/89**).
+   The QA sheet must stay 100 % passing (currently **97/97**).
 5. **Verify against the PDFs**, not memory. If something can't be verified, say so in the UI and the QA audit card.
 6. The user tests on an **Android phone** and sends screenshots. Every change must work at ~360 px width with no horizontal overflow.
 7. Keep the **Blueprint theme** (CSS variables; drawings use `bpColors()` — never hard-code colours) and the light "Whiteprint" theme.
@@ -79,7 +79,7 @@ URL hash deep links: `#turn`, `#holdb`, `#pt`, …
 - Tools available: Python 3.14 (+ Pillow, PyMuPDF), Node, pdftotext, Git Bash, PowerShell.
 
 ## Current status (1 Nov 2026)
-Last commit: `c7448f4` (MSD checker). Everything above is live.
+Last commit: 07-D departure PDG card integrated (browser/360 px check still to do).
 
 ### In progress — 07-D Departure Climb Gradient (PDG)  ← **resume here**
 Work-in-progress code is in `wip/departure/` (not yet in `index.html`):
