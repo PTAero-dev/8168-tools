@@ -105,8 +105,6 @@ Card in `tab-desc` (sheet 07 renamed "Departure & Missed Approach"): `PANS.depSt
 - VNAV vs PAPI: compute true VPA with the Vol II III-3-4 App A method (currently temperature-ratio approximation).
 - Polish: ⓘ per result showing formula + Doc paragraph; ft/NM ↔ m/km toggle; "using TAS from Sheet 01" labels.
 - Real-device testing by the user (install, offline, print to PDF on phone).
-
-### Proposed additions (NOT agreed yet — ask before starting; "continue" does not pick these)
 - Holding: VOR/DME holding area + along-radial entry (I-4-3-App C §3.3.4); entry area for radial-intersection fixes (§3.3.3.2.2); sector-1 area reduction (§3.3.3.3); RNAV holding.
 - Racetrack protected area on sheet 02R from the same template (primary + 2.5 NM secondary, §3.3.1.3).
 - Turn area construction for departure / missed approach turns (wind spiral, turn at altitude / at a TP).
@@ -114,6 +112,7 @@ Card in `tab-desc` (sheet 07 renamed "Departure & Missed Approach"): `PANS.depSt
 - OCA/H helper for non-precision approaches (MOC per segment + controlling obstacle).
 - MSA / TAA sector tool.
 - Optional: renumber sheets/cards to the new section order (currently original numbers kept; 02R added).
+
 
 ### Known approximations (documented in UI)
 - Holding basic area = convex envelope of the template wind circles swept around a quadrilateral fix area (approximation of the TTT construction).
