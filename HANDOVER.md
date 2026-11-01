@@ -271,15 +271,26 @@ Function: `calcVnavPapi()`
 
 ---
 
-## 7. Canvas Elements
+## 7. Diagrams
 
-| Canvas ID | Tab | Purpose |
-|---|---|---|
-| `ptVizCanvas` | Turn Calculator | Procedure turn geometry |
-| `baseVizCanvas` | Turn Calculator | Base turn protected area |
-| `turnCanvas` | Turn Anticipation | Course intercept geometry (North-up) |
-| `gradCanvas` | IFP Gradient | Gradient profile per leg |
-| VNAV canvas | VNAV vs PAPI | Glide path comparison (created dynamically) |
+All diagrams are drawn by one engine (search `DIAGRAMS — HiDPI canvas` in `index.html`).
+
+| Element | Tab | Function | Notes |
+|---|---|---|---|
+| `ptVizCanvas` | Turn Calculator | `drawPTViz` | 45°/180° or 80°/260° nominal track, **to scale** in NM |
+| `baseVizCanvas` | Turn Calculator | `drawBaseTurnViz` | Nominal track + x/y extents box, to scale |
+| `#btp-svg-container` (SVG) | Turn Calculator | `drawBtpVisualizer` | Compass with φ wedge |
+| `turnCanvas` | Turn Anticipation | `drawTurnViz` | Intercept geometry to scale, Lead dimension |
+| `gradCanvas`, `gradNCanvas` | IFP Gradient | `drawGradientViz` | Profile (vertical exaggerated) |
+| `#vnp-chart-container` (SVG) | VNAV vs PAPI | `drawVnavPapiChart` | Compact 1:1 layout when container < 640 px |
+
+- `setupCanvas()` sizes each canvas to its frame × devicePixelRatio (sharp on phones/retina) and is re-run on window resize (`redrawDiagrams()`).
+- `makeTurtle()` builds tracks from straight legs + constant-radius turns (x = east, y = north, NM).
+- Every `.viz` frame has a `⤓ PNG` button → `exportViz()` saves a 4× resolution PNG.
+
+## 7b. Installable app (PWA)
+
+`manifest.webmanifest`, `sw.js`, `icons/`, `_headers`. The service worker is network-first for the page (new deploys appear when online) and cache-first for fonts/icons. Bump `CACHE` in `sw.js` if the list of shell files changes. The app is still one `index.html`; the extra files are only for install/offline.
 
 ---
 
@@ -322,6 +333,7 @@ Key development milestones from previous sessions:
 | 2026-05-01 | Coordinate Converter mobile UI redesigned (within FISB Tools project, separate app). Nested card-in-card layout replaced with fluid full-page scroll. |
 | 2026-05-02 | Context imported from Claude session. Session context continuity maintained. |
 | 2026-05-08 | Folder rename from `FVP Tools` → `8168 Tools` initiated. Handover document created. |
+| 2026-11-01 | Installable PWA (manifest, service worker, icons). Diagrams rebuilt: HiDPI, to-scale plan views, PNG export. Mobile overflow audit of all 8 pages at 360 px; VNAV chart compact layout. |
 | 2026-11-01 | Full redesign to Blueprint theme; nav regrouped into 3 sections with sheet numbers; inputs/results side by side; hash deep links; drawings use theme palette (`bpColors`). Fixed: missing `base-ymax` output (Base Turn crashed), unstyled radio toggles, invalid CSS-variable colours in canvases, Airspeed results outside its card. |
 
 ---

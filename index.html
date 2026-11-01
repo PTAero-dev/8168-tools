@@ -345,7 +345,7 @@
            ========================================================= */
         .grid-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr));
             gap: 22px;
             align-items: start;
             animation: slideUp 0.35s ease-out;
@@ -359,6 +359,10 @@
         }
 
         .span-all { grid-column: 1 / -1; }
+
+        /* never let wide content (charts, tables) stretch a column past the screen */
+        .grid-container > *, .stack > *, .split > *, .col > *, .card, .card-body { min-width: 0; }
+        .viz svg { max-width: 100%; }
 
         .split {
             display: grid;
@@ -801,6 +805,25 @@
 
         .viz canvas { display: block; width: 100%; height: auto; }
 
+        .viz-dl {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            z-index: 2;
+            height: 24px;
+            padding: 0 8px;
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            background: var(--bg-sidebar);
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            font-size: 0.62rem;
+            letter-spacing: 0.08em;
+            cursor: pointer;
+            opacity: 0.85;
+        }
+        .viz-dl:hover { color: var(--accent-primary); border-color: var(--accent-primary); opacity: 1; }
+
         .viz-label {
             position: absolute;
             top: 8px;
@@ -823,6 +846,7 @@
         }
 
         .viz-scroll { overflow-x: auto; padding: 10px; }
+        @media (max-width: 768px) { .viz-scroll { padding: 6px 2px; } }
 
         .grad-viz { margin-top: 12px; }
         .viz canvas.grad-canvas { height: 150px; }
@@ -994,7 +1018,7 @@
            RESPONSIVE
            ========================================================= */
         @media (max-width: 1100px) {
-            .split { grid-template-columns: 1fr; }
+            .split { grid-template-columns: minmax(0, 1fr); }
         }
 
         @media (max-width: 768px) {
@@ -1012,7 +1036,7 @@
             .ph-block { border-left: 0; border-top: 1px solid var(--line); grid-template-columns: repeat(3, 1fr); }
             .ph-block > div { border-bottom: 0; border-right: 1px solid var(--line-soft); }
             .ph-block > div:last-child { border-right: 0; }
-            .grid-container { grid-template-columns: 1fr; }
+            .grid-container { grid-template-columns: minmax(0, 1fr); }
             .page-title { font-size: 1.4rem; }
         }
     </style>
@@ -1367,7 +1391,8 @@
                         </div>
 
                         <div class="viz">
-                            <span class="viz-label">Plan view · schematic</span>
+                            <span class="viz-label">Plan view · to scale</span>
+                            <button class="viz-dl" onclick="exportViz(this)" data-name="procedure-turn" title="Download high-resolution PNG">⤓ PNG</button>
                             <canvas id="ptVizCanvas" width="600" height="250"></canvas>
                         </div>
                     </div>
@@ -1435,7 +1460,8 @@
                         </div>
 
                         <div class="viz">
-                            <span class="viz-label">Plan view · schematic</span>
+                            <span class="viz-label">Plan view · to scale</span>
+                            <button class="viz-dl" onclick="exportViz(this)" data-name="base-turn" title="Download high-resolution PNG">⤓ PNG</button>
                             <canvas id="baseVizCanvas" width="600" height="250"></canvas>
                         </div>
                     </div>
@@ -1560,6 +1586,7 @@
                         <div class="col">
                             <div class="viz">
                                 <span class="viz-label">Track diagram · north up</span>
+                                <button class="viz-dl" onclick="exportViz(this)" data-name="base-turn-divergence" title="Download high-resolution PNG">⤓ PNG</button>
                                 <div id="btp-svg-container" class="viz-svg">
                                     <!-- SVG injected by JS -->
                                 </div>
@@ -1679,8 +1706,9 @@
                     </div>
 
                     <div class="viz" style="max-width: 560px; justify-self: center;">
-                        <span class="viz-label">Plan view · north up</span>
-                        <canvas id="turnCanvas" width="400" height="400" style="aspect-ratio: 1;"></canvas>
+                        <span class="viz-label">Plan view · to scale</span>
+                        <button class="viz-dl" onclick="exportViz(this)" data-name="turn-anticipation" title="Download high-resolution PNG">⤓ PNG</button>
+                        <canvas id="turnCanvas" width="400" height="400"></canvas>
                     </div>
                 </div>
             </div>
@@ -1798,6 +1826,7 @@
                                 <div class="result-row"><span class="result-label">Angle (&deg;)</span><span id="grad-angle" class="result-value c-cyan">0.00&deg;</span></div>
                             </div>
                             <div class="viz grad-viz">
+                                <button class="viz-dl" onclick="exportViz(this)" data-name="gradient-leg-1" title="Download high-resolution PNG">⤓ PNG</button>
                                 <canvas id="gradCanvas" class="grad-canvas"></canvas>
                             </div>
                         </div>
@@ -2384,12 +2413,15 @@
                     </div>
                     <div class="card-body">
                         <div class="viz">
+                            <button class="viz-dl" onclick="exportViz(this)" data-name="vnav-vs-papi" title="Download high-resolution PNG">⤓ PNG</button>
                             <div id="vnp-chart-container" class="viz-scroll">
                                 <!-- SVG injected by JS -->
                             </div>
                         </div>
                         <div class="legend">
                             <span class="c-primary"><i></i>True VNAV path</span>
+                            <span class="c-cyan"><i class="dash"></i>Design VPA (indicated)</span>
+                            <span class="c-success"><i></i>PAPI on-slope corridor</span>
                             <span class="c-danger"><i class="dash"></i>PAPI Box 3 / 2</span>
                             <span class="c-muted"><i class="dash"></i>PAPI nominal</span>
                             <span class="c-success"><i class="dot"></i>FAF</span>
@@ -2506,6 +2538,7 @@
                 success: v('--accent-success'), warning: v('--accent-warning'),
                 danger: v('--accent-danger'), violet: v('--accent-violet'),
                 fill: v('--accent-fill'),
+                bg: v('--bg-body'),
                 mono: "'IBM Plex Mono', ui-monospace, monospace"
             };
         }
@@ -2889,7 +2922,7 @@
                 document.getElementById('pt-details').innerHTML = "80\u00B0/" + Math.round(turn80Time) + "s &nbsp;|&nbsp; 260\u00B0/" + Math.round(turn260Time) + "s";
             }
 
-            drawPTViz(tas, r, t, type);
+            drawPTViz(tas, r, t, type, ias);
         }
 
         // --- BASE TURN DIVERGENCE (φ) CALCULATOR ---
@@ -3041,81 +3074,6 @@
             }
         }
 
-        function drawBtpVisualizer(outboundTrack, inboundTrack, turnDirection, publishedTrack) {
-            const C = bpColors();
-            const size = 320;
-            const center = size / 2;
-            const radius = 110;
-
-            const getCoords = (angle, r) => {
-                const rad = (angle - 90) * (Math.PI / 180);
-                return { x: center + r * Math.cos(rad), y: center + r * Math.sin(rad) };
-            };
-
-            const outPt = getCoords(outboundTrack, radius);
-            const recipTrack = (inboundTrack + 180) % 360;
-            const inPt = getCoords(recipTrack, radius);
-            const pubPt = publishedTrack ? getCoords(publishedTrack, radius) : null;
-
-            const dist = Math.sqrt(Math.pow(inPt.x - outPt.x, 2) + Math.pow(inPt.y - outPt.y, 2));
-            const arcR = dist * 0.7;
-            const sweepFlag = turnDirection === 'Right' ? 1 : 0;
-
-            let pubHtml = '';
-            let legendPub = '';
-            if (pubPt) {
-                pubHtml = `
-                    <line x1="${center}" y1="${center}" x2="${pubPt.x}" y2="${pubPt.y}" stroke="${C.danger}" stroke-width="3" stroke-dasharray="6 4" />
-                    <circle cx="${pubPt.x}" cy="${pubPt.y}" r="5" fill="${C.danger}" />
-                    <text x="${pubPt.x + 10}" y="${pubPt.y - 5}" fill="${C.danger}" font-size="11" font-weight="bold">Charted ${String(publishedTrack).padStart(3,'0')}°</text>
-                `;
-                legendPub = `<div style="position:absolute; top:10px; right:10px; font-size:0.68rem; font-weight:600; font-family:${C.mono}; color:${C.danger};">● Charted Outbound</div>`;
-            }
-
-            // Compass ring ticks
-            let ticks = '';
-            for (let i = 0; i < 360; i += 10) {
-                const c = getCoords(i, radius + 15);
-                const c2 = getCoords(i, radius + (i % 30 === 0 ? 25 : 20));
-                ticks += `<line x1="${c.x}" y1="${c.y}" x2="${c2.x}" y2="${c2.y}" stroke="${C.line}" stroke-width="${i % 30 === 0 ? 1.5 : 0.5}" />`;
-            }
-            // Cardinal labels
-            const cardinals = [{a:0,l:'N'},{a:90,l:'E'},{a:180,l:'S'},{a:270,l:'W'}];
-            let cardHtml = '';
-            cardinals.forEach(c => {
-                const p = getCoords(c.a, radius + 35);
-                cardHtml += `<text x="${p.x}" y="${p.y + 4}" fill="${C.muted}" font-size="12" font-weight="bold" text-anchor="middle">${c.l}</text>`;
-            });
-
-            const svgContent = `
-                <svg width="${size}" height="${size}" style="overflow:visible; font-family:${C.mono};">
-                    <!-- Compass ring -->
-                    <circle cx="${center}" cy="${center}" r="${radius + 15}" fill="none" stroke="${C.soft}" stroke-width="1" />
-                    ${ticks}
-                    ${cardHtml}
-                    <!-- North indicator -->
-                    <line x1="${center}" y1="${center}" x2="${center}" y2="${center - radius - 5}" stroke="${C.line}" stroke-width="2" stroke-dasharray="4 4" />
-                    <!-- Required Outbound (green) -->
-                    <line x1="${center}" y1="${center}" x2="${outPt.x}" y2="${outPt.y}" stroke="${C.success}" stroke-width="3" />
-                    <circle cx="${outPt.x}" cy="${outPt.y}" r="5" fill="${C.success}" />
-                    <text x="${outPt.x + 10}" y="${outPt.y + 4}" fill="${C.success}" font-size="11" font-weight="bold">${String(outboundTrack).padStart(3,'0')}°</text>
-                    <!-- Published if exists -->
-                    ${pubHtml}
-                    <!-- Turn arc -->
-                    <path d="M ${outPt.x} ${outPt.y} A ${arcR} ${arcR} 0 1 ${sweepFlag} ${inPt.x} ${inPt.y}" stroke="${C.primary}" stroke-width="2.5" fill="none" stroke-dasharray="6 4" />
-                    <!-- Inbound (blue) -->
-                    <line x1="${inPt.x}" y1="${inPt.y}" x2="${center}" y2="${center}" stroke="${C.primary}" stroke-width="3" />
-                    <circle cx="${inPt.x}" cy="${inPt.y}" r="5" fill="${C.primary}" />
-                    <!-- Fix -->
-                    <polygon points="${center},${center-8} ${center+7},${center+5} ${center-7},${center+5}" fill="${C.ink}" />
-                </svg>
-                <div style="position:absolute; bottom:10px; left:10px; font-size:0.68rem; font-weight:600; font-family:${C.mono}; color:${C.success};">● Required Outbound</div>
-                <div style="position:absolute; bottom:10px; right:10px; font-size:0.68rem; font-weight:600; font-family:${C.mono}; color:${C.primary};">● Inbound</div>
-                ${legendPub}
-            `;
-            document.getElementById('btp-svg-container').innerHTML = svgContent;
-        }
-
         // --- GRADIENT CALCULATOR ---
         let gradLegCount = 1;
 
@@ -3202,6 +3160,7 @@
                             <div class="result-row"><span class="result-label">Angle (&deg;)</span><span id="${id}-angle" class="result-value c-cyan">0.00&deg;</span></div>
                         </div>
                         <div class="viz grad-viz">
+                            <button class="viz-dl" onclick="exportViz(this)" data-name="gradient-leg-${gradLegCount}" title="Download high-resolution PNG">⤓ PNG</button>
                             <canvas id="${id}Canvas" class="grad-canvas"></canvas>
                         </div>
                     </div>
@@ -3382,74 +3341,6 @@
             }
         }
 
-        function drawGradientViz(runNM, riseFT, isClimb, angleVal, canvasId) {
-            const canvas = document.getElementById(canvasId);
-            if (!canvas) return;
-
-            const dpr = window.devicePixelRatio || 1;
-            const rect = canvas.getBoundingClientRect();
-            if (rect.width === 0) {
-                canvas.width = 400 * dpr;
-                canvas.height = 150 * dpr;
-            } else {
-                canvas.width = rect.width * dpr;
-                canvas.height = rect.height * dpr;
-            }
-
-            const ctx = canvas.getContext('2d');
-            const C = bpColors();
-            ctx.scale(dpr, dpr);
-            const w = rect.width || 400;
-            const h = rect.height || 150;
-
-            ctx.clearRect(0, 0, w, h);
-            if (runNM <= 0 || riseFT <= 0) return;
-
-            const pad = 30;
-            const dw = w - (pad * 2);
-            const dh = h - (pad * 2);
-            const startX = pad;
-            const startY = h - pad;
-            const endX = w - pad;
-            const endY = pad;
-
-            ctx.strokeStyle = C.primary; ctx.lineWidth = 2.5;
-            ctx.fillStyle = C.fill;
-
-            ctx.beginPath();
-            if (isClimb) {
-                ctx.moveTo(startX, startY);
-                ctx.lineTo(endX, endY);
-                ctx.stroke();
-                ctx.lineTo(endX, startY);
-                ctx.lineTo(startX, startY);
-                ctx.fill();
-            } else {
-                ctx.moveTo(startX, pad);
-                ctx.lineTo(endX, startY);
-                ctx.stroke();
-                ctx.lineTo(startX, startY);
-                ctx.lineTo(startX, pad);
-                ctx.fill();
-            }
-
-            ctx.strokeStyle = C.line; ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(startX, startY); ctx.lineTo(endX, startY);
-            ctx.moveTo(startX, startY); ctx.lineTo(startX, pad);
-            ctx.stroke();
-
-            ctx.fillStyle = C.ink; ctx.font = '11px ' + C.mono;
-            ctx.textAlign = 'center'; ctx.fillText(`${runNM} NM`, startX + dw / 2, startY + 20);
-
-            ctx.save();
-            ctx.translate(startX - 20, startY - dh / 2);
-            ctx.rotate(-Math.PI / 2);
-            ctx.textAlign = 'center';
-            ctx.fillText(`${riseFT} ft`, 0, 0);
-            ctx.restore();
-        }
-
         // --- BASE TURN CALCULATOR ---
         function calcBaseTurn() {
             const tasIn = parseFloat(document.getElementById('base-tas').value);
@@ -3481,7 +3372,7 @@
             document.getElementById('base-ymax').textContent = ymax.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " NM";
             document.getElementById('base-ymin').textContent = ymin.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " NM";
 
-            drawBaseTurnViz(tas, t, wind, xmax, ymax);
+            drawBaseTurnViz(tas, t, wind, xmax, ymax, ymin);
         }
 
         // --- PBN CALCULATOR ---
@@ -3714,558 +3605,6 @@
             drawTurnViz();
         }
 
-        function drawTurnViz() {
-            const curTrk = parseFloat(document.getElementById('viz-cur-trk').value);
-            const finCrs = parseFloat(document.getElementById('viz-fin-crs').value);
-            const ias = parseFloat(document.getElementById('viz-ias').value);
-            const alt = parseFloat(document.getElementById('viz-alt').value);
-            const bank = parseFloat(document.getElementById('viz-bank').value);
-
-            if (isNaN(curTrk) || isNaN(finCrs) || isNaN(ias) || isNaN(alt) || isNaN(bank)) return;
-
-            // Doc 8168 TAS calculation
-            const t0 = 288;
-            const lapseRate = 0.00198;
-            const numerator = 171233 * Math.pow(t0 - lapseRate * alt, 0.5);
-            const denominator = Math.pow(t0 - lapseRate * alt, 2.628);
-            let tas = ias * (numerator / denominator);
-
-            if (tas <= 0) tas = 1;
-
-            const dir = document.getElementById('viz-dir').value;
-
-            // Math
-            let diff = finCrs - curTrk;
-            if (diff < -180) diff += 360;
-            if (diff > 180) diff -= 360;
-
-            let isRightTurn = diff > 0;
-            let theta = Math.abs(diff);
-
-            // Override turning direction if forced
-            if (dir === 'right' && !isRightTurn && theta !== 0) {
-                isRightTurn = true;
-                theta = 360 - theta;
-            } else if (dir === 'left' && isRightTurn && theta !== 0) {
-                isRightTurn = false;
-                theta = 360 - theta;
-            }
-
-            const alphaRad = bank * Math.PI / 180;
-            const rate = (3431 * Math.tan(alphaRad)) / (Math.PI * tas);
-            const r = tas / (20 * Math.PI * rate);
-
-            let ta = 0;
-            let offset = 0;
-
-            if (theta === 180) {
-                offset = 2 * r;
-                ta = 0;
-            } else {
-                ta = r * Math.tan((theta / 2) * Math.PI / 180);
-            }
-
-            document.getElementById('viz-theta').textContent = theta.toFixed(1) + " \xB0";
-            document.getElementById('viz-radius').textContent = r.toFixed(2) + " NM";
-            document.getElementById('viz-ta').textContent = theta === 180 ? "N/A" : ta.toFixed(2) + " NM";
-            document.getElementById('viz-offset').textContent = theta === 180 ? offset.toFixed(2) + " NM" : "N/A";
-
-            // Drawing
-            const canvas = document.getElementById('turnCanvas');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            const C = bpColors();
-            const w = canvas.width;
-            const h = canvas.height;
-            const cx = w / 2;
-            const cy = h / 2;
-
-            ctx.clearRect(0, 0, w, h);
-
-            // Helper to convert deg to canvas rad (North = 0 = -PI/2)
-            const deg2rad = (deg) => (deg - 90) * Math.PI / 180;
-
-            // Helper to draw an arrowhead
-            const drawArrowhead = (context, x, y, angle, color) => {
-                const headLen = 12; // length of head in pixels
-                context.beginPath();
-                context.moveTo(x, y);
-                context.lineTo(x - headLen * Math.cos(angle - Math.PI / 6), y - headLen * Math.sin(angle - Math.PI / 6));
-                context.lineTo(x - headLen * Math.cos(angle + Math.PI / 6), y - headLen * Math.sin(angle + Math.PI / 6));
-                context.lineTo(x, y);
-                context.fillStyle = color;
-                context.fill();
-            };
-
-            let scalePxPerNm = (w * 0.15) / r;
-            if (theta > 150) {
-                scalePxPerNm = (w * 0.2) / (r * 2);
-            }
-
-            let ix = cx;
-            let iy = cy;
-
-            if (theta === 180) {
-                const trkRad = deg2rad(curTrk);
-                const crsRad = deg2rad(finCrs);
-
-                scalePxPerNm = (w * 0.3) / r;
-                const rPx = r * scalePxPerNm;
-
-                // Respect the forced direction for 180 turn
-                const angleToCenter = trkRad + (isRightTurn ? Math.PI / 2 : -Math.PI / 2);
-                const arcCenterX = cx;
-                const arcCenterY = cy;
-
-                const startX = arcCenterX - Math.cos(angleToCenter) * rPx;
-                const startY = arcCenterY - Math.sin(angleToCenter) * rPx;
-
-                const endX = arcCenterX + Math.cos(angleToCenter) * rPx;
-                const endY = arcCenterY + Math.sin(angleToCenter) * rPx;
-
-                // Final Course Dashed Line
-                ctx.beginPath();
-                ctx.moveTo(endX - Math.cos(crsRad) * 1000, endY - Math.sin(crsRad) * 1000);
-                ctx.lineTo(endX + Math.cos(crsRad) * 1000, endY + Math.sin(crsRad) * 1000);
-                ctx.strokeStyle = C.muted;
-                ctx.lineWidth = 2;
-                ctx.setLineDash([5, 5]);
-                ctx.stroke();
-                ctx.setLineDash([]);
-
-                // Current Track (white line)
-                ctx.beginPath();
-                ctx.moveTo(startX - Math.cos(trkRad) * 1000, startY - Math.sin(trkRad) * 1000);
-                ctx.lineTo(startX, startY);
-                ctx.strokeStyle = C.ink;
-                ctx.lineWidth = 3;
-                ctx.stroke();
-
-                let startAng = angleToCenter - Math.PI;
-                let sweepAngle = isRightTurn ? Math.PI : -Math.PI;
-                let endAng = startAng + sweepAngle;
-
-                ctx.beginPath();
-                ctx.arc(arcCenterX, arcCenterY, rPx, startAng, endAng, !isRightTurn);
-                ctx.strokeStyle = C.warning;
-                ctx.stroke();
-
-                // Final Course (green line)
-                ctx.beginPath();
-                ctx.moveTo(endX, endY);
-                ctx.lineTo(endX + Math.cos(crsRad) * 1000, endY + Math.sin(crsRad) * 1000);
-                ctx.strokeStyle = C.success;
-                ctx.stroke();
-
-                ctx.fillStyle = C.danger;
-                ctx.beginPath();
-                ctx.arc(startX, startY, 4, 0, 2 * Math.PI);
-                ctx.fill();
-
-                ctx.fillStyle = C.success;
-                ctx.beginPath();
-                ctx.arc(endX, endY, 4, 0, 2 * Math.PI);
-                ctx.fill();
-
-                // Draw Directional Arrows
-                drawArrowhead(ctx, startX - Math.cos(trkRad) * 30, startY - Math.sin(trkRad) * 30, trkRad, C.ink);
-                drawArrowhead(ctx, endX + Math.cos(crsRad) * 50, endY + Math.sin(crsRad) * 50, crsRad, C.success);
-
-                ctx.beginPath();
-                ctx.moveTo(startX, startY);
-                ctx.lineTo(endX, endY);
-                ctx.strokeStyle = C.cyan;
-                ctx.lineWidth = 1;
-                ctx.setLineDash([2, 2]);
-                ctx.stroke();
-
-                ctx.fillStyle = C.cyan;
-                ctx.beginPath();
-                ctx.arc(arcCenterX, arcCenterY, 3, 0, 2 * Math.PI);
-                ctx.fill();
-
-            } else {
-                const trkRad = deg2rad(curTrk);
-                const crsRad = deg2rad(finCrs);
-
-                // Scale to fit the entire structure
-                // Maximum dimension from the turn center to the intersection point:
-                const distToCenter = Math.sqrt(ta * ta + r * r);
-                const neededSpanNm = distToCenter + r * 1.5; // add some padding
-
-                scalePxPerNm = (w * 0.45) / neededSpanNm;
-
-                const taPx = ta * scalePxPerNm;
-                const rPx = r * scalePxPerNm;
-
-                // Vector from intersection to start of turn
-                const vecIxToStartX = -Math.cos(trkRad) * taPx;
-                const vecIxToStartY = -Math.sin(trkRad) * taPx;
-
-                // Angle from start of turn to arc center
-                let angleToCenter = trkRad + (isRightTurn ? Math.PI / 2 : -Math.PI / 2);
-
-                // Vector from start of turn to arc center
-                const vecStartToArcCenterX = Math.cos(angleToCenter) * rPx;
-                const vecStartToArcCenterY = Math.sin(angleToCenter) * rPx;
-
-                // Vector from intersection to arc center
-                const vecIxToArcCenterX = vecIxToStartX + vecStartToArcCenterX;
-                const vecIxToArcCenterY = vecIxToStartY + vecStartToArcCenterY;
-
-                // We want the midpoint between intersection and arc center to be at cx, cy
-                ix = cx - vecIxToArcCenterX / 2;
-                iy = cy - vecIxToArcCenterY / 2;
-
-                const startX = ix + vecIxToStartX;
-                const startY = iy + vecIxToStartY;
-
-                const endX = ix + Math.cos(crsRad) * taPx;
-                const endY = iy + Math.sin(crsRad) * taPx;
-
-                const arcCenterX = startX + vecStartToArcCenterX;
-                const arcCenterY = startY + vecStartToArcCenterY;
-
-                ctx.beginPath();
-                ctx.moveTo(ix - Math.cos(crsRad) * 1000, iy - Math.sin(crsRad) * 1000);
-                ctx.lineTo(ix + Math.cos(crsRad) * 1000, iy + Math.sin(crsRad) * 1000);
-                ctx.strokeStyle = C.muted;
-                ctx.lineWidth = 2;
-                ctx.setLineDash([5, 5]);
-                ctx.stroke();
-
-                ctx.beginPath();
-                ctx.moveTo(ix - Math.cos(trkRad) * 1000, iy - Math.sin(trkRad) * 1000);
-                ctx.lineTo(ix + Math.cos(trkRad) * 1000, iy + Math.sin(trkRad) * 1000);
-                ctx.stroke();
-                ctx.setLineDash([]);
-
-                const startAng = angleToCenter - Math.PI;
-                const sweepAngle = isRightTurn ? theta * Math.PI / 180 : -theta * Math.PI / 180;
-                const endAng = startAng + sweepAngle;
-
-                ctx.beginPath();
-                ctx.moveTo(ix - Math.cos(trkRad) * 1000, iy - Math.sin(trkRad) * 1000);
-                ctx.lineTo(startX, startY);
-                ctx.strokeStyle = C.ink;
-                ctx.lineWidth = 3;
-                ctx.stroke();
-
-                ctx.beginPath();
-                ctx.arc(arcCenterX, arcCenterY, rPx, startAng, endAng, !isRightTurn);
-                ctx.strokeStyle = C.warning;
-                ctx.stroke();
-
-                ctx.beginPath();
-                ctx.moveTo(endX, endY);
-                ctx.lineTo(endX + Math.cos(crsRad) * 1000, endY + Math.sin(crsRad) * 1000);
-                ctx.strokeStyle = C.success;
-                ctx.stroke();
-
-                ctx.fillStyle = C.danger;
-                [
-                    { x: startX, y: startY },
-                    { x: ix, y: iy }
-                ].forEach(pt => {
-                    ctx.beginPath();
-                    ctx.arc(pt.x, pt.y, 4, 0, 2 * Math.PI);
-                    ctx.fill();
-                });
-
-                ctx.fillStyle = C.success;
-                ctx.beginPath();
-                ctx.arc(endX, endY, 4, 0, 2 * Math.PI);
-                ctx.fill();
-
-                // Draw Directional Arrows
-                drawArrowhead(ctx, startX - Math.cos(trkRad) * 30, startY - Math.sin(trkRad) * 30, trkRad, C.ink);
-                drawArrowhead(ctx, endX + Math.cos(crsRad) * 50, endY + Math.sin(crsRad) * 50, crsRad, C.success);
-
-                ctx.beginPath();
-                ctx.moveTo(arcCenterX, arcCenterY);
-                ctx.lineTo(startX, startY);
-                ctx.strokeStyle = C.cyan;
-                ctx.lineWidth = 1;
-                ctx.setLineDash([2, 2]);
-                ctx.stroke();
-
-                ctx.fillStyle = C.cyan;
-                ctx.beginPath();
-                ctx.arc(arcCenterX, arcCenterY, 3, 0, 2 * Math.PI);
-                ctx.fill();
-            }
-        }
-
-        function drawArrow(ctx, x, y, angle, size) {
-            ctx.save();
-            ctx.translate(x, y);
-            ctx.rotate(angle);
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(-size, size / 2);
-            ctx.lineTo(-size, -size / 2);
-            ctx.closePath();
-            ctx.fill();
-            ctx.restore();
-        }
-
-        function drawPTViz(tas, radius, timeOut, type) {
-            const canvas = document.getElementById('ptVizCanvas');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            const C = bpColors();
-            const w = canvas.width;
-            const h = canvas.height;
-            ctx.clearRect(0, 0, w, h);
-
-            // Styling
-            ctx.strokeStyle = C.cyan;
-            ctx.lineWidth = 2;
-            ctx.fillStyle = C.ink;
-            ctx.font = '12px ' + C.mono;
-
-            const cx = w * 0.45;
-            const cy = h * 0.8;
-
-            // Draw nominal centerlines (inbound/outbound)
-            ctx.strokeStyle = C.muted;
-            ctx.setLineDash([5, 5]);
-            ctx.beginPath();
-            ctx.moveTo(cx, h); // Inbound towards fix
-            ctx.lineTo(cx, 20); // Outbound past fix
-            ctx.stroke();
-            ctx.setLineDash([]);
-
-            // Draw fix
-            ctx.fillStyle = C.ink;
-            ctx.beginPath();
-            ctx.moveTo(cx, cy - 8); ctx.lineTo(cx + 8, cy);
-            ctx.lineTo(cx, cy + 8); ctx.lineTo(cx - 8, cy);
-            ctx.fill();
-            ctx.textAlign = "left";
-            ctx.fillText("Fix", cx + 15, cy + 5);
-
-            ctx.strokeStyle = C.primary;
-            ctx.lineWidth = 3;
-            ctx.fillStyle = C.primary;
-
-            // Scaling factor: lets fit it nicely
-            const scale = 30; // pixels per parameter unit roughly
-
-            if (type === "45/180") {
-                const legLen = 80; // visual length of 45 deg leg
-                const turnRad = 25; // visual radius of 180 turn
-                const outbLen = 50;
-
-                ctx.beginPath();
-                // Start tracking from fix outbound
-                ctx.moveTo(cx, cy);
-
-                // Outbound straight before turn
-                const obY = cy - outbLen;
-                ctx.lineTo(cx, obY);
-                drawArrow(ctx, cx, cy - (outbLen / 2), -Math.PI / 2, 8);
-
-                // 45 deg outbound leg
-                const offX = cx + legLen * Math.cos(Math.PI / 4);
-                const offY = obY - legLen * Math.sin(Math.PI / 4);
-                ctx.lineTo(offX, offY);
-                drawArrow(ctx, cx + (legLen / 2) * Math.cos(Math.PI / 4), obY - (legLen / 2) * Math.sin(Math.PI / 4), -Math.PI / 4, 8);
-
-                // 180 deg turn (right turn)
-                const arcCX = offX + turnRad * Math.cos(-Math.PI / 4);
-                const arcCY = offY - turnRad * Math.sin(-Math.PI / 4);
-                ctx.arc(arcCX, arcCY, turnRad, Math.PI * 0.75, Math.PI * 1.75, true);
-
-                // Return intercept
-                const retX = arcCX + turnRad * Math.cos(Math.PI * 1.75);
-                const retY = arcCY + turnRad * Math.sin(Math.PI * 1.75);
-
-                // Intercept nominal course
-                const intY = cy - 20;
-                ctx.lineTo(cx, intY);
-                drawArrow(ctx, cx + (retX - cx) / 2, intY - (intY - retY) / 2, Math.atan2(intY - retY, cx - retX), 8);
-
-                // Back to fix
-                ctx.lineTo(cx, cy);
-                ctx.stroke();
-
-                ctx.fillStyle = C.ink;
-                ctx.textAlign = "right";
-                ctx.fillText("45°", cx + 30, obY - 20);
-
-                ctx.beginPath();
-                ctx.setLineDash([2, 2]);
-                ctx.strokeStyle = C.muted;
-                ctx.lineWidth = 1;
-                ctx.moveTo(cx, obY);
-                ctx.lineTo(cx, obY - 40);
-                ctx.stroke();
-                ctx.setLineDash([]);
-
-                ctx.beginPath();
-                ctx.arc(cx, obY, 20, -Math.PI / 2, -Math.PI / 4, false);
-                ctx.stroke();
-
-            } else {
-                // 80/260
-                const legLen = 40;
-                const turnRad = 30;
-
-                ctx.beginPath();
-                ctx.moveTo(cx, cy);
-
-                // Outbound short leg
-                const obY = cy - 50;
-                ctx.lineTo(cx, obY);
-                drawArrow(ctx, cx, cy - 25, -Math.PI / 2, 8);
-
-                // 80 deg turn away
-                const arc1CX = cx - turnRad;
-                const arc1CY = obY;
-                ctx.arc(arc1CX, arc1CY, turnRad, 0, -80 * Math.PI / 180, true);
-
-                // 260 deg turn back
-                const p2X = arc1CX + turnRad * Math.cos(-80 * Math.PI / 180);
-                const p2Y = arc1CY + turnRad * Math.sin(-80 * Math.PI / 180);
-
-                // Center of second arc is mirrored
-                const r2 = turnRad * 1.5;
-                const arc2CX = p2X + r2 * Math.cos(100 * Math.PI / 180);
-                const arc2CY = p2Y + r2 * Math.sin(100 * Math.PI / 180);
-
-                ctx.arc(arc2CX, arc2CY, r2, -80 * Math.PI / 180, 180 * Math.PI / 180, false);
-
-                const returnY = arc2CY + r2; // roughly
-
-                ctx.lineTo(cx, cy);
-                ctx.stroke();
-
-                ctx.fillStyle = C.ink;
-                ctx.textAlign = "left";
-                ctx.fillText("80°", cx - 40, obY - 10);
-                ctx.fillText("260°", arc2CX - r2 - 30, arc2CY);
-            }
-        }
-
-        function drawBaseTurnViz(tas, t, wind, xmax, ymax) {
-            const canvas = document.getElementById('baseVizCanvas');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            const C = bpColors();
-            const w = canvas.width;
-            const h = canvas.height;
-            ctx.clearRect(0, 0, w, h);
-
-            ctx.strokeStyle = C.cyan;
-            ctx.lineWidth = 2;
-            ctx.fillStyle = C.ink;
-            ctx.font = '12px ' + C.mono;
-
-            const cx = w * 0.3;
-            const cy = h * 0.8;
-
-            // Centerline
-            ctx.strokeStyle = C.muted;
-            ctx.setLineDash([5, 5]);
-            ctx.beginPath();
-            ctx.moveTo(0, cy);
-            ctx.lineTo(w, cy); // Outbound radial
-            ctx.moveTo(cx, h);
-            ctx.lineTo(cx, 0); // Inbound radial
-            ctx.stroke();
-            ctx.setLineDash([]);
-
-            // Draw fix
-            ctx.fillStyle = C.ink;
-            ctx.beginPath();
-            ctx.arc(cx, cy, 6, 0, 2 * Math.PI);
-            ctx.fill();
-            ctx.strokeStyle = C.muted;
-            ctx.beginPath();
-            ctx.arc(cx, cy, 10, 0, 2 * Math.PI);
-            ctx.stroke();
-            ctx.textAlign = "right";
-            ctx.fillStyle = C.ink;
-            ctx.fillText("Fix", cx - 15, cy + 15);
-
-            // Base Turn shape (Teardrop-ish expanding outward)
-            ctx.strokeStyle = C.primary;
-            ctx.lineWidth = 3;
-            ctx.fillStyle = C.primary;
-
-            const outAngle = -20 * Math.PI / 180; // Outbound slightly angled
-            const outLen = 140; // Visual length
-
-            ctx.beginPath();
-            ctx.moveTo(cx, cy);
-
-            // Outbound Leg
-            const tX = cx + outLen * Math.cos(outAngle);
-            const tY = cy + outLen * Math.sin(outAngle);
-            ctx.lineTo(tX, tY);
-            drawArrow(ctx, cx + (outLen / 2) * Math.cos(outAngle), cy + (outLen / 2) * Math.sin(outAngle), outAngle, 8);
-
-            // Tear drop loop turn back to inbound course
-            // Control points for a teardrop bezier
-            const cp1X = tX + 60;
-            const cp1Y = tY - 60;
-            const cp2X = cx + 80;
-            const cp2Y = cy - 120;
-            const endX = cx; // Intercept inbound course
-            const endY = cy - 80;
-
-            ctx.bezierCurveTo(cp1X, cp1Y, cp2X, cp2Y, endX, endY);
-
-            // Inbound leg
-            ctx.lineTo(cx, cy);
-            drawArrow(ctx, cx, cy - 40, Math.PI / 2, 8);
-
-            ctx.stroke();
-
-            // Dimensions and Extents (Xmax, Ymax)
-            ctx.strokeStyle = C.muted;
-            ctx.lineWidth = 1;
-            ctx.setLineDash([2, 2]);
-
-            // Max X extent
-            const maxX = tX + 30; // Approx visual max X
-            ctx.beginPath();
-            ctx.moveTo(maxX, cy + 20);
-            ctx.lineTo(maxX, cy - 130);
-            ctx.moveTo(cx, cy + 10);
-            ctx.lineTo(cx, cy - 130);
-            ctx.stroke();
-
-            // Max X indicator line
-            ctx.setLineDash([]);
-            ctx.beginPath();
-            ctx.moveTo(cx, cy - 120);
-            ctx.lineTo(maxX, cy - 120);
-            ctx.stroke();
-            ctx.fillStyle = C.ink;
-            ctx.textAlign = "center";
-            ctx.fillText("Xmax \u2248 " + parseFloat(xmax).toFixed(1) + " NM", cx + (maxX - cx) / 2, cy - 125);
-
-            // Max Y extent
-            const maxY = cy - 100; // Approx visual max Y
-            ctx.setLineDash([2, 2]);
-            ctx.beginPath();
-            ctx.moveTo(cx - 30, maxY);
-            ctx.lineTo(maxX + 20, maxY);
-            ctx.moveTo(cx - 30, cy);
-            ctx.lineTo(maxX + 20, cy);
-            ctx.stroke();
-
-            ctx.setLineDash([]);
-            ctx.beginPath();
-            ctx.moveTo(maxX + 10, cy);
-            ctx.lineTo(maxX + 10, maxY);
-            ctx.stroke();
-            ctx.textAlign = "left";
-            ctx.fillText("Ymax \u2248 " + parseFloat(ymax).toFixed(1) + " NM", maxX + 15, cy - (cy - maxY) / 2);
-        }
-
         // --- VNAV vs PAPI & DA SIMULATION ---
         function toggleVnpIls() {
             const isIls = document.getElementById('vnp-ils-yes').checked;
@@ -4459,108 +3798,808 @@
             });
         }
 
+        // =========================================================
+        // DIAGRAMS — HiDPI canvas + vector SVG
+        // Plan views are drawn to scale in NM (x = east, y = north).
+        // =========================================================
+        let VIZ_SCALE = 0; // > 0 forces a pixel ratio (used for PNG export)
+        const DEG = Math.PI / 180;
+
+        // Size a canvas to its frame at device pixel density; returns logical size
+        function setupCanvas(canvas, aspect, maxH, minH) {
+            const parentW = canvas.parentElement ? canvas.parentElement.clientWidth : 0;
+            const cssW = parentW || canvas._lastW || 600;
+            canvas._lastW = cssW;
+            let cssH = Math.round(cssW * aspect);
+            if (maxH) cssH = Math.min(cssH, maxH);
+            if (minH) cssH = Math.max(cssH, minH);
+            const dpr = VIZ_SCALE || Math.max(window.devicePixelRatio || 1, 1);
+            canvas.style.height = cssH + 'px';
+            canvas.width = Math.round(cssW * dpr);
+            canvas.height = Math.round(cssH * dpr);
+            const ctx = canvas.getContext('2d');
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            return { ctx, w: cssW, h: cssH };
+        }
+
+        function boundsOf(points, padFrac) {
+            let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+            points.forEach(([x, y]) => {
+                if (x < minX) minX = x; if (x > maxX) maxX = x;
+                if (y < minY) minY = y; if (y > maxY) maxY = y;
+            });
+            const px = (maxX - minX || 1) * (padFrac || 0), py = (maxY - minY || 1) * (padFrac || 0);
+            return { minX: minX - px, maxX: maxX + px, minY: minY - py, maxY: maxY + py };
+        }
+
+        // Fit NM bounds into the canvas (equal scale, north up)
+        function vizView(b, w, h, pad) {
+            const p = Object.assign({ t: 40, r: 24, b: 40, l: 24 }, pad || {});
+            const bw = Math.max(b.maxX - b.minX, 1e-6), bh = Math.max(b.maxY - b.minY, 1e-6);
+            const k = Math.min((w - p.l - p.r) / bw, (h - p.t - p.b) / bh);
+            const ox = p.l + ((w - p.l - p.r) - bw * k) / 2;
+            const oy = p.t + ((h - p.t - p.b) - bh * k) / 2;
+            return { k, X: (x) => ox + (x - b.minX) * k, Y: (y) => oy + (b.maxY - y) * k };
+        }
+
+        // Turtle path: straight legs and constant-radius turns
+        function makeTurtle(x, y, hdg) {
+            const T = { x, y, hdg, pts: [[x, y]], centers: [] };
+            T.fwd = (d) => {
+                T.x += d * Math.sin(T.hdg * DEG);
+                T.y += d * Math.cos(T.hdg * DEG);
+                T.pts.push([T.x, T.y]);
+                return T;
+            };
+            T.turn = (deg, r, right) => {
+                const s = right ? 1 : -1;
+                const ca = (T.hdg + 90 * s) * DEG;
+                const cx = T.x + r * Math.sin(ca), cy = T.y + r * Math.cos(ca);
+                T.centers.push([cx, cy, r]);
+                const n = Math.max(8, Math.ceil(Math.abs(deg) / 3));
+                for (let i = 1; i <= n; i++) {
+                    const a = (T.hdg + s * deg * i / n + 90 * s) * DEG;
+                    T.pts.push([cx - r * Math.sin(a), cy - r * Math.cos(a)]);
+                }
+                T.hdg = ((T.hdg + s * deg) % 360 + 360) % 360;
+                const last = T.pts[T.pts.length - 1];
+                T.x = last[0]; T.y = last[1];
+                return T;
+            };
+            return T;
+        }
+
+        // ---------- canvas primitives ----------
+        function cvPath(ctx, V, pts) {
+            ctx.beginPath();
+            pts.forEach(([x, y], i) => i ? ctx.lineTo(V.X(x), V.Y(y)) : ctx.moveTo(V.X(x), V.Y(y)));
+        }
+
+        function cvStroke(ctx, C, V, pts, color, width, dash) {
+            ctx.save();
+            if (!dash) { // soft glow under main line
+                cvPath(ctx, V, pts);
+                ctx.strokeStyle = C.fill; ctx.lineWidth = width + 6; ctx.stroke();
+            }
+            cvPath(ctx, V, pts);
+            ctx.setLineDash(dash || []);
+            ctx.strokeStyle = color; ctx.lineWidth = width; ctx.stroke();
+            ctx.restore();
+        }
+
+        function cvArrowHead(ctx, x, y, ang, color, size) {
+            size = size || 10;
+            ctx.save();
+            ctx.translate(x, y); ctx.rotate(ang);
+            ctx.beginPath();
+            ctx.moveTo(size * 0.6, 0);
+            ctx.lineTo(-size * 0.6, size * 0.48);
+            ctx.lineTo(-size * 0.3, 0);
+            ctx.lineTo(-size * 0.6, -size * 0.48);
+            ctx.closePath();
+            ctx.fillStyle = color; ctx.fill();
+            ctx.restore();
+        }
+
+        // Arrowheads at fractions of the path length
+        function cvArrowsAlong(ctx, V, pts, fracs, color, size) {
+            const P = pts.map(([x, y]) => [V.X(x), V.Y(y)]);
+            const seg = []; let L = 0;
+            for (let i = 1; i < P.length; i++) { const l = Math.hypot(P[i][0] - P[i - 1][0], P[i][1] - P[i - 1][1]); seg.push(l); L += l; }
+            fracs.forEach((f) => {
+                const target = f * L; let acc = 0;
+                for (let i = 0; i < seg.length; i++) {
+                    if (seg[i] > 0 && acc + seg[i] >= target) {
+                        const t = (target - acc) / seg[i];
+                        const [x0, y0] = P[i], [x1, y1] = P[i + 1];
+                        cvArrowHead(ctx, x0 + (x1 - x0) * t, y0 + (y1 - y0) * t, Math.atan2(y1 - y0, x1 - x0), color, size);
+                        break;
+                    }
+                    acc += seg[i];
+                }
+            });
+        }
+
+        function cvLabel(ctx, C, text, x, y, o) {
+            o = o || {};
+            const size = o.size || 11;
+            ctx.save();
+            ctx.font = (o.bold ? '600 ' : '500 ') + size + 'px ' + C.mono;
+            ctx.textAlign = o.align || 'center';
+            ctx.textBaseline = 'middle';
+            if (o.box !== false) {
+                const tw = ctx.measureText(text).width, ph = 5, pv = 3;
+                const bx = o.align === 'left' ? x : (o.align === 'right' ? x - tw : x - tw / 2);
+                ctx.globalAlpha = 0.9;
+                ctx.fillStyle = C.bg;
+                ctx.fillRect(bx - ph, y - size / 2 - pv, tw + ph * 2, size + pv * 2);
+                ctx.globalAlpha = 1;
+                if (o.border) {
+                    ctx.strokeStyle = o.border; ctx.lineWidth = 1;
+                    ctx.strokeRect(bx - ph + 0.5, y - size / 2 - pv + 0.5, tw + ph * 2 - 1, size + pv * 2 - 1);
+                }
+            }
+            ctx.fillStyle = o.color || C.ink;
+            ctx.fillText(text, x, y + 0.5);
+            ctx.restore();
+        }
+
+        // Dimension line with arrowheads and a centred value
+        function cvDim(ctx, C, x1, y1, x2, y2, text, color) {
+            color = color || C.muted;
+            ctx.save();
+            ctx.strokeStyle = color; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+            const a = Math.atan2(y2 - y1, x2 - x1);
+            cvArrowHead(ctx, x1, y1, a + Math.PI, color, 7);
+            cvArrowHead(ctx, x2, y2, a, color, 7);
+            ctx.restore();
+            if (text) cvLabel(ctx, C, text, (x1 + x2) / 2, (y1 + y2) / 2, { size: 10, color: C.ink, border: C.soft });
+        }
+
+        function cvScaleBar(ctx, C, V, x, y) {
+            const target = 100 / V.k;
+            const nice = [0.05, 0.1, 0.2, 0.25, 0.5, 1, 2, 2.5, 5, 10, 20, 25, 50, 100];
+            let nm = nice[0];
+            nice.forEach((n) => { if (n <= target) nm = n; });
+            const len = nm * V.k;
+            ctx.save();
+            ctx.fillStyle = C.ink;
+            ctx.fillRect(x, y - 3, len / 2, 3);
+            ctx.strokeStyle = C.ink; ctx.lineWidth = 1;
+            ctx.strokeRect(x + 0.5, y - 3.5, len, 3);
+            ctx.restore();
+            cvLabel(ctx, C, '0', x, y - 12, { size: 9, box: false, color: C.muted });
+            cvLabel(ctx, C, nm + ' NM', x + len, y - 12, { size: 9, box: false, color: C.muted });
+        }
+
+        function cvNorth(ctx, C, x, y) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(x, y - 12); ctx.lineTo(x + 6, y + 6); ctx.lineTo(x, y + 2); ctx.closePath();
+            ctx.fillStyle = C.ink; ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(x, y - 12); ctx.lineTo(x - 6, y + 6); ctx.lineTo(x, y + 2); ctx.closePath();
+            ctx.strokeStyle = C.ink; ctx.lineWidth = 1; ctx.stroke();
+            ctx.restore();
+            cvLabel(ctx, C, 'N', x, y - 22, { size: 10, bold: true, box: false });
+        }
+
+        function cvFix(ctx, C, x, y, label) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(x, y - 8); ctx.lineTo(x + 7, y + 5); ctx.lineTo(x - 7, y + 5); ctx.closePath();
+            ctx.fillStyle = C.bg; ctx.fill();
+            ctx.strokeStyle = C.ink; ctx.lineWidth = 1.6; ctx.stroke();
+            ctx.beginPath(); ctx.arc(x, y, 1.8, 0, Math.PI * 2); ctx.fillStyle = C.ink; ctx.fill();
+            ctx.restore();
+            if (label) cvLabel(ctx, C, label, x + 12, y + 13, { align: 'left', size: 10, bold: true });
+        }
+
+        function cvDot(ctx, C, x, y, color, r) {
+            ctx.beginPath(); ctx.arc(x, y, (r || 4) + 2, 0, Math.PI * 2); ctx.fillStyle = C.bg; ctx.fill();
+            ctx.beginPath(); ctx.arc(x, y, r || 4, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
+        }
+
+        function cvFooter(ctx, C, V, w, h, caption) {
+            cvScaleBar(ctx, C, V, 16, h - 14);
+            cvLabel(ctx, C, caption, w - 12, h - 16, { align: 'right', size: 9, box: false, color: C.muted });
+            cvNorth(ctx, C, w - 24, 62);
+        }
+
+        // ---------- SVG helpers ----------
+        function svgPill(C, x, y, text, color, anchor) {
+            const w = text.length * 6.6 + 12, h = 17;
+            const x0 = anchor === 'start' ? x : (anchor === 'end' ? x - w : x - w / 2);
+            return `<g><rect x="${x0}" y="${y - h / 2}" width="${w}" height="${h}" rx="2" fill="${C.bg}" fill-opacity="0.92" stroke="${color}" stroke-width="1"/>` +
+                `<text x="${x0 + w / 2}" y="${y + 4}" fill="${color}" font-size="11" font-weight="600" text-anchor="middle">${text}</text></g>`;
+        }
+
+        // =========================================================
+        // 02-B PROCEDURE TURN — nominal track to scale (no wind)
+        // =========================================================
+        function drawPTViz(tas, radius, timeOut, type, ias) {
+            const canvas = document.getElementById('ptVizCanvas');
+            if (!canvas) return;
+            const { ctx, w, h } = setupCanvas(canvas, 0.66, 460, 260);
+            const C = bpColors();
+            const r = radius, dOut = tas * timeOut / 60;
+
+            const T = makeTurtle(0, 0, 0); // fix at origin, outbound = north
+            let legNote = '', turnCtr;
+            if (type === '45/180') {
+                const legT = (ias || tas) < 170 ? 1.0 : 1.25;
+                const dLeg = tas * legT / 60;
+                T.fwd(dOut).turn(45, r, true).fwd(dLeg).turn(180, r, false);
+                const probe = makeTurtle(0, 0, 225).turn(45, r, false);
+                T.fwd(Math.max(0, (T.x + probe.x) / Math.SQRT1_2)).turn(45, r, false);
+                turnCtr = T.centers[1];
+                legNote = '45° leg ' + legT + ' min';
+            } else {
+                T.fwd(dOut).turn(80, r, false).turn(260, r, true);
+                turnCtr = T.centers[1];
+                legNote = '80° / 260°';
+            }
+            T.fwd(Math.max(0, T.y));
+
+            const B = boundsOf(T.pts.concat([[0, 0], [-r * 0.6, 0]]), 0.06);
+            B.minY -= (B.maxY - B.minY) * 0.12;
+            const V = vizView(B, w, h, { t: 44, b: 48, l: 70, r: 60 });
+
+            // course line
+            cvStroke(ctx, C, V, [[0, B.minY], [0, B.maxY]], C.muted, 1, [6, 6]);
+            // track
+            cvStroke(ctx, C, V, T.pts, C.primary, 2.4);
+            cvArrowsAlong(ctx, V, T.pts, [0.06, 0.24, 0.42, 0.6, 0.78, 0.95], C.primary, 11);
+
+            // turn radius
+            if (turnCtr) {
+                const [cx, cy] = turnCtr;
+                const ex = cx + r * Math.sin(-60 * DEG), ey = cy + r * Math.cos(-60 * DEG);
+                ctx.save(); ctx.setLineDash([3, 3]); ctx.strokeStyle = C.cyan; ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.moveTo(V.X(cx), V.Y(cy)); ctx.lineTo(V.X(ex), V.Y(ey)); ctx.stroke(); ctx.restore();
+                cvDot(ctx, C, V.X(cx), V.Y(cy), C.cyan, 2.5);
+                cvLabel(ctx, C, 'r ' + r.toFixed(2) + ' NM', V.X(cx), V.Y(cy) + 16, { size: 10, color: C.cyan });
+            }
+
+            // outbound dimension (left of course)
+            const dx = V.X(0) - 26;
+            cvDim(ctx, C, dx, V.Y(0), dx, V.Y(dOut), dOut.toFixed(2) + ' NM');
+            cvLabel(ctx, C, timeOut + ' min', dx, V.Y(dOut) - 14, { size: 9, box: false, color: C.muted });
+
+            cvLabel(ctx, C, legNote, V.X(T.centers[0][0]) + 24, V.Y(T.centers[0][1]), { align: 'left', size: 10, color: C.warning });
+            cvFix(ctx, C, V.X(0), V.Y(0), 'FIX');
+            cvFooter(ctx, C, V, w, h, type + ' · TAS ' + Math.round(tas) + ' kt · to scale, no wind');
+        }
+
+        // =========================================================
+        // 02-C BASE TURN — nominal track + Doc 8168 extents to scale
+        // =========================================================
+        function drawBaseTurnViz(tas, t, wind, xmax, ymax, ymin) {
+            const canvas = document.getElementById('baseVizCanvas');
+            if (!canvas) return;
+            const { ctx, w, h } = setupCanvas(canvas, 0.75, 520, 280);
+            const C = bpColors();
+
+            const phi = tas <= 170 ? 36 / t : (0.215 * tas) / t;
+            const rate = Math.min(3, (3431 * Math.tan(25 * DEG)) / (Math.PI * tas));
+            const r = tas / (20 * Math.PI * rate);
+            const dOut = tas * t / 60;
+
+            const T = makeTurtle(0, 0, phi).fwd(dOut).turn(180 + phi, r, false);
+            T.fwd(Math.max(0, T.y));
+
+            const hasBox = isFinite(xmax) && isFinite(ymax) && isFinite(ymin);
+            const bx1 = Math.min(ymin, ymax), bx2 = Math.max(ymin, ymax);
+            const pts = T.pts.concat(hasBox ? [[bx1, 0], [bx2, xmax]] : []);
+            const B = boundsOf(pts.concat([[0, 0]]), 0.05);
+            B.minY -= (B.maxY - B.minY) * 0.08;
+            const V = vizView(B, w, h, { t: 50, b: 48, l: 28, r: 74 });
+
+            // protected extents box
+            if (hasBox) {
+                const X1 = V.X(bx1), X2 = V.X(bx2), Y1 = V.Y(0), Y2 = V.Y(xmax);
+                ctx.save();
+                ctx.fillStyle = C.fill; ctx.fillRect(X1, Y2, X2 - X1, Y1 - Y2);
+                ctx.setLineDash([7, 4]); ctx.strokeStyle = C.warning; ctx.lineWidth = 1.3;
+                ctx.strokeRect(X1, Y2, X2 - X1, Y1 - Y2);
+                ctx.restore();
+                cvDim(ctx, C, X2 + 18, Y1, X2 + 18, Y2, 'xmax ' + xmax.toFixed(2));
+                cvDim(ctx, C, V.X(0), Y2 - 14, X2, Y2 - 14, 'ymax ' + ymax.toFixed(2));
+                if (bx1 < 0) cvDim(ctx, C, X1, Y2 - 14, V.X(0), Y2 - 14, 'ymin ' + ymin.toFixed(2));
+            }
+
+            // course line + track
+            cvStroke(ctx, C, V, [[0, B.minY], [0, B.maxY]], C.muted, 1, [6, 6]);
+            cvStroke(ctx, C, V, T.pts, C.primary, 2.4);
+            cvArrowsAlong(ctx, V, T.pts, [0.15, 0.45, 0.62, 0.8, 0.95], C.primary, 11);
+
+            // divergence angle at the fix
+            const R0 = 34;
+            ctx.save(); ctx.strokeStyle = C.warning; ctx.lineWidth = 1.2;
+            ctx.beginPath(); ctx.arc(V.X(0), V.Y(0), R0, -Math.PI / 2, -Math.PI / 2 + phi * DEG); ctx.stroke(); ctx.restore();
+            cvLabel(ctx, C, 'φ ' + phi.toFixed(1) + '°', V.X(0) + R0 + 6, V.Y(0) - R0 + 4, { align: 'left', size: 10, color: C.warning });
+
+            // turn radius
+            const [cx, cy] = T.centers[0];
+            cvDot(ctx, C, V.X(cx), V.Y(cy), C.cyan, 2.5);
+            cvLabel(ctx, C, 'r ' + r.toFixed(2), V.X(cx), V.Y(cy) + 14, { size: 10, color: C.cyan, box: false });
+
+            cvFix(ctx, C, V.X(0), V.Y(0), 'FIX');
+            cvLabel(ctx, C, '▭ protected extents (Doc 8168)', 10, 34, { align: 'left', size: 9, box: false, color: C.warning });
+            cvFooter(ctx, C, V, w, h, 'Outbound ' + t + ' min · ' + dOut.toFixed(2) + ' NM · w ' + Math.round(wind) + ' kt');
+        }
+
+        // =========================================================
+        // 03-A TURN ANTICIPATION — intercept geometry to scale
+        // =========================================================
+        function drawTurnViz() {
+            const curTrk = parseFloat(document.getElementById('viz-cur-trk').value);
+            const finCrs = parseFloat(document.getElementById('viz-fin-crs').value);
+            const ias = parseFloat(document.getElementById('viz-ias').value);
+            const alt = parseFloat(document.getElementById('viz-alt').value);
+            const bank = parseFloat(document.getElementById('viz-bank').value);
+
+            if (isNaN(curTrk) || isNaN(finCrs) || isNaN(ias) || isNaN(alt) || isNaN(bank)) return;
+
+            // Doc 8168 TAS calculation
+            const t0 = 288;
+            const lapseRate = 0.00198;
+            const numerator = 171233 * Math.pow(t0 - lapseRate * alt, 0.5);
+            const denominator = Math.pow(t0 - lapseRate * alt, 2.628);
+            let tas = ias * (numerator / denominator);
+            if (tas <= 0) tas = 1;
+
+            const dir = document.getElementById('viz-dir').value;
+
+            let diff = finCrs - curTrk;
+            if (diff < -180) diff += 360;
+            if (diff > 180) diff -= 360;
+
+            let isRightTurn = diff > 0;
+            let theta = Math.abs(diff);
+
+            if (dir === 'right' && !isRightTurn && theta !== 0) {
+                isRightTurn = true;
+                theta = 360 - theta;
+            } else if (dir === 'left' && isRightTurn && theta !== 0) {
+                isRightTurn = false;
+                theta = 360 - theta;
+            }
+
+            const rate = (3431 * Math.tan(bank * DEG)) / (Math.PI * tas);
+            const r = tas / (20 * Math.PI * rate);
+
+            let ta = 0, offset = 0;
+            if (theta === 180) offset = 2 * r;
+            else ta = r * Math.tan((theta / 2) * DEG);
+
+            document.getElementById('viz-theta').textContent = theta.toFixed(1) + " \xB0";
+            document.getElementById('viz-radius').textContent = r.toFixed(2) + " NM";
+            document.getElementById('viz-ta').textContent = theta === 180 ? "N/A" : ta.toFixed(2) + " NM";
+            document.getElementById('viz-offset').textContent = theta === 180 ? offset.toFixed(2) + " NM" : "N/A";
+
+            // ---- drawing ----
+            const canvas = document.getElementById('turnCanvas');
+            if (!canvas) return;
+            const { ctx, w, h } = setupCanvas(canvas, 1, 560, 300);
+            const C = bpColors();
+            const u = [Math.sin(curTrk * DEG), Math.cos(curTrk * DEG)];
+            const v = [Math.sin(finCrs * DEG), Math.cos(finCrs * DEG)];
+
+            if (theta < 0.5) {
+                const L = Math.max(r, 1) * 2;
+                const V0 = vizView({ minX: -L, maxX: L, minY: -L, maxY: L }, w, h);
+                cvStroke(ctx, C, V0, [[-u[0] * L, -u[1] * L], [u[0] * L, u[1] * L]], C.ink, 2.4);
+                cvArrowsAlong(ctx, V0, [[-u[0] * L, -u[1] * L], [u[0] * L, u[1] * L]], [0.5], C.ink, 11);
+                cvLabel(ctx, C, 'No turn required', w / 2, 24, { color: C.muted });
+                return;
+            }
+
+            const is180 = theta === 180;
+            const S = is180 ? [0, 0] : [-ta * u[0], -ta * u[1]];
+            const T = makeTurtle(S[0], S[1], curTrk).turn(theta, r, isRightTurn);
+            const E = [T.x, T.y];
+            const ctr = T.centers[0];
+            const ext = Math.max(Math.abs(ta), r) * 1.5 + r * 0.6;
+            const inStart = [S[0] - u[0] * ext, S[1] - u[1] * ext];
+            const outEnd = [E[0] + v[0] * ext, E[1] + v[1] * ext];
+
+            const pts = [inStart, outEnd, [ctr[0] - r, ctr[1] - r], [ctr[0] + r, ctr[1] + r], S, E];
+            if (!is180) pts.push([0, 0]);
+            const Bt = boundsOf(pts, 0.06);
+            const half = Math.max(Bt.maxX - Bt.minX, Bt.maxY - Bt.minY) / 2;
+            const mx = (Bt.maxX + Bt.minX) / 2, my = (Bt.maxY + Bt.minY) / 2;
+            const V = vizView({ minX: mx - half, maxX: mx + half, minY: my - half, maxY: my + half }, w, h, { t: 40, b: 44, l: 24, r: 24 });
+            const far = half * 4;
+
+            // construction lines
+            const I = is180 ? S : [0, 0];
+            cvStroke(ctx, C, V, [[I[0] - u[0] * far, I[1] - u[1] * far], [I[0] + u[0] * far, I[1] + u[1] * far]], C.soft, 1, [5, 5]);
+            cvStroke(ctx, C, V, [[E[0] - v[0] * far, E[1] - v[1] * far], [E[0] + v[0] * far, E[1] + v[1] * far]], C.muted, 1, [5, 5]);
+
+            // radius lines
+            ctx.save(); ctx.setLineDash([3, 3]); ctx.strokeStyle = C.cyan; ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(V.X(ctr[0]), V.Y(ctr[1])); ctx.lineTo(V.X(S[0]), V.Y(S[1]));
+            ctx.moveTo(V.X(ctr[0]), V.Y(ctr[1])); ctx.lineTo(V.X(E[0]), V.Y(E[1]));
+            ctx.stroke(); ctx.restore();
+            cvDot(ctx, C, V.X(ctr[0]), V.Y(ctr[1]), C.cyan, 3);
+            cvLabel(ctx, C, 'r ' + r.toFixed(2) + ' NM', (V.X(ctr[0]) + V.X(S[0])) / 2, (V.Y(ctr[1]) + V.Y(S[1])) / 2, { size: 10, color: C.cyan, border: C.soft });
+
+            // tracks
+            cvStroke(ctx, C, V, [inStart, S], C.ink, 2.4);
+            cvStroke(ctx, C, V, T.pts, C.warning, 2.6);
+            cvStroke(ctx, C, V, [E, outEnd], C.success, 2.4);
+            cvArrowsAlong(ctx, V, [inStart, S], [0.55], C.ink, 12);
+            cvArrowsAlong(ctx, V, T.pts, [0.5], C.warning, 11);
+            cvArrowsAlong(ctx, V, [E, outEnd], [0.6], C.success, 12);
+
+            // dimensions
+            const nOut = isRightTurn ? [-u[1], u[0]] : [u[1], -u[0]]; // outside of the turn (NM vector)
+            const off = 18 / V.k;
+            if (!is180 && ta > 0) {
+                cvDim(ctx, C, V.X(S[0] + nOut[0] * off), V.Y(S[1] + nOut[1] * off), V.X(nOut[0] * off), V.Y(nOut[1] * off), 'Lead ' + ta.toFixed(2) + ' NM', C.warning);
+                // turn angle at intersection
+                const bis = [v[0] + u[0], v[1] + u[1]], bl = Math.hypot(bis[0], bis[1]) || 1;
+                cvLabel(ctx, C, 'θ ' + theta.toFixed(0) + '°', V.X(bis[0] / bl * 30 / V.k), V.Y(bis[1] / bl * 30 / V.k), { size: 10, bold: true });
+                cvDot(ctx, C, V.X(0), V.Y(0), C.danger, 4);
+            }
+            if (is180) {
+                cvDim(ctx, C, V.X(S[0]), V.Y(S[1]), V.X(E[0]), V.Y(E[1]), 'Offset ' + offset.toFixed(2) + ' NM', C.primary);
+            }
+            cvDot(ctx, C, V.X(S[0]), V.Y(S[1]), C.danger, 4);
+            cvDot(ctx, C, V.X(E[0]), V.Y(E[1]), C.success, 4);
+
+            cvScaleBar(ctx, C, V, 16, h - 14);
+            cvLabel(ctx, C, String(Math.round(curTrk)).padStart(3, '0') + '° → ' + String(Math.round(finCrs)).padStart(3, '0') + '° · TAS ' + Math.round(tas) + ' kt',
+                w - 12, h - 16, { align: 'right', size: 9, box: false, color: C.muted });
+            cvNorth(ctx, C, w - 24, 62);
+        }
+
+        // =========================================================
+        // 04 GRADIENT PROFILE
+        // =========================================================
+        function drawGradientViz(runNM, riseFT, isClimb, angleVal, canvasId) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const { ctx, w, h } = setupCanvas(canvas, 0.36, 210, 150);
+            const C = bpColors();
+            if (runNM <= 0 || riseFT <= 0) return;
+
+            const p = { l: 58, r: 20, t: 20, b: 32 };
+            const x0 = p.l, x1 = w - p.r, yb = h - p.b, yt = p.t;
+            const fmt = (n) => (Math.round(n * 100) / 100).toLocaleString();
+
+            // grid & axes
+            ctx.save();
+            ctx.strokeStyle = C.soft; ctx.lineWidth = 1;
+            for (let i = 1; i <= 4; i++) {
+                const x = x0 + (x1 - x0) * i / 4;
+                ctx.beginPath(); ctx.moveTo(x, yb); ctx.lineTo(x, yt); ctx.stroke();
+            }
+            ctx.beginPath(); ctx.moveTo(x0, yt); ctx.lineTo(x1, yt); ctx.stroke();
+            ctx.strokeStyle = C.line;
+            ctx.beginPath(); ctx.moveTo(x0, yt); ctx.lineTo(x0, yb); ctx.lineTo(x1, yb); ctx.stroke();
+            ctx.restore();
+            for (let i = 0; i <= 4; i++) {
+                cvLabel(ctx, C, fmt(runNM * i / 4), x0 + (x1 - x0) * i / 4, yb + 12, { size: 9, box: false, color: C.muted });
+            }
+            cvLabel(ctx, C, 'NM', x1, yb + 24, { size: 9, box: false, color: C.muted, align: 'right' });
+            cvLabel(ctx, C, '0', x0 - 8, yb, { size: 9, box: false, color: C.muted, align: 'right' });
+            cvLabel(ctx, C, Math.round(riseFT).toLocaleString(), x0 - 8, yt, { size: 9, box: false, color: C.muted, align: 'right' });
+            cvLabel(ctx, C, 'ft', x0 - 8, yt + 14, { size: 9, box: false, color: C.muted, align: 'right' });
+
+            const ya = isClimb ? yb : yt, yz = isClimb ? yt : yb;
+            ctx.save();
+            const grad = ctx.createLinearGradient(0, yt, 0, yb);
+            grad.addColorStop(0, C.fill); grad.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.beginPath(); ctx.moveTo(x0, ya); ctx.lineTo(x1, yz); ctx.lineTo(x1, yb); ctx.lineTo(x0, yb); ctx.closePath();
+            ctx.fillStyle = grad; ctx.fill();
+            ctx.beginPath(); ctx.moveTo(x0, ya); ctx.lineTo(x1, yz);
+            ctx.strokeStyle = C.fill; ctx.lineWidth = 8; ctx.stroke();
+            ctx.strokeStyle = isClimb ? C.success : C.danger; ctx.lineWidth = 2.5; ctx.stroke();
+            ctx.restore();
+            const slope = Math.atan2(yz - ya, x1 - x0);
+            cvArrowHead(ctx, (x0 + x1) / 2, (ya + yz) / 2, slope, isClimb ? C.success : C.danger, 11);
+            cvDot(ctx, C, x0, ya, C.ink, 3.5);
+            cvDot(ctx, C, x1, yz, C.ink, 3.5);
+
+            // angle arc at the low end
+            const ax = isClimb ? x0 : x1, start = isClimb ? -Math.abs(slope) : Math.PI, end = isClimb ? 0 : Math.PI + Math.abs(slope);
+            ctx.save(); ctx.strokeStyle = C.warning; ctx.lineWidth = 1.2;
+            ctx.beginPath(); ctx.arc(ax, yb, 38, start, end); ctx.stroke(); ctx.restore();
+            cvLabel(ctx, C, angleVal.toFixed(2) + '°', isClimb ? ax + 46 : ax - 46, yb - 10, { size: 10, color: C.warning, align: isClimb ? 'left' : 'right' });
+
+            const pct = Math.tan(angleVal * DEG) * 100;
+            cvLabel(ctx, C, pct.toFixed(2) + '%  ·  ' + Math.round(riseFT / runNM).toLocaleString() + ' ft/NM',
+                (x0 + x1) / 2, (ya + yz) / 2 - 18, { size: 10, bold: true, border: C.soft });
+            cvLabel(ctx, C, 'vertical exaggerated', x0, yb + 24, { size: 8, box: false, color: C.muted, align: 'left' });
+        }
+
+        // =========================================================
+        // 02-D BASE TURN DIVERGENCE — compass diagram (SVG)
+        // =========================================================
+        function drawBtpVisualizer(outboundTrack, inboundTrack, turnDirection, publishedTrack) {
+            const C = bpColors();
+            const S = 380, c = S / 2, R = 120;
+            const P = (ang, rr) => { const a = (ang - 90) * DEG; return { x: c + rr * Math.cos(a), y: c + rr * Math.sin(a) }; };
+            const pad3 = (n) => String(Math.round(((n % 360) + 360) % 360)).padStart(3, '0');
+            const recip = (inboundTrack + 180) % 360;
+            const out = P(outboundTrack, R), inn = P(recip, R);
+            const phi = ((outboundTrack - recip + 540) % 360) - 180;
+
+            let s = '';
+            // compass rose
+            s += `<circle cx="${c}" cy="${c}" r="${R + 18}" fill="${C.fill}" fill-opacity="0.35" stroke="${C.line}" stroke-width="1"/>`;
+            s += `<circle cx="${c}" cy="${c}" r="${R * 0.5}" fill="none" stroke="${C.soft}" stroke-width="1" stroke-dasharray="2 4"/>`;
+            for (let i = 0; i < 360; i += 5) {
+                const len = i % 30 === 0 ? 12 : (i % 10 === 0 ? 8 : 4);
+                const a = P(i, R + 18), b = P(i, R + 18 - len);
+                s += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${i % 30 === 0 ? C.ink : C.line}" stroke-width="${i % 30 === 0 ? 1.4 : 1}"/>`;
+                if (i % 30 === 0) {
+                    const t = P(i, R + 34);
+                    const lbl = { 0: 'N', 90: 'E', 180: 'S', 270: 'W' }[i] || pad3(i);
+                    const card = i % 90 === 0;
+                    s += `<text x="${t.x}" y="${t.y + 4}" fill="${card ? C.ink : C.muted}" font-size="${card ? 13 : 10}" font-weight="${card ? 700 : 500}" text-anchor="middle">${lbl}</text>`;
+                }
+            }
+
+            // reciprocal reference + phi wedge
+            const rr = P(recip, R + 18);
+            s += `<line x1="${c}" y1="${c}" x2="${rr.x}" y2="${rr.y}" stroke="${C.muted}" stroke-width="1" stroke-dasharray="4 4"/>`;
+            const wr = 56, w1 = P(recip, wr), w2 = P(outboundTrack, wr);
+            const sweep = phi > 0 ? 1 : 0;
+            s += `<path d="M ${c} ${c} L ${w1.x} ${w1.y} A ${wr} ${wr} 0 0 ${sweep} ${w2.x} ${w2.y} Z" fill="${C.warning}" fill-opacity="0.16" stroke="${C.warning}" stroke-width="1.2"/>`;
+            const wl = P(recip + phi / 2, wr * 0.62);
+            s += svgPill(C, wl.x, wl.y, 'φ ' + Math.abs(phi).toFixed(1) + '°', C.warning);
+
+            // published (charted) outbound
+            if (publishedTrack) {
+                const pb = P(publishedTrack, R);
+                s += `<line x1="${c}" y1="${c}" x2="${pb.x}" y2="${pb.y}" stroke="${C.danger}" stroke-width="2.2" stroke-dasharray="7 5"/>`;
+                s += `<circle cx="${pb.x}" cy="${pb.y}" r="4.5" fill="${C.danger}"/>`;
+            }
+
+            // turn arc
+            const dist = Math.hypot(inn.x - out.x, inn.y - out.y);
+            const arcR = dist * 0.7;
+            const sw = turnDirection === 'Right' ? 1 : 0;
+            s += `<path d="M ${out.x} ${out.y} A ${arcR} ${arcR} 0 1 ${sw} ${inn.x} ${inn.y}" stroke="${C.primary}" stroke-width="2" fill="none" stroke-dasharray="6 4" marker-end="url(#btpArrIn)"/>`;
+
+            // required outbound + inbound
+            s += `<line x1="${c}" y1="${c}" x2="${out.x}" y2="${out.y}" stroke="${C.fill}" stroke-width="9"/>`;
+            s += `<line x1="${c}" y1="${c}" x2="${out.x}" y2="${out.y}" stroke="${C.success}" stroke-width="3" marker-end="url(#btpArrOut)"/>`;
+            s += `<line x1="${inn.x}" y1="${inn.y}" x2="${c}" y2="${c}" stroke="${C.fill}" stroke-width="9"/>`;
+            s += `<line x1="${inn.x}" y1="${inn.y}" x2="${c}" y2="${c}" stroke="${C.primary}" stroke-width="3" marker-end="url(#btpArrIn)"/>`;
+
+            // labels
+            const sg = phi >= 0 ? 1 : -1;
+            const lo = P(outboundTrack + sg * 9, R * 0.8), li = P(recip - sg * 9, R * 0.8);
+            s += svgPill(C, lo.x, lo.y, pad3(outboundTrack) + '°', C.success);
+            s += svgPill(C, li.x, li.y, 'INB ' + pad3(inboundTrack) + '°', C.primary);
+            if (publishedTrack) {
+                const lp = P(publishedTrack, R * 0.45);
+                s += svgPill(C, lp.x, lp.y, 'CHT ' + pad3(publishedTrack) + '°', C.danger);
+            }
+
+            // fix
+            s += `<polygon points="${c},${c - 9} ${c + 8},${c + 6} ${c - 8},${c + 6}" fill="${C.bg}" stroke="${C.ink}" stroke-width="1.6"/>`;
+
+            // fit view to the turn arc (it bulges outside the rose)
+            const half = dist / 2, chordD = R * Math.cos(Math.abs(phi) / 2 * DEG);
+            const farD = chordD + arcR + Math.sqrt(Math.max(0, arcR * arcR - half * half));
+            const ext = Math.max(R + 46, farD + 10);
+            const vx = c - ext, vy = c - ext, vw = ext * 2, vh = ext * 2 + 34;
+
+            // legend
+            const ly = c + ext + 20;
+            const lx = vx + 14;
+            let leg = `<g font-size="10.5" font-weight="600">`;
+            leg += `<line x1="${lx}" y1="${ly}" x2="${lx + 18}" y2="${ly}" stroke="${C.success}" stroke-width="3"/><text x="${lx + 24}" y="${ly + 4}" fill="${C.success}">Required outbound</text>`;
+            leg += `<line x1="${lx + 150}" y1="${ly}" x2="${lx + 168}" y2="${ly}" stroke="${C.primary}" stroke-width="3"/><text x="${lx + 174}" y="${ly + 4}" fill="${C.primary}">Inbound</text>`;
+            if (publishedTrack) leg += `<line x1="${lx + 240}" y1="${ly}" x2="${lx + 258}" y2="${ly}" stroke="${C.danger}" stroke-width="2.2" stroke-dasharray="5 3"/><text x="${lx + 264}" y="${ly + 4}" fill="${C.danger}">Charted</text>`;
+            leg += `</g>`;
+
+            const defs = `<defs>
+                <marker id="btpArrOut" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 L3,5 Z" fill="${C.success}"/></marker>
+                <marker id="btpArrIn" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 L3,5 Z" fill="${C.primary}"/></marker>
+            </defs>`;
+
+            document.getElementById('btp-svg-container').innerHTML =
+                `<svg viewBox="${vx} ${vy} ${vw} ${vh}" width="100%" style="display:block; max-width:460px; font-family:${C.mono};">${defs}${s}${leg}</svg>`;
+        }
+
+        // =========================================================
+        // 08-B VNAV vs PAPI PROFILE (SVG)
+        // =========================================================
         function drawVnavPapiChart(r) {
             const C = bpColors();
-            const width = 700;
-            const height = 380;
-            const pad = { top: 20, right: 20, bottom: 50, left: 60 };
+            const box = document.getElementById('vnp-chart-container');
+            const compact = box && box.clientWidth > 0 && box.clientWidth < 640;
+            // phones: draw 1:1 with the container so text stays readable
+            const width = compact ? Math.max(300, box.clientWidth - 4) : 780;
+            const height = compact ? Math.round(width * 1.1) : 400;
+            const pad = compact ? { top: 30, right: 88, bottom: 40, left: 44 } : { top: 24, right: 118, bottom: 52, left: 64 };
 
             const minNM = -0.25;
             const maxNM = Math.max(2.0, Math.ceil(r.fafDistNm + 0.5));
             const maxYFt = Math.max(1000, Math.ceil((r.trueFafHatFt * 1.2) / 500) * 500);
+            const plotR = width - pad.right, plotB = height - pad.bottom;
 
-            const scX = (nm) => pad.left + ((nm - minNM) / (maxNM - minNM)) * (width - pad.left - pad.right);
-            const scY = (ft) => height - pad.bottom - (ft / maxYFt) * (height - pad.top - pad.bottom);
+            const scX = (nm) => pad.left + ((nm - minNM) / (maxNM - minNM)) * (plotR - pad.left);
+            const scY = (ft) => plotB - (ft / maxYFt) * (plotB - pad.top);
+            const clampY = (ft) => Math.max(-50, Math.min(maxYFt * 1.05, ft));
 
-            // Generate data points
-            let vnavPts = '', papi3Pts = '', papi2Pts = '', papiNomPts = '';
-            for (let nm = minNM; nm <= maxNM; nm += 0.05) {
+            const vnav = [], design = [], p3 = [], p2 = [], pn = [];
+            for (let nm = minNM; nm <= maxNM + 1e-9; nm += 0.05) {
                 const distFt = nm * 6076.12;
-                const distFromPapi = distFt + r.PAPI_DIST_FT;
-
-                const papiNomY = distFromPapi >= 0 ? distFromPapi * Math.tan(r.toRad(r.effectiveNominalPapi)) : 0;
-                const p3Y = distFromPapi >= 0 ? distFromPapi * r.tanPapi3 : 0;
-                const p2Y = distFromPapi >= 0 ? distFromPapi * r.tanPapi2 : 0;
-
-                const indicatedVnavHat = (distFt * r.tanVpa) + r.TCH;
-                const vnavTrueY = distFt >= 0 ? r.getTrueHatVnav(indicatedVnavHat) : (distFt * r.tanVpa + r.TCH) * r.tempRatio;
-
-                const sx = scX(nm);
-                vnavPts += sx + ',' + scY(vnavTrueY) + ' ';
-                papi3Pts += sx + ',' + scY(p3Y) + ' ';
-                papi2Pts += sx + ',' + scY(p2Y) + ' ';
-                papiNomPts += sx + ',' + scY(papiNomY) + ' ';
+                const fromPapi = distFt + r.PAPI_DIST_FT;
+                const nomY = fromPapi >= 0 ? fromPapi * Math.tan(r.toRad(r.effectiveNominalPapi)) : 0;
+                const y3 = fromPapi >= 0 ? fromPapi * r.tanPapi3 : 0;
+                const y2 = fromPapi >= 0 ? fromPapi * r.tanPapi2 : 0;
+                const ind = distFt * r.tanVpa + r.TCH;
+                const tru = distFt >= 0 ? r.getTrueHatVnav(ind) : ind * r.tempRatio;
+                const x = scX(nm);
+                vnav.push([x, scY(clampY(tru))]);
+                design.push([x, scY(clampY(ind))]);
+                p3.push([x, scY(clampY(y3))]);
+                p2.push([x, scY(clampY(y2))]);
+                pn.push([x, scY(clampY(nomY))]);
             }
+            const pl = (a) => a.map((p) => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
 
-            // Grid
-            let gridHtml = '';
+            let s = `<defs><clipPath id="vnpClip"><rect x="${pad.left}" y="${pad.top}" width="${plotR - pad.left}" height="${plotB - pad.top}"/></clipPath></defs>`;
+
+            // grid + ticks
             const xStep = maxNM > 5 ? 1 : 0.5;
-            for (let nm = 0; nm <= maxNM; nm += xStep) {
-                gridHtml += `<line x1="${scX(nm)}" y1="${pad.top}" x2="${scX(nm)}" y2="${height - pad.bottom}" stroke="${nm === 0 ? C.line : C.soft}" stroke-width="${nm === 0 ? 2 : 1}" />`;
-                gridHtml += `<text x="${scX(nm)}" y="${height - pad.bottom + 15}" fill="${C.muted}" font-size="10" text-anchor="middle">${nm}</text>`;
+            for (let nm = 0; nm <= maxNM + 1e-9; nm += xStep) {
+                s += `<line x1="${scX(nm)}" y1="${pad.top}" x2="${scX(nm)}" y2="${plotB}" stroke="${nm === 0 ? C.line : C.soft}" stroke-width="1"/>`;
+                s += `<text x="${scX(nm)}" y="${plotB + 16}" fill="${C.muted}" font-size="10" text-anchor="middle">${nm}</text>`;
             }
             const yStep = maxYFt > 2000 ? 500 : 200;
             for (let ft = 0; ft <= maxYFt; ft += yStep) {
-                gridHtml += `<line x1="${pad.left}" y1="${scY(ft)}" x2="${width - pad.right}" y2="${scY(ft)}" stroke="${C.soft}" />`;
-                gridHtml += `<text x="${pad.left - 8}" y="${scY(ft) + 4}" fill="${C.muted}" font-size="10" text-anchor="end">${ft}</text>`;
+                s += `<line x1="${pad.left}" y1="${scY(ft)}" x2="${plotR}" y2="${scY(ft)}" stroke="${C.soft}" stroke-width="1"/>`;
+                s += `<text x="${pad.left - 6}" y="${scY(ft) + 3.5}" fill="${C.muted}" font-size="10" text-anchor="end">${compact && ft >= 1000 ? (ft / 1000) + 'k' : ft.toLocaleString()}</text>`;
             }
+            s += `<rect x="${pad.left}" y="${pad.top}" width="${plotR - pad.left}" height="${plotB - pad.top}" fill="none" stroke="${C.line}" stroke-width="1"/>`;
 
-            // Runway
-            const rwHtml = `<rect x="${scX(minNM)}" y="${scY(0)}" width="${scX(0) - scX(minNM)}" height="6" fill="${C.muted}" rx="2"/>
-                <text x="${scX(-0.1)}" y="${scY(0) + 18}" fill="${C.muted}" font-size="10" font-weight="bold">RUNWAY</text>`;
+            // PAPI corridor (between Box 2 and Box 3)
+            s += `<g clip-path="url(#vnpClip)">`;
+            s += `<polygon points="${pl(p3)} ${pl(p2.slice().reverse())}" fill="${C.success}" fill-opacity="0.10"/>`;
+            s += `<polyline points="${pl(pn)}" fill="none" stroke="${C.muted}" stroke-width="1.4" stroke-dasharray="6 4"/>`;
+            s += `<polyline points="${pl(p3)}" fill="none" stroke="${C.danger}" stroke-width="1.6" stroke-dasharray="8 5"/>`;
+            s += `<polyline points="${pl(p2)}" fill="none" stroke="${C.danger}" stroke-width="1.6" stroke-dasharray="8 5"/>`;
+            s += `<polyline points="${pl(design)}" fill="none" stroke="${C.cyan}" stroke-width="1.3" stroke-dasharray="2 4"/>`;
+            s += `<polyline points="${pl(vnav)}" fill="none" stroke="${C.fill}" stroke-width="9"/>`;
+            s += `<polyline points="${pl(vnav)}" fill="none" stroke="${C.primary}" stroke-width="2.8"/>`;
+            s += `</g>`;
 
-            // PAPI origin marker
+            // runway + PAPI + TCH
+            s += `<rect x="${scX(minNM)}" y="${scY(0) - 1}" width="${scX(0) - scX(minNM)}" height="6" fill="${C.ink}" fill-opacity="0.75"/>`;
+            s += `<line x1="${scX(0)}" y1="${scY(0) - 6}" x2="${scX(0)}" y2="${scY(0) + 8}" stroke="${C.ink}" stroke-width="2"/>`;
+            s += `<text x="${scX(minNM) + 4}" y="${scY(0) + 20}" fill="${C.muted}" font-size="9" font-weight="600">RWY</text>`;
             const papiX = scX(-1000 / 6076.12);
-            const papiMarker = `<circle cx="${papiX}" cy="${scY(0)}" r="5" fill="${C.danger}"/>
-                <text x="${papiX}" y="${scY(0) - 10}" fill="${C.danger}" font-size="10" text-anchor="middle">PAPI</text>`;
+            s += `<polygon points="${papiX},${scY(0) - 10} ${papiX + 5},${scY(0) - 2} ${papiX - 5},${scY(0) - 2}" fill="${C.danger}"/>`;
+            s += `<text x="${papiX}" y="${scY(0) - 14}" fill="${C.danger}" font-size="9" font-weight="600" text-anchor="middle">PAPI</text>`;
+            s += `<circle cx="${scX(0)}" cy="${scY(r.TCH * r.tempRatio)}" r="3.5" fill="${C.primary}"/>`;
 
-            // TCH marker
-            const tchMarker = `<circle cx="${scX(0)}" cy="${scY(50 * r.tempRatio)}" r="4" fill="${C.primary}"/>
-                <text x="${scX(0) + 8}" y="${scY(50) - 10}" fill="${C.primary}" font-size="10">50ft TCH</text>`;
+            // FAF / DA markers
+            const marker = (nm, ft, color, text) =>
+                `<line x1="${scX(nm)}" y1="${plotB}" x2="${scX(nm)}" y2="${scY(ft)}" stroke="${color}" stroke-width="1" stroke-dasharray="2 3"/>` +
+                `<circle cx="${scX(nm)}" cy="${scY(ft)}" r="7" fill="${C.bg}"/><circle cx="${scX(nm)}" cy="${scY(ft)}" r="5" fill="${color}"/>` +
+                svgPill(C, scX(nm), scY(ft) - 18, text, color);
+            s += marker(r.fafDistNm, r.trueFafHatFt, C.success, 'FAF ' + r.fafDistNm.toFixed(2) + (compact ? '' : ' NM'));
+            s += marker(r.daDistNm, r.trueDaHatFt, C.violet, 'DA ' + r.daDistNm.toFixed(2) + (compact ? '' : ' NM'));
 
-            // FAF marker
-            const fafMarker = `<circle cx="${scX(r.fafDistNm)}" cy="${scY(r.trueFafHatFt)}" r="6" fill="${C.success}"/>
-                <line x1="${scX(r.fafDistNm)}" y1="${scY(0)}" x2="${scX(r.fafDistNm)}" y2="${scY(r.trueFafHatFt)}" stroke="${C.success}" stroke-dasharray="2"/>
-                <text x="${scX(r.fafDistNm) + 8}" y="${scY(r.trueFafHatFt) - 5}" fill="${C.success}" font-size="11" font-weight="bold">FAF</text>`;
-
-            // DA marker
-            const daMarker = `<circle cx="${scX(r.daDistNm)}" cy="${scY(r.trueDaHatFt)}" r="6" fill="${C.violet}"/>
-                <line x1="${scX(r.daDistNm)}" y1="${scY(0)}" x2="${scX(r.daDistNm)}" y2="${scY(r.trueDaHatFt)}" stroke="${C.violet}" stroke-dasharray="2"/>
-                <text x="${scX(r.daDistNm) + 8}" y="${scY(r.trueDaHatFt) - 5}" fill="${C.violet}" font-size="11" font-weight="bold">DA</text>`;
-
-            // Crossing markers
-            let crossMarker = '';
-            if (r.int3DistFt > 0 && r.trueVpaDeg > r.box3Papi) {
-                const crossY = (r.int3DistFt * r.tanVpa + r.TCH) * r.tempRatio;
-                crossMarker = `<circle cx="${scX(r.int3DistNm)}" cy="${scY(crossY)}" r="6" fill="${C.danger}"/>`;
+            // PAPI crossing markers
+            if (r.int3DistFt > 0 && r.trueVpaDeg > r.box3Papi && r.int3DistNm <= maxNM) {
+                const cy = (r.int3DistFt * r.tanVpa + r.TCH) * r.tempRatio;
+                s += `<circle cx="${scX(r.int3DistNm)}" cy="${scY(cy)}" r="6" fill="none" stroke="${C.danger}" stroke-width="2"/>`;
+                s += svgPill(C, scX(r.int3DistNm), scY(cy) + 20, 'Box 3 ✕ ' + r.int3DistNm.toFixed(2), C.danger);
             }
-            if (r.int2DistFt > 0 && r.trueVpaDeg < r.box2Papi) {
-                const crossY = (r.int2DistFt * r.tanVpa + r.TCH) * r.tempRatio;
-                crossMarker += `<circle cx="${scX(r.int2DistNm)}" cy="${scY(crossY)}" r="6" fill="${C.warning}"/>`;
+            if (r.int2DistFt > 0 && r.trueVpaDeg < r.box2Papi && r.int2DistNm <= maxNM) {
+                const cy = (r.int2DistFt * r.tanVpa + r.TCH) * r.tempRatio;
+                s += `<circle cx="${scX(r.int2DistNm)}" cy="${scY(cy)}" r="6" fill="none" stroke="${C.warning}" stroke-width="2"/>`;
+                s += svgPill(C, scX(r.int2DistNm), scY(cy) + 20, 'Box 2 ✕ ' + r.int2DistNm.toFixed(2), C.warning);
             }
 
-            // Axis labels
-            const axisLabels = `
-                <text x="${width / 2}" y="${height - 8}" fill="${C.muted}" font-size="11" text-anchor="middle">Distance from Threshold (NM) →</text>
-                <text x="14" y="${height / 2}" fill="${C.muted}" font-size="11" text-anchor="middle" transform="rotate(-90, 14, ${height / 2})">True Height Above Threshold (ft)</text>`;
+            // right-edge line labels (spread to avoid overlap)
+            const lab = [
+                { y: vnav[vnav.length - 1][1], t: 'VNAV ' + r.trueVpaDeg.toFixed(2) + '°', c: C.primary },
+                { y: design[design.length - 1][1], t: (compact ? 'Dsgn ' : 'Design ') + r.designVpa.toFixed(1) + '°', c: C.cyan },
+                { y: p3[p3.length - 1][1], t: 'Box 3 ' + r.box3Papi.toFixed(2) + '°', c: C.danger },
+                { y: pn[pn.length - 1][1], t: 'Nom ' + r.effectiveNominalPapi.toFixed(2) + '°', c: C.muted },
+                { y: p2[p2.length - 1][1], t: 'Box 2 ' + r.box2Papi.toFixed(2) + '°', c: C.danger }
+            ].sort((a, b) => a.y - b.y);
+            for (let i = 1; i < lab.length; i++) if (lab[i].y - lab[i - 1].y < 19) lab[i].y = lab[i - 1].y + 19;
+            const overflow = lab[lab.length - 1].y - (plotB - 6);
+            if (overflow > 0) lab.forEach((l) => { l.y -= overflow; });
+            lab.forEach((l) => { s += svgPill(C, plotR + 8, l.y, l.t, l.c, 'start'); });
 
-            const svg = `<svg viewBox="0 0 ${width} ${height}" width="100%" style="display:block; min-width:600px; max-width:1100px; margin:0 auto; font-family:${C.mono};">
-                ${gridHtml}
-                ${rwHtml}
-                ${papiMarker}
-                ${tchMarker}
-                <polyline points="${papiNomPts}" fill="none" stroke="${C.muted}" stroke-width="2" stroke-dasharray="6 4"/>
-                <polyline points="${papi3Pts}" fill="none" stroke="${C.danger}" stroke-width="2" stroke-dasharray="8 6"/>
-                <polyline points="${papi2Pts}" fill="none" stroke="${C.danger}" stroke-width="2" stroke-dasharray="8 6"/>
-                <polyline points="${vnavPts}" fill="none" stroke="${C.primary}" stroke-width="2.5"/>
-                ${fafMarker}
-                ${daMarker}
-                ${crossMarker}
-                ${axisLabels}
-            </svg>`;
+            // axis titles
+            if (compact) {
+                s += `<text x="${(pad.left + plotR) / 2}" y="${height - 8}" fill="${C.muted}" font-size="10" text-anchor="middle">NM from threshold →</text>`;
+                s += `<text x="${pad.left - 8}" y="${pad.top - 12}" fill="${C.muted}" font-size="10" text-anchor="end">ft</text>`;
+            } else {
+                s += `<text x="${(pad.left + plotR) / 2}" y="${height - 12}" fill="${C.muted}" font-size="11" text-anchor="middle">Distance from threshold (NM) →</text>`;
+                s += `<text x="16" y="${(pad.top + plotB) / 2}" fill="${C.muted}" font-size="11" text-anchor="middle" transform="rotate(-90, 16, ${(pad.top + plotB) / 2})">True height above threshold (ft)</text>`;
+            }
+            s += `<text x="${plotR}" y="${pad.top - 8}" fill="${C.muted}" font-size="10" text-anchor="end">OAT ${r.temperature}°C · T/T<tspan font-size="8" dy="2">ISA</tspan><tspan dy="-2"> ${r.tempRatio.toFixed(3)}</tspan></text>`;
 
-            document.getElementById('vnp-chart-container').innerHTML = svg;
+            document.getElementById('vnp-chart-container').innerHTML =
+                `<svg viewBox="0 0 ${width} ${height}" width="100%" style="display:block; max-width:1180px; margin:0 auto; font-family:${C.mono};">${s}</svg>`;
         }
+
+        // =========================================================
+        // PNG export (4×) + redraw on resize
+        // =========================================================
+        function redrawDiagrams() {
+            if (typeof calcPT === 'function') calcPT();
+            if (typeof calcBaseTurn === 'function') calcBaseTurn();
+            if (typeof drawTurnViz === 'function') drawTurnViz();
+            if (typeof redrawGradients === 'function') redrawGradients();
+            if (typeof calcVnavPapi === 'function') calcVnavPapi();
+        }
+
+        function exportViz(btn) {
+            const viz = btn.closest('.viz');
+            if (!viz) return;
+            const name = (btn.dataset.name || '8168-diagram') + '.png';
+            const C = bpColors();
+
+            const finish = (src, pw, ph, scale) => {
+                const out = document.createElement('canvas');
+                out.width = pw; out.height = ph;
+                const x = out.getContext('2d');
+                x.fillStyle = C.bg; x.fillRect(0, 0, pw, ph);
+                x.strokeStyle = C.soft; x.lineWidth = Math.max(1, scale * 0.5);
+                const step = 16 * scale;
+                x.beginPath();
+                for (let gx = 0; gx <= pw; gx += step) { x.moveTo(gx, 0); x.lineTo(gx, ph); }
+                for (let gy = 0; gy <= ph; gy += step) { x.moveTo(0, gy); x.lineTo(pw, gy); }
+                x.stroke();
+                x.drawImage(src, 0, 0, pw, ph);
+                const a = document.createElement('a');
+                a.download = name;
+                a.href = out.toDataURL('image/png');
+                document.body.appendChild(a); a.click(); a.remove();
+            };
+
+            const cv = viz.querySelector('canvas');
+            if (cv) {
+                VIZ_SCALE = 4;
+                redrawDiagrams();
+                finish(cv, cv.width, cv.height, 4);
+                VIZ_SCALE = 0;
+                redrawDiagrams();
+                return;
+            }
+            const svg = viz.querySelector('svg');
+            if (!svg) return;
+            const vb = svg.viewBox && svg.viewBox.baseVal;
+            const scale = 4;
+            const pw = Math.round((vb && vb.width ? vb.width : svg.clientWidth) * scale);
+            const ph = Math.round((vb && vb.height ? vb.height : svg.clientHeight) * scale);
+            const clone = svg.cloneNode(true);
+            clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+            clone.setAttribute('width', pw);
+            clone.setAttribute('height', ph);
+            clone.setAttribute('style', 'font-family:' + C.mono);
+            const blob = new Blob([new XMLSerializer().serializeToString(clone)], { type: 'image/svg+xml;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const img = new Image();
+            img.onload = () => { finish(img, pw, ph, scale); URL.revokeObjectURL(url); };
+            img.src = url;
+        }
+
+        let _vizResizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(_vizResizeTimer);
+            _vizResizeTimer = setTimeout(redrawDiagrams, 150);
+        });
 
         // Setup init drawing event hook
         document.addEventListener("DOMContentLoaded", () => {
@@ -4569,6 +4608,8 @@
                 oldSwitch(id, el);
                 if (id === 'tab-turnviz') drawTurnViz();
                 if (id === 'tab-gradient') redrawGradients();
+                if (id === 'tab-turn') { calcPT(); calcBaseTurn(); }
+                if (id === 'tab-vnav-papi') calcVnavPapi();
             }
 
             // Open the sheet named in the URL hash, e.g. #vnav-papi
