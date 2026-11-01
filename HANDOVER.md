@@ -202,6 +202,11 @@ Three cards:
 - System use accuracy (Table I-2-2-1) shown as reference: VOR ±5.2°/±4.5°, NDB ±6.9°/±6.2°, ILS ±2.4°/±1.4°
 - Function: `calcTolerance()`
 
+**Intersection Fix Tolerance (06-D)** (`calcIfix`, `ifixGeometry`, `drawIfixViz`)
+- Tracking aid VOR/NDB/LOC (Table I-2-2-1 track accuracy ±5.2/6.9/2.4°) flying from/to the aid; fix defined by an intersecting VOR/NDB/LOC radial (±4.5/6.2/1.4°) or DME (collocated or not, ±(0.25 + 1.25 % D))
+- Outputs earliest/latest fix position along the nominal track (fix tolerance, §2.3.2), cross-track, area corners; acceptance IAF/IF ±2 NM or ±25 % of segment, FAF ±1 NM (§2.6.2–2.6.3); warnings for θ < 45°, DME divergence > 23°, DME below minimum usable distance
+- "→ Holding" sends ATT/XTT to 05-A as a custom fix tolerance area
+
 **Vertical Error Budget (Doc 9905)**
 - Inputs: RNP value (0.1 or 0.3), LNE (ft), ASE (ft), FTE (ft)
 - Outputs: Lateral protection (semi-width NM), VEB MOC (ft)
@@ -261,8 +266,8 @@ Cold temperature correction (01-B, 08 true altitude) = Vol III 2-4 §4.3.3 via `
 ## 5b. PANS core formulas & self-test
 
 All Doc 8168 formulas live in one object, `PANS` (search `PANS-OPS CORE FORMULAS`), each with its paragraph reference.
-Calculators call `PANS.*`; the **QA · Doc 8168 Self-test** sheet (`#selftest`) runs `PANS_TESTS` — 58 reference values from Doc 8168 Vol II
-(incl. holding Table I-4-3-App C-4), Vol III (Table 2-4-1 b) and Doc 9905 (Appendix B sample) — and shows the pass count in the sidebar badge. **Add a test whenever a formula is added or changed.**
+Calculators call `PANS.*`; the **QA · Doc 8168 Self-test** sheet (`#selftest`) runs `PANS_TESTS` — 64 reference values from Doc 8168 Vol II
+(incl. holding Table I-4-3-App C-4, fix accuracies), Vol III (Table 2-4-1 b) and Doc 9905 (Appendix B sample) — and shows the pass count in the sidebar badge. **Add a test whenever a formula is added or changed.**
 
 ## 5c. Save, scenarios and print
 
@@ -357,6 +362,7 @@ Key development milestones from previous sessions:
 | 2026-05-01 | Coordinate Converter mobile UI redesigned (within FISB Tools project, separate app). Nested card-in-card layout replaced with fluid full-page scroll. |
 | 2026-05-02 | Context imported from Claude session. Session context continuity maintained. |
 | 2026-05-08 | Folder rename from `FVP Tools` → `8168 Tools` initiated. Handover document created. |
+| 2026-11-01 | Intersection fix tolerance 06-D (6 new checks → 64), linked to holding. |
 | 2026-11-01 | Holding sheet 05-A (template, basic area, entries, MHL; 18 new checks → 58). VNAV chart deviation view. |
 | 2026-11-01 | Added Vol III + Doc 9905: VEB card rebuilt to Doc 9905 App B, cold temperature confirmed vs Vol III Table 2-4-1 b); self-test now 40 checks. |
 | 2026-11-01 | Formula audit vs Doc 8168 Vol II (7 corrections, VEB flagged), PANS core + 28-check self-test sheet. Autosave, named scenarios, JSON export/import, print/PDF calculation sheet with title block. |

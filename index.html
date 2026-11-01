@@ -2607,6 +2607,138 @@
                     </div>
                 </div>
 
+                <div class="card span-all">
+                    <div class="card-header minimizable" onclick="toggleCard(this)">
+                        <div class="card-heading"><span class="card-tag">06-D</span>
+                            <div class="card-title">Intersection Fix Tolerance</div>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-mini primary" onclick="event.stopPropagation(); ifixToHolding();" title="Use this fix tolerance area for the holding template (05-A)">→ Holding</button>
+                            <button class="btn-reset"
+                                onclick="event.stopPropagation(); resetCard('card-ifix', ['ifix-d1', 'ifix-d2', 'ifix-theta', 'ifix-h', 'ifix-seglen', 'ifix-res-early', 'ifix-res-late', 'ifix-res-att', 'ifix-res-xtt', 'ifix-res-acc'], 'calcIfix');">↺ Reset</button>
+                        </div>
+                    </div>
+                    <div class="card-body split">
+                        <div class="col">
+                            <div class="form-grid">
+                                <div class="section-label">Track guidance</div>
+                                <div class="vp-row">
+                                    <div class="vp-input-group">
+                                        <label>Tracking Aid</label>
+                                        <select id="ifix-track" onchange="calcIfix()">
+                                            <option value="vor">VOR (±5.2°)</option>
+                                            <option value="ndb">NDB (±6.9°)</option>
+                                            <option value="loc">LOC (±2.4°)</option>
+                                        </select>
+                                    </div>
+                                    <div class="vp-input-group">
+                                        <label>Flying</label>
+                                        <select id="ifix-dir" onchange="calcIfix()">
+                                            <option value="from">From the aid</option>
+                                            <option value="to">To the aid</option>
+                                        </select>
+                                    </div>
+                                    <div class="vp-input-group">
+                                        <label>Aid to Fix (NM)</label>
+                                        <input type="number" id="ifix-d1" placeholder="e.g. 15" oninput="calcIfix()">
+                                    </div>
+                                </div>
+                                <div class="section-label">Fix defined by</div>
+                                <div class="vp-row">
+                                    <div class="vp-input-group">
+                                        <label>Intersecting Aid</label>
+                                        <select id="ifix-isect" onchange="calcIfix()">
+                                            <option value="vor">VOR radial (±4.5°)</option>
+                                            <option value="ndb">NDB bearing (±6.2°)</option>
+                                            <option value="loc">LOC (±1.4°)</option>
+                                            <option value="dme">DME collocated with tracking aid</option>
+                                            <option value="dme-nc">DME not collocated</option>
+                                        </select>
+                                    </div>
+                                    <div class="vp-input-group" id="ifix-d2-grp">
+                                        <label id="ifix-d2-lbl">Intersecting Aid to Fix (NM)</label>
+                                        <input type="number" id="ifix-d2" placeholder="e.g. 10" oninput="calcIfix()">
+                                    </div>
+                                </div>
+                                <div class="vp-row">
+                                    <div class="vp-input-group" id="ifix-theta-grp">
+                                        <label id="ifix-theta-lbl">Intersection Angle θ (°)</label>
+                                        <input type="number" id="ifix-theta" placeholder="45 – 135" oninput="calcIfix()">
+                                    </div>
+                                    <div class="vp-input-group" id="ifix-side-grp">
+                                        <label>Aid Side</label>
+                                        <select id="ifix-side" onchange="calcIfix()">
+                                            <option value="right">Right of track</option>
+                                            <option value="left">Left of track</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="section-label">Use of the fix</div>
+                                <div class="vp-row">
+                                    <div class="vp-input-group">
+                                        <label>Fix Role</label>
+                                        <select id="ifix-seg" onchange="calcIfix()">
+                                            <option value="iaf">IAF / IF (±2.0 NM)</option>
+                                            <option value="iaf25">IAF / IF, FAF is VOR/NDB/VOR-DME (±25 %)</option>
+                                            <option value="faf">FAF (±1.0 NM)</option>
+                                            <option value="none">Other</option>
+                                        </select>
+                                    </div>
+                                    <div class="vp-input-group">
+                                        <label>Segment Length (NM)<span class="opt">25 %</span></label>
+                                        <input type="number" id="ifix-seglen" placeholder="e.g. 10" oninput="calcIfix()">
+                                    </div>
+                                    <div class="vp-input-group">
+                                        <label>Height above DME (ft)<span class="opt">OPT</span></label>
+                                        <input type="number" id="ifix-h" placeholder="for min dist" oninput="calcIfix()">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="results-panel flush">
+                                <div class="result-row">
+                                    <span class="result-label">Earliest fix position</span>
+                                    <span id="ifix-res-early" class="result-value">---</span>
+                                </div>
+                                <div class="result-row">
+                                    <span class="result-label">Latest fix position</span>
+                                    <span id="ifix-res-late" class="result-value">---</span>
+                                </div>
+                                <div class="result-row key">
+                                    <span class="result-label">Fix tolerance (along track)</span>
+                                    <span id="ifix-res-att" class="result-value c-warning">---</span>
+                                </div>
+                                <div class="result-row">
+                                    <span class="result-label">Cross-track at fix</span>
+                                    <span id="ifix-res-xtt" class="result-value">---</span>
+                                </div>
+                                <div class="result-row">
+                                    <span class="result-label">Intersecting accuracy</span>
+                                    <span id="ifix-res-acc" class="result-value">---</span>
+                                </div>
+                                <hr>
+                                <div class="result-row key">
+                                    <span class="result-label">Acceptability</span>
+                                    <span id="ifix-res-ok" class="result-value">---</span>
+                                </div>
+                                <div id="ifix-warn" class="warn-text" style="display:none;"></div>
+                            </div>
+                            <div class="note">
+                                <div class="note-title">Reference</div>
+                                System use accuracy Table I-2-2-1 (track guidance VOR ±5.2°, NDB ±6.9°, LOC ±2.4°; intersecting VOR ±4.5°, NDB ±6.2°, LOC ±1.4°);
+                                DME ±(0.25 NM + 1.25 % D) §2.4.4. Fix tolerance is measured along the nominal track (§2.3.2). Limits §2.6.2–2.6.3;
+                                minimum usable DME distance d<sub>m</sub> = 0.164·h·tan 55° (§2.6.1).
+                            </div>
+                        </div>
+
+                        <div class="viz">
+                            <span class="viz-label">Fix tolerance area · to scale</span>
+                            <button class="viz-dl" onclick="exportViz(this)" data-name="intersection-fix" title="Download high-resolution PNG">⤓ PNG</button>
+                            <canvas id="ifixVizCanvas" width="600" height="400"></canvas>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </section>
 
@@ -3054,6 +3186,7 @@
                                 <li><b>Confirmed:</b> TAS (I-2-1-App), r = V/(20πR), ICAO wind 2h+47, wind spiral E, φ = 36/t or 0.215·TAS/t, DME tolerance, turn anticipation, ROD.</li>
                                 <li><b>01-B Cold temperature</b> and <b>08 true altitude:</b> confirmed against Doc 8168 Vol III 2-4 §4.3.3 and Table 2-4-1 b); both now share one function.</li>
                                 <li><b>05-A Holding</b> (new): Table II-4-1-2 speeds, ISA+15, ICAO wind, template Table I-4-3-App C-4 (all 33 lines), entry sectors, buffer MOC.</li>
+                                <li><b>06-D Intersection fix</b> (new): Table I-2-2-1 accuracies, VOR/NDB/LOC radial or DME intersections, along-track tolerance, §2.6 acceptance.</li>
                                 <li><b>06-C VEB</b> rebuilt to Doc 9905 Appendix B (was a simplified RSS × 4/3 of three terms); reproduces the Doc sample MOC, OAS gradient and origin.</li>
                             </ul>
                         </div>
@@ -3199,6 +3332,21 @@
                 const offsetTrack = ((inbound + 180 + (left ? 30 : -30)) % 360 + 360) % 360;
                 return { sector, name, rel, near, offsetTrack };
             },
+            // Table I-2-2-1: system use accuracy (2 SD), facility providing track / not providing track (deg)
+            trackAccuracy(aid) { return { vor: 5.2, ndb: 6.9, loc: 2.4 }[aid]; },
+            isectAccuracy(aid) { return { vor: 4.5, ndb: 6.2, loc: 1.4 }[aid]; },
+            // Along-track positions where the ±β limits of an intersecting radial cross the nominal track.
+            // Intersecting aid at distance d2 from the fix, bearing θ from the flight direction (+ right, − left).
+            isectAlongTrack(d2, thetaDeg, betaDeg) {
+                const D = Math.PI / 180, I = [d2 * Math.sin(thetaDeg * D), d2 * Math.cos(thetaDeg * D)], u0 = [-I[0] / d2, -I[1] / d2];
+                return [betaDeg, -betaDeg].map((b) => {
+                    const a = b * D, u = [u0[0] * Math.cos(a) + u0[1] * Math.sin(a), -u0[0] * Math.sin(a) + u0[1] * Math.cos(a)];
+                    if (Math.abs(u[0]) < 1e-12) return NaN;
+                    return I[1] + (-I[0] / u[0]) * u[1];
+                });
+            },
+            // I-2-2 §2.6.1: minimum usable DME ground distance dm = 0.164·h·tan 55° (h in ft)
+            dmeMinUsable(hFt) { return 0.164 * (hFt / 1000) * Math.tan(55 * Math.PI / 180); },
             // ROD (ft/min) = GS (kt) × 6076.12/60 × gradient
             rod(gs, gradPct) { return gs * 101.2685 * gradPct / 100; },
 
@@ -3285,6 +3433,12 @@
             { g: 'Holding', n: 'Entry allowance YE', ref: 'Table I-4-3-App C-4, line 33', exp: 6.93, tol: 0.012, f: () => HOLD_SAMPLE().YE },
             { g: 'Holding', n: 'Entry: inbound 360°, right, heading 150° → sector', ref: 'II-4-1 Fig. II-4-1-2', exp: 2, tol: 0, f: () => PANS.holdingEntry(360, 150, false).sector },
             { g: 'Holding', n: 'Offset entry track (30° from reciprocal, holding side)', ref: 'II-4-1 §1.2.1.3', exp: 150, tol: 0, f: () => PANS.holdingEntry(360, 150, false).offsetTrack },
+            { g: 'Fixes', n: 'System use accuracy, VOR providing track', ref: 'Table I-2-2-1', exp: 5.2, tol: 0, f: () => PANS.trackAccuracy('vor') },
+            { g: 'Fixes', n: 'System use accuracy, NDB intersecting', ref: 'Table I-2-2-1', exp: 6.2, tol: 0, f: () => PANS.isectAccuracy('ndb') },
+            { g: 'Fixes', n: 'VOR/VOR fix, θ 90°, 10 NM: along-track tolerance = 10·tan 4.5°', ref: 'I-2-2 §2.3 (geometry)', exp: 10 * Math.tan(4.5 * Math.PI / 180), tol: 1e-9, f: () => Math.max(...PANS.isectAlongTrack(10, 90, 4.5).map(Math.abs)) },
+            { g: 'Fixes', n: 'VOR/VOR fix, θ 60°, 10 NM: law of sines d·sinβ/sin(θ−β)', ref: 'I-2-2 §2.3 (geometry)', exp: 10 * Math.sin(4.5 * Math.PI / 180) / Math.sin(55.5 * Math.PI / 180), tol: 1e-9, f: () => Math.max(...PANS.isectAlongTrack(10, 60, 4.5).map(Math.abs)) },
+            { g: 'Fixes', n: 'Collocated VOR/DME at 12 NM: tolerance', ref: 'I-2-2 §2.4.4', exp: 0.40, tol: 1e-9, f: () => PANS.dmeTol(12) },
+            { g: 'Fixes', n: 'Minimum usable DME distance, h 6 000 ft', ref: 'I-2-2 §2.6.1', exp: 0.164 * 6 * Math.tan(55 * Math.PI / 180), tol: 1e-9, f: () => PANS.dmeMinUsable(6000) },
             { g: 'Missed app.', n: 'ha ↔ hma round trip (hma 100, x −1500, xz 900, Z 2.5 %, θ 3°)', ref: 'II-1-1 §1.4.8.8.2.1', exp: 100, tol: 1e-9, f: () => PANS.equivHma(PANS.equivHa(100, -1500, 900, 2.5, 3), -1500, 900, 2.5, 3) },
             { g: 'Cold temp', n: '−10 °C, 1 000 ft above SL source (rounded up 10 ft)', ref: 'Vol III Table 2-4-1 b)', exp: 100, tol: 0, f: () => Math.ceil(PANS.coldTempCorr(1000, -10, 0) / 10) * 10 },
             { g: 'Cold temp', n: '−30 °C, 2 000 ft', ref: 'Vol III Table 2-4-1 b)', exp: 380, tol: 0, f: () => Math.ceil(PANS.coldTempCorr(2000, -30, 0) / 10) * 10 },
@@ -5367,6 +5521,7 @@
             if (typeof redrawGradients === 'function') redrawGradients();
             if (typeof calcVnavPapi === 'function') calcVnavPapi();
             if (typeof calcHoldArea === 'function') calcHoldArea();
+            if (typeof calcIfix === 'function') calcIfix();
         }
 
         function exportViz(btn) {
@@ -5557,7 +5712,7 @@
             if (lim) document.getElementById('btp-ob-unit').textContent = lim.checked ? 'min' : 'DME';
             run('toggleVnpIls');
             ['calcTAS', 'calcTempCorr', 'calcTurn', 'calcPT', 'calcBaseTurn', 'calcBaseTurnPhi', 'drawTurnViz', 'calcHoldB',
-                'calcPBN', 'calcTolerance', 'calcVEB', 'calcDescent', 'calcEqObs', 'calcReaction', 'calcVnavPapi', 'calcHoldArea'].forEach((f) => run(f));
+                'calcPBN', 'calcTolerance', 'calcVEB', 'calcDescent', 'calcEqObs', 'calcReaction', 'calcVnavPapi', 'calcHoldArea', 'calcIfix'].forEach((f) => run(f));
             gradLegIds().forEach((id) => run('calculateGradient', id));
         }
 
@@ -5946,6 +6101,205 @@
             cvFooter(ctx, C, V, w, h, String(Math.round(o.inbound)).padStart(3, '0') + '° inbound · ' + (o.left ? 'left' : 'right') + ' turns · TAS ' + Math.round(o.V) + ' kt · w ' + Math.round(o.wind) + ' kt');
         }
 
+        // =========================================================
+        // 06-D INTERSECTION FIX TOLERANCE (I-2-2 §2.3–2.6, Table I-2-2-1)
+        // Local frame: nominal fix at origin, flight direction +y (NM)
+        // =========================================================
+        function ifixGeometry(o) {
+            const D = Math.PI / 180;
+            const lineX = (P, u, Q, w) => {             // intersection of P + s·u and Q + t·w
+                const den = u[0] * w[1] - u[1] * w[0];
+                if (Math.abs(den) < 1e-12) return null;
+                const s = ((Q[0] - P[0]) * w[1] - (Q[1] - P[1]) * w[0]) / den;
+                return [P[0] + s * u[0], P[1] + s * u[1]];
+            };
+            const rot = (v, a) => [v[0] * Math.cos(a) + v[1] * Math.sin(a), -v[0] * Math.sin(a) + v[1] * Math.cos(a)];
+            // tracking facility on the track axis (behind the fix when flying from it, ahead when flying to it)
+            const T = [0, o.toFac ? o.d1 : -o.d1];
+            const uT = [0, o.toFac ? -1 : 1];
+            const alpha = PANS.trackAccuracy(o.trackAid) * D;
+            const tLines = [rot(uT, alpha), rot(uT, -alpha)];
+            const xtt = o.d1 * Math.tan(alpha);
+
+            let corners = [], along = [], I = null, kind = o.isect;
+            if (o.isect === 'dme' || o.isect === 'dme-nc') {
+                const tol = PANS.dmeTol(o.d2);
+                const C = o.isect === 'dme' ? T : (() => { const b = (o.side === 'left' ? -1 : 1) * o.theta * D; return [o.d2 * Math.sin(b), o.d2 * Math.cos(b)]; })();
+                const R0 = Math.hypot(C[0], C[1]);       // DME distance of the nominal fix
+                I = C;
+                const circleTrack = (rad) => {           // circle around C with the x = 0 track axis
+                    const dy = rad * rad - C[0] * C[0];
+                    if (dy < 0) return null;
+                    const ys = [C[1] - Math.sqrt(dy), C[1] + Math.sqrt(dy)];
+                    return ys.reduce((a, b) => (Math.abs(b) < Math.abs(a) ? b : a));
+                };
+                along = [circleTrack(R0 - tol), circleTrack(R0 + tol)].filter((v) => v !== null);
+                const circleLine = (rad, u) => {         // circle ∩ line T + s·u, nearest to fix
+                    const fx = T[0] - C[0], fy = T[1] - C[1];
+                    const b = 2 * (fx * u[0] + fy * u[1]), c = fx * fx + fy * fy - rad * rad, disc = b * b - 4 * c;
+                    if (disc < 0) return null;
+                    const pts = [(-b - Math.sqrt(disc)) / 2, (-b + Math.sqrt(disc)) / 2].map((s) => [T[0] + s * u[0], T[1] + s * u[1]]);
+                    return pts.reduce((a, p) => (Math.hypot(p[0], p[1]) < Math.hypot(a[0], a[1]) ? p : a));
+                };
+                corners = [circleLine(R0 - tol, tLines[0]), circleLine(R0 + tol, tLines[0]), circleLine(R0 + tol, tLines[1]), circleLine(R0 - tol, tLines[1])].filter(Boolean);
+                return { T, I, kind, corners, along, xtt, tol, alpha, R0 };
+            }
+            // intersecting radial / bearing from facility I at distance d2, bearing theta (relative to flight direction)
+            const b = (o.side === 'left' ? -1 : 1) * o.theta * D;
+            I = [o.d2 * Math.sin(b), o.d2 * Math.cos(b)];
+            const uI = [-I[0] / o.d2, -I[1] / o.d2];
+            const beta = PANS.isectAccuracy(o.isect) * D;
+            const iLines = [rot(uI, beta), rot(uI, -beta)];
+            along = PANS.isectAlongTrack(o.d2, (o.side === 'left' ? -1 : 1) * o.theta, PANS.isectAccuracy(o.isect)).filter(isFinite);
+            corners = [lineX(T, tLines[0], I, iLines[0]), lineX(T, tLines[0], I, iLines[1]), lineX(T, tLines[1], I, iLines[1]), lineX(T, tLines[1], I, iLines[0])].filter(Boolean);
+            return { T, I, kind, corners, along, xtt, alpha, beta };
+        }
+
+        function calcIfix() {
+            const g = (id) => parseFloat(document.getElementById(id).value);
+            const v = (id) => document.getElementById(id).value;
+            const set = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+            const isect = v('ifix-isect');
+            const isDme = isect === 'dme' || isect === 'dme-nc';
+            document.getElementById('ifix-d2-grp').style.display = isect === 'dme' ? 'none' : 'flex';
+            document.getElementById('ifix-theta-grp').style.display = isect === 'dme' ? 'none' : 'flex';
+            document.getElementById('ifix-side-grp').style.display = isect === 'dme' ? 'none' : 'flex';
+            document.getElementById('ifix-theta-lbl').textContent = isect === 'dme-nc' ? 'DME Bearing from Fix (°)' : 'Intersection Angle θ (°)';
+            document.getElementById('ifix-d2-lbl').textContent = isDme ? 'DME Station to Fix (NM)' : 'Intersecting Aid to Fix (NM)';
+
+            const o = { trackAid: v('ifix-track'), isect, d1: g('ifix-d1'), d2: isect === 'dme' ? g('ifix-d1') : g('ifix-d2'),
+                theta: g('ifix-theta'), side: v('ifix-side'), toFac: v('ifix-dir') === 'to' };
+            if (isNaN(o.d1) || o.d1 <= 0 || isNaN(o.d2) || o.d2 <= 0 || (!isDme && (isNaN(o.theta) || o.theta <= 0 || o.theta >= 180)) || (isect === 'dme-nc' && isNaN(o.theta))) return;
+
+            const r = ifixGeometry(o);
+            const f2 = (n) => n.toFixed(2);
+            const early = Math.min(...r.along), late = Math.max(...r.along);
+            const att = Math.max(Math.abs(early), Math.abs(late));
+            set('ifix-res-early', f2(Math.abs(Math.min(0, early))) + ' NM before fix');
+            set('ifix-res-late', f2(Math.max(0, late)) + ' NM after fix');
+            set('ifix-res-att', '± ' + f2(att) + ' NM');
+            set('ifix-res-xtt', '± ' + f2(r.xtt) + ' NM (±' + PANS.trackAccuracy(o.trackAid) + '°)');
+            set('ifix-res-acc', isDme ? 'DME ±' + f2(r.tol) + ' NM' : '±' + PANS.isectAccuracy(isect) + '°');
+
+            // acceptance (I-2-2 §2.6)
+            const seg = v('ifix-seg');
+            const segLen = g('ifix-seglen');
+            let limit = NaN, limTxt = '';
+            if (seg === 'iaf') { limit = 2.0; limTxt = 'IAF/IF ±2.0 NM'; }
+            else if (seg === 'iaf25' && !isNaN(segLen)) { limit = 0.25 * segLen; limTxt = 'IAF/IF ±25 % of ' + segLen + ' NM'; }
+            else if (seg === 'faf') { limit = 1.0; limTxt = 'FAF ±1.0 NM'; }
+            const ok = isNaN(limit) ? null : att <= limit + 1e-9;
+            const st = document.getElementById('ifix-res-ok');
+            st.textContent = ok === null ? '—' : (ok ? '✓ meets ' : '✕ exceeds ') + limTxt;
+            st.className = 'result-value ' + (ok === null ? '' : (ok ? 'c-success' : 'c-danger'));
+
+            // warnings
+            const warn = [];
+            if (!isDme && o.theta < 45) warn.push('Intersection angle < 45°: fix tolerance grows rapidly (I-4-3-App A guidance)');
+            if (isect === 'dme-nc' && o.theta > 23 && o.theta < 157) warn.push('DME not collocated: divergence between fix, tracking facility and DME should not exceed 23° (I-2-2 §2.4.3.2)');
+            const h = g('ifix-h');
+            if (isDme && !isNaN(h)) {
+                const dm = PANS.dmeMinUsable(h);
+                if (o.d2 < dm) warn.push('DME distance below minimum usable ground distance ' + f2(dm) + ' NM (I-2-2 §2.6.1)');
+            }
+            set('ifix-warn', warn.join(' · '));
+            document.getElementById('ifix-warn').style.display = warn.length ? 'block' : 'none';
+
+            window._ifixLast = { att, xtt: r.xtt };
+            drawIfixViz(o, r);
+        }
+
+        function ifixToHolding() {
+            const r = window._ifixLast;
+            if (!r) return;
+            document.getElementById('hold-fix').value = 'custom';
+            document.getElementById('hold-att').value = r.att.toFixed(2);
+            document.getElementById('hold-xtt').value = r.xtt.toFixed(2);
+            switchTab('tab-holdb');
+            calcHoldArea();
+            scheduleSave();
+        }
+
+        function drawIfixViz(o, r) {
+            const canvas = document.getElementById('ifixVizCanvas');
+            if (!canvas) return;
+            const { ctx, w, h } = setupCanvas(canvas, 0.62, 460, 280);
+            const C = bpColors();
+            // frame the fix tolerance area; facilities further away are shown as edge markers
+            const ext = Math.max(0.6, ...r.corners.map((p) => Math.hypot(p[0], p[1]))) * 2.4;
+            const B = { minX: -ext * 1.25, maxX: ext * 1.25, minY: -ext, maxY: ext };
+            const V = vizView(B, w, h, { t: 44, b: 44, l: 30, r: 30 });
+            const far = (P, u, len) => [P[0] + u[0] * len, P[1] + u[1] * len];
+            const span = Math.hypot(r.T[0], r.T[1]) + (r.I ? Math.hypot(r.I[0], r.I[1]) : 0) + ext * 4;
+
+            // nominal track
+            cvStroke(ctx, C, V, [[0, -span], [0, span]], C.primary, 2);
+            cvArrowsAlong(ctx, V, [[0, B.minY], [0, B.maxY]], [0.85], C.primary, 11);
+            // tracking tolerance wedge
+            ctx.save(); ctx.setLineDash([5, 4]); ctx.strokeStyle = C.primary; ctx.lineWidth = 1;
+            const uT = [0, o.toFac ? -1 : 1];
+            [r.alpha, -r.alpha].forEach((a) => {
+                const u = [uT[0] * Math.cos(a) + uT[1] * Math.sin(a), -uT[0] * Math.sin(a) + uT[1] * Math.cos(a)];
+                cvPath(ctx, V, [r.T, far(r.T, u, span)]); ctx.stroke();
+            });
+            ctx.restore();
+            // intersecting aid
+            if (r.beta !== undefined) {
+                const len = Math.hypot(r.I[0], r.I[1]);
+                const uI = [-r.I[0] / len, -r.I[1] / len];
+                cvStroke(ctx, C, V, [r.I, far(r.I, uI, len + ext * 3)], C.success, 1.6);
+                ctx.save(); ctx.setLineDash([5, 4]); ctx.strokeStyle = C.success; ctx.lineWidth = 1;
+                [r.beta, -r.beta].forEach((a) => {
+                    const u = [uI[0] * Math.cos(a) + uI[1] * Math.sin(a), -uI[0] * Math.sin(a) + uI[1] * Math.cos(a)];
+                    cvPath(ctx, V, [r.I, far(r.I, u, len + ext * 3)]); ctx.stroke();
+                });
+                ctx.restore();
+            } else {
+                // DME arcs
+                ctx.save(); ctx.strokeStyle = C.success; ctx.lineWidth = 1;
+                [[r.R0, []], [r.R0 - r.tol, [5, 4]], [r.R0 + r.tol, [5, 4]]].forEach(([rad, dash]) => {
+                    ctx.setLineDash(dash); ctx.beginPath(); ctx.arc(V.X(r.I[0]), V.Y(r.I[1]), rad * V.k, 0, Math.PI * 2); ctx.stroke();
+                });
+                ctx.restore();
+            }
+            // fix tolerance area
+            if (r.corners.length >= 3) {
+                ctx.save(); cvPath(ctx, V, r.corners); ctx.closePath();
+                ctx.fillStyle = C.warning; ctx.globalAlpha = 0.22; ctx.fill(); ctx.globalAlpha = 1;
+                ctx.strokeStyle = C.warning; ctx.lineWidth = 1.6; ctx.stroke(); ctx.restore();
+            }
+            // along-track tolerance dimension
+            const ys = r.along;
+            if (ys.length === 2) {
+                const x = V.X(0) + 26;
+                cvDim(ctx, C, x, V.Y(Math.min(...ys)), x, V.Y(Math.max(...ys)), 'ATT', C.warning);
+            }
+            // facilities
+            const fac = (P, label, col) => {
+                const inside = P[0] > B.minX && P[0] < B.maxX && P[1] > B.minY && P[1] < B.maxY;
+                if (!inside) {                                      // edge marker pointing to the facility
+                    const d = Math.hypot(P[0], P[1]), u = [P[0] / d, P[1] / d];
+                    const tEdge = Math.min(Math.abs((u[0] > 0 ? B.maxX : B.minX) / (u[0] || 1e-9)), Math.abs((u[1] > 0 ? B.maxY : B.minY) / (u[1] || 1e-9))) * 0.9;
+                    const q = [u[0] * tEdge, u[1] * tEdge];
+                    cvArrowHead(ctx, V.X(q[0]), V.Y(q[1]), Math.atan2(-u[1], u[0]), col, 12);
+                    cvLabel(ctx, C, label + ' · ' + d.toFixed(1) + ' NM', V.X(q[0]) - u[0] * 14, V.Y(q[1]) + u[1] * 14 + (u[1] > 0 ? 12 : -12),
+                        { size: 10, bold: true, color: col, border: C.soft });
+                    return;
+                }
+                ctx.save(); ctx.strokeStyle = col; ctx.lineWidth = 1.6; ctx.fillStyle = C.bg;
+                ctx.beginPath(); ctx.arc(V.X(P[0]), V.Y(P[1]), 6, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                ctx.beginPath(); ctx.arc(V.X(P[0]), V.Y(P[1]), 2, 0, Math.PI * 2); ctx.fillStyle = col; ctx.fill(); ctx.restore();
+                cvLabel(ctx, C, label, V.X(P[0]) + 10, V.Y(P[1]) - 12, { align: 'left', size: 10, bold: true, color: col });
+            };
+            const names = { vor: 'VOR', ndb: 'NDB', loc: 'LOC' };
+            fac(r.T, names[o.trackAid] + ' (track)' + (o.isect === 'dme' ? '/DME' : ''), C.primary);
+            if (o.isect !== 'dme') fac(r.I, o.isect.startsWith('dme') ? 'DME' : names[o.isect] + ' (intersecting)', C.success);
+            cvDot(ctx, C, V.X(0), V.Y(0), C.ink, 3.5);
+            cvLabel(ctx, C, 'FIX', V.X(0) - 10, V.Y(0) + 12, { align: 'right', size: 10, bold: true });
+            cvScaleBar(ctx, C, V, 16, h - 14);
+            cvLabel(ctx, C, 'flight direction ↑ · not north-referenced', w - 12, h - 16, { align: 'right', size: 9, box: false, color: C.muted });
+        }
+
         // Setup init drawing event hook
         document.addEventListener("DOMContentLoaded", () => {
             const oldSwitch = window.switchTab;
@@ -5956,6 +6310,7 @@
                 if (id === 'tab-turn') { calcPT(); calcBaseTurn(); }
                 if (id === 'tab-vnav-papi') calcVnavPapi();
                 if (id === 'tab-holdb') calcHoldArea();
+                if (id === 'tab-tol') calcIfix();
             }
 
             renderSelfTest();
@@ -5986,6 +6341,7 @@
             if (typeof calcVnavPapi === 'function') calcVnavPapi();
             if (typeof calcBaseTurnPhi === 'function') calcBaseTurnPhi();
             if (typeof calcHoldArea === 'function') calcHoldArea();
+            if (typeof calcIfix === 'function') calcIfix();
             redrawGradients();
         }
 
