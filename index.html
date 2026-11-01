@@ -3385,8 +3385,16 @@
                     <div class="card-body col">
                         <div class="results-panel flush">
                             <div class="result-row key">
-                                <span class="result-label">True Geometric VPA</span>
+                                <span class="result-label">Effective VPA</span>
                                 <span id="vnp-res-truevpa" class="result-value c-warning">---&deg;</span>
+                            </div>
+                            <div class="result-row">
+                                <span class="result-label">Min temp (VPA 2.5°)</span>
+                                <span id="vnp-res-t25" class="result-value c-cyan">---</span>
+                            </div>
+                            <div class="result-row">
+                                <span class="result-label">VPA &gt; 3.5° above</span>
+                                <span id="vnp-res-t35" class="result-value c-cyan">---</span>
                             </div>
                             <div class="result-row">
                                 <span class="result-label">Local ISA Temperature</span>
@@ -3518,6 +3526,7 @@
                                 <li><b>Confirmed:</b> TAS (I-2-1-App), r = V/(20πR), ICAO wind 2h+47, wind spiral E, φ = 36/t or 0.215·TAS/t, DME tolerance, turn anticipation, ROD.</li>
                                 <li><b>01-B Cold temperature</b> and <b>08 true altitude:</b> confirmed against Doc 8168 Vol III 2-4 §4.3.3 and Table 2-4-1 b); both now share one function.</li>
                                 <li><b>05-A Holding</b> (new): Table II-4-1-2 speeds, ISA+15, ICAO wind, template Table I-4-3-App C-4 (all 33 lines), entry sectors, buffer MOC. Omnidirectional entry area §3.3.3.2.1 (curves 5–8, convex-envelope approximation); template extents checked against Diagram I-4-3-App C-6.</li>
+                                <li><b>08 Baro-VNAV effective VPA</b> (2 Nov 2026): replaced the temperature-ratio approximation by III-3-4-App A §1.3 (ESDU 770221 correction with hFAP = FAF height above THR) and §4.3.4.2.5; checked against Tables III-3-4-App A-4/A-5 and III-3-4-1. Adds the §4.7.3 c)/d) temperatures.</li>
                                 <li><b>Limit warnings</b> (new, 2 Nov 2026): reversal max IAS Table I-4-1-2, outbound 1–3 min I-4-3 §3.4.5.1/§3.5.5, bank ≤ 25° Table I-2-3-1, descent gradients I-4-3 §3.3.5 / I-4-4 §4.3.3.2 / I-4-5 §5.3.1, Baro-VNAV VPA 2.5°–3.5° III-3-4 §4.2.1, holding speed/timing II-4-1. Shown under the results of 02-A, 02-B, 02-C, 02-D, 04 legs, 05-A, 07-A, 08.</li>
                                 <li><b>07-D Departure PDG</b> (new): OIS 2.5 %/4.2 % from 16 ft above DER, MOC 0.8 %, PDG end point and close-in rule (I-3-2 §2.7).</li>
                                 <li><b>09-D MSD</b> (new): fly-by / fly-over minimum stabilization distance (III-2-1 §1.4), leg checks §1.2.5 and Table III-2-1-21.</li>
@@ -4082,6 +4091,26 @@
                 if (seg === 'intermediate') return { opt: 0, max: H ? 10 : 5.2 };
                 return { opt: 5.2, max: H ? 10 : (cat === 'A' || cat === 'B' ? 6.5 : 6.1) };
             },
+            // III-3-4-App A §1.3: temperature correction for the FAS angle / effective VPA (ft)
+            // h = (−ΔT/L0)·ln[1 + L0·hFAP/(T0 + L0·hTHR)], L0 = −0.0065 K/m, T0 = 288.15 K, ΔT = aerodrome temp − ISA at THR (metres inside)
+            vnavTempCorr(hFapFt, tempC, thrFt) {
+                const L0 = -0.0065, T0 = 288.15, M = 0.3048, hT = thrFt * M, hF = hFapFt * M;
+                const dT = tempC - (15 + L0 * hT);
+                return (-dT / L0) * Math.log(1 + L0 * hF / (T0 + L0 * hT)) / M;
+            },
+            // III-3-4 §4.3.4.2.5 with Hi = 0: tan VPAeff = (hFAP − h)·tan VPA / hFAP
+            effectiveVpa(vpa, hFapFt, tempC, thrFt) {
+                const h = PANS.vnavTempCorr(hFapFt, tempC, thrFt);
+                return Math.atan((hFapFt - h) * Math.tan(vpa * Math.PI / 180) / hFapFt) * 180 / Math.PI;
+            },
+            // III-3-4 §4.7.3 c), d): aerodrome temperature at which the effective VPA equals a target angle (bisection, −100…+80 °C)
+            vpaTempFor(target, vpa, hFapFt, thrFt) {
+                let lo = -100, hi = 80;
+                const f = (t) => PANS.effectiveVpa(vpa, hFapFt, t, thrFt) - target;
+                if (f(lo) > 0 || f(hi) < 0) return NaN;
+                for (let i = 0; i < 60; i++) { const m = (lo + hi) / 2; if (f(m) > 0) hi = m; else lo = m; }
+                return (lo + hi) / 2;
+            },
             // III-3-4 §4.2.1: promulgated VPA ≥ 2.5° (shall), > 3.5° non-standard; effective VPA ≥ 2.5° at lowest, ≤ 3.5° at highest temperature
             vpaClass(vpa) { return vpa < 2.5 - 1e-9 ? 'prohibited' : (vpa > 3.5 + 1e-9 ? 'non-standard' : 'standard'); },
             // ROD (ft/min) = GS (kt) × 6076.12/60 × gradient
@@ -4223,6 +4252,13 @@
             { g: 'Limits', n: 'Initial approach max gradient', ref: 'I-4-3 §3.3.5', exp: 8.0, tol: 0, f: () => PANS.descentLimits('initial', 'D').max },
             { g: 'Limits', n: 'Intermediate max gradient', ref: 'I-4-4 §4.3.3.2', exp: 5.2, tol: 0, f: () => PANS.descentLimits('intermediate', 'C').max },
             { g: 'Limits', n: 'VPA 2.4° prohibited, 3.6° non-standard, 3.0° standard', ref: 'III-3-4 §4.2.1.3', exp: 1, tol: 0, f: () => (PANS.vpaClass(2.4) === 'prohibited' && PANS.vpaClass(3.6) === 'non-standard' && PANS.vpaClass(3.0) === 'standard') ? 1 : 0 },
+            { g: 'Baro-VNAV', n: 'Temp correction, FAP 2 000 ft, MSL, −20 °C', ref: 'Table III-3-4-App A-4', exp: 245, tol: 1, f: () => PANS.vnavTempCorr(2000, -20, 0) },
+            { g: 'Baro-VNAV', n: 'Temp correction, FAP 1 000 ft, MSL, +50 °C', ref: 'Table III-3-4-App A-4', exp: -122, tol: 1, f: () => PANS.vnavTempCorr(1000, 50, 0) },
+            { g: 'Baro-VNAV', n: 'Temp correction, FAP 3 000 ft, THR 3 000 ft, −30 °C', ref: 'Table III-3-4-App A-5', exp: 420, tol: 1, f: () => PANS.vnavTempCorr(3000, -30, 3000) },
+            { g: 'Baro-VNAV', n: 'Effective VPA 3.0°, MSL, −20 °C', ref: 'Table III-3-4-1', exp: 2.63, tol: 0.006, f: () => PANS.effectiveVpa(3.0, 2000, -20, 0) },
+            { g: 'Baro-VNAV', n: 'Effective VPA 2.8°, MSL, +50 °C', ref: 'Table III-3-4-1', exp: 3.14, tol: 0.006, f: () => PANS.effectiveVpa(2.8, 2000, 50, 0) },
+            { g: 'Baro-VNAV', n: 'Effective VPA 3.2°, 6 000 ft, −40 °C', ref: 'Table III-3-4-1', exp: 2.70, tol: 0.006, f: () => PANS.effectiveVpa(3.2, 2000, -40, 6000) },
+            { g: 'Baro-VNAV', n: 'Effective VPA 3.0°, 3 000 ft, −20 °C', ref: 'Table III-3-4-1', exp: 2.69, tol: 0.006, f: () => PANS.effectiveVpa(3.0, 2000, -20, 3000) },
             { g: 'Missed app.', n: 'ha ↔ hma round trip (hma 100, x −1500, xz 900, Z 2.5 %, θ 3°)', ref: 'II-1-1 §1.4.8.8.2.1', exp: 100, tol: 1e-9, f: () => PANS.equivHma(PANS.equivHa(100, -1500, 900, 2.5, 3), -1500, 900, 2.5, 3) },
             { g: 'Cold temp', n: '−10 °C, 1 000 ft above SL source (rounded up 10 ft)', ref: 'Vol III Table 2-4-1 b)', exp: 100, tol: 0, f: () => Math.ceil(PANS.coldTempCorr(1000, -10, 0) / 10) * 10 },
             { g: 'Cold temp', n: '−30 °C, 2 000 ft', ref: 'Vol III Table 2-4-1 b)', exp: 380, tol: 0, f: () => Math.ceil(PANS.coldTempCorr(2000, -30, 0) / 10) * 10 },
@@ -5361,10 +5397,17 @@
             const localISA = 15 - (2 * (elevation / 1000));
             const deltaISA = temperature - localISA;
 
-            // True geometric VPA (Doc 8168 Vol II)
-            const tempRatio = (temperature + 273.15) / (localISA + 273.15);
-            const trueVpaRad = Math.atan(Math.tan(toRad(designVpa)) * tempRatio);
-            const trueVpaDeg = trueVpaRad * (180 / Math.PI);
+            // Effective (true) VPA, Vol II III-3-4-App A: true height = indicated height × (hFAP − h)/hFAP
+            const hFap = fafAmsl > elevation + 200 ? fafAmsl - elevation : 2000;
+            const tempRatio = 1 - PANS.vnavTempCorr(hFap, temperature, elevation) / hFap;
+            const trueVpaDeg = PANS.effectiveVpa(designVpa, hFap, temperature, elevation);
+            const trueVpaRad = toRad(trueVpaDeg);
+            {
+                const t25 = PANS.vpaTempFor(2.5, designVpa, hFap, elevation), t35 = PANS.vpaTempFor(3.5, designVpa, hFap, elevation);
+                const el25 = document.getElementById('vnp-res-t25'), el35 = document.getElementById('vnp-res-t35');
+                if (el25) el25.textContent = isNaN(t25) ? 'n/a' : (Math.ceil(t25) + ' °C');
+                if (el35) el35.textContent = isNaN(t35) ? 'n/a' : (Math.floor(t35) + ' °C');
+            }
             {
                 const L = [], c = PANS.vpaClass(designVpa);
                 if (c === 'prohibited') L.push(['bad', 'Promulgated VPA ' + designVpa + '° is below 2.5° — not permitted.', 'III-3-4 §4.2.1.3']);
