@@ -20,6 +20,7 @@ Guide for Claude Code sessions working on this repo. Read this first; details ar
 6. The user tests on an **Android phone** and sends screenshots. Every change must work at ~360 px width with no horizontal overflow.
 7. Keep the **Blueprint theme** (CSS variables; drawings use `bpColors()` — never hard-code colours) and the light "Whiteprint" theme.
 8. Communicate plainly; the user is a pilot/procedure designer, not a developer.
+9. **When the user just says "continue"**, finish any work in progress; if none, start the top item of the Backlog (below) right away without asking which one. Remove it from the Backlog when done.
 
 ## Reference documents (in this folder, git-ignored)
 - `Doc_8168_Vol_2_Construction_of_Visual_and_Instrument_Flight_Procedures.pdf` — 7th ed., Amdt 10 (main authority)
