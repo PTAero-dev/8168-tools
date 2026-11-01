@@ -89,7 +89,7 @@ Every card has a `.btn-reset` in its header (uses `event.stopPropagation()` so i
 | | 05 | Holding | `tab-holdb` |
 | | 06 | Tolerance, VEB & PBN | `tab-tol` |
 | | 09 | Path Terminators | `tab-pt` |
-| Approach & Vertical | 07 | Descent & Missed App | `tab-desc` |
+| Approach & Vertical | 07 | Departure & Missed App | `tab-desc` |
 | | 08 | VNAV vs PAPI | `tab-vnav-papi` |
 
 ---
@@ -218,7 +218,7 @@ Three cards:
 
 ---
 
-### Tab 7: Descent & Missed App (`tab-desc`)
+### Tab 7: Departure & Missed Approach (`tab-desc`)
 
 **Required Rate of Descent**
 - Inputs: Ground speed (kt), Target gradient (%, default 5.2%)
@@ -235,6 +235,14 @@ Three cards:
 - Inputs: Speed (kt), Pilot reaction time (sec, default 3s), Bank establishment (sec, default 3s), Engine spool-up (sec, default 0s for jets)
 - Outputs: Individual component distances + total distance consumed
 - Function: `calcReaction()`
+
+**Departure Climb Gradient (07-D)**
+- Doc 8168 Vol II I-3-2 §2.2–2.7, II-3 §5.1–5.2. OIS 2.5 % (Cat H 4.2 %) and PDG both start 5 m (16 ft) above DER; MOC 0.8 % of distance; standard PDG 3.3 % (Cat H 5.0 %).
+- Inputs: DER elevation (ft), category (Aeroplane / Helicopter), GS (kt); obstacle list (name, distance from DER NM, elevation ft AMSL) kept in `DEP_ROWS`, mirrored to hidden `#dep-json`.
+- Penetration if `h > 16 + OIS·d`; required `PDG = (h − 16)/d + 0.008`. Close-in (increased PDG needed only to ≤ 60 m / 200 ft) → not promulgated, publish the obstacle (§2.7.5).
+- Published PDG = max of non-close-in requirements; it ends at `x_end = max((h − 16 − OIS·d)/(P − PDGstd))` (§2.7.4) and the altitude is promulgated (§2.7.3).
+- Outputs: published PDG, end altitude/distance, ft/NM, ROC + table, earliest-turn distance to 120 m (Cat H 90 m), suggested chart notes, profile drawing.
+- Functions: `PANS.depStd/depPdgFor/depAnalyse/rocFor`, `calcDeparture()`, `drawDepViz()`, `depAdd/depEdit`.
 
 ---
 
@@ -269,8 +277,8 @@ Cold temperature correction (01-B, 08 true altitude) = Vol III 2-4 §4.3.3 via `
 ## 5b. PANS core formulas & self-test
 
 All Doc 8168 formulas live in one object, `PANS` (search `PANS-OPS CORE FORMULAS`), each with its paragraph reference.
-Calculators call `PANS.*`; the **QA · Doc 8168 Self-test** sheet (`#selftest`) runs `PANS_TESTS` — 89 reference values from Doc 8168 Vol II
-(incl. holding Table I-4-3-App C-4, fix accuracies, path terminator tables, MSD tables), Vol III (Table 2-4-1 b) and Doc 9905 (Appendix B sample) — and shows the pass count in the sidebar badge. **Add a test whenever a formula is added or changed.**
+Calculators call `PANS.*`; the **QA · Doc 8168 Self-test** sheet (`#selftest`) runs `PANS_TESTS` — 97 reference values from Doc 8168 Vol II
+(incl. holding Table I-4-3-App C-4, fix accuracies, path terminator tables, MSD tables, departure PDG), Vol III (Table 2-4-1 b) and Doc 9905 (Appendix B sample) — and shows the pass count in the sidebar badge. **Add a test whenever a formula is added or changed.**
 
 ## 5c. Save, scenarios and print
 
@@ -322,6 +330,7 @@ All diagrams are drawn by one engine (search `DIAGRAMS — HiDPI canvas` in `ind
 | `turnCanvas` | Turn Anticipation | `drawTurnViz` | Intercept geometry to scale, Lead dimension |
 | `gradCanvas`, `gradNCanvas` | IFP Gradient | `drawGradientViz` | Profile (vertical exaggerated) |
 | `#vnp-chart-container` (SVG) | VNAV vs PAPI | `drawVnavPapiChart` | Compact 1:1 layout when container < 640 px |
+| `depVizCanvas` | Departure & Missed App | `drawDepViz` | OIS, 0.8 % MOC band, flight path, obstacles (vertical exaggerated) |
 
 - `setupCanvas()` sizes each canvas to its frame × devicePixelRatio (sharp on phones/retina) and is re-run on window resize (`redrawDiagrams()`).
 - `makeTurtle()` builds tracks from straight legs + constant-radius turns (x = east, y = north, NM).
@@ -372,6 +381,7 @@ Key development milestones from previous sessions:
 | 2026-05-01 | Coordinate Converter mobile UI redesigned (within FISB Tools project, separate app). Nested card-in-card layout replaced with fluid full-page scroll. |
 | 2026-05-02 | Context imported from Claude session. Session context continuity maintained. |
 | 2026-05-08 | Folder rename from `FVP Tools` → `8168 Tools` initiated. Handover document created. |
+| 2026-11-01 | Departure PDG card 07-D (8 checks → 97); sheet 07 renamed Departure & Missed Approach; browser + 360 px verified. |
 | 2026-11-01 | MSD card 09-D (11 checks → 89); base turn overshoot analysis fixed. |
 | 2026-11-01 | Path Terminators sheet 09 (10 new checks → 74). Clear/Reset buttons on drawing cards. VNAV chart → PAPI lights view. |
 | 2026-11-01 | Intersection fix tolerance 06-D (6 new checks → 64), linked to holding. |

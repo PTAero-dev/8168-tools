@@ -50,7 +50,7 @@ URL hash deep links: `#turn`, `#holdb`, `#pt`, …
 - `DIAGRAMS — HiDPI canvas` — drawing engine: `setupCanvas`, `vizView`, `makeTurtle`, `cv*` primitives, `svgPill`, `exportViz` (PNG 4×), `redrawDiagrams`.
 - `SAVE / SCENARIOS / PRINT` — autosave (`localStorage['8168tools:autosave']`), `collectState/applyState/recalcAll`, scenarios, `printSheet/preparePrint`.
 - `CARD TOOLS` — `decorateCards()`: "⌫ Clear" (inputs only) on cards with drawings; Reset also restores result placeholders (`data-init`) and clears drawings.
-- Dynamic lists are mirrored to hidden inputs so autosave captures them: `#pt-legs-json`, `#msd-json` (and `#dep-json` for the WIP departure card).
+- Dynamic lists are mirrored to hidden inputs so autosave captures them: `#pt-legs-json`, `#msd-json`, `#dep-json`.
 - Install/PWA script is a second `<script>` block at the end of `<body>`.
 
 ## Adding a feature — checklist
@@ -79,36 +79,18 @@ URL hash deep links: `#turn`, `#holdb`, `#pt`, …
 - Tools available: Python 3.14 (+ Pillow, PyMuPDF), Node, pdftotext, Git Bash, PowerShell.
 
 ## Current status (1 Nov 2026)
-Last commit: 07-D departure PDG card integrated (browser/360 px check still to do).
+Last commit: 07-D departure PDG card finished (verified in browser, light/dark themes and 360 px; `wip/` removed).
 
-### In progress — 07-D Departure Climb Gradient (PDG)  ← **resume here**
-Work-in-progress code is in `wip/departure/` (not yet in `index.html`):
-- `dep_pans.js` — `PANS` additions: `depStd`, `DEP_ORIGIN_FT` (16 ft = 5 m), `DEP_MOC` (0.008), `depPdgFor`, `depAnalyse`, `rocFor`. Paste inside `PANS`.
-- `dep_ui.js` — `DEP_ROWS` obstacle list (hidden `#dep-json`), `depLoad/depSave/depEdit/depAdd`, `calcDeparture()`, `drawDepViz()`.
-- `example_integrate_msd.py` — the integration script used for the MSD card; copy its pattern.
+### Done — 07-D Departure Climb Gradient (PDG)
+Card in `tab-desc` (sheet 07 renamed "Departure & Missed Approach"): `PANS.depStd/depPdgFor/depAnalyse/rocFor`, `calcDeparture()`, `drawDepViz()`, obstacle list in hidden `#dep-json`. Details in `HANDOVER.md`.
 
-Criteria used (Doc 8168 Vol II I-3-2 §2.2–2.7, II-3 §5.1–5.2):
+### Departure criteria used (Doc 8168 Vol II I-3-2 §2.2–2.7, II-3 §5.1–5.2)
 - OIS 2.5 % (Cat H 4.2 %) and PDG from 5 m (16 ft) above DER; MOC 0.8 % of distance; standard PDG 3.3 % (Cat H 5.0 %).
 - Obstacle penetrates if `h > 16 + OIS·d`. Required PDG `P = (h − 16)/d + 0.008` (h ft above DER, d ft).
 - Close-in: if the increased gradient is needed only to ≤ 60 m (200 ft) (`16 + P·d ≤ 200`), it is **not** promulgated; publish the obstacle (§2.7.5).
 - Published PDG = max of non-close-in requirements; it ends where a standard gradient keeps 0.8 % MOC over all governing obstacles:
   `x_end = max((h − 16 − OIS·d)/(P − PDGstd))` (single obstacle → at the obstacle, §2.7.4); promulgate the altitude (§2.7.3, II-3 §5.2 e).
 - Turn height 120 m (394 ft) (Cat H 90 m); at 3.3 % reached at ≈ 1.9 NM (Doc: nominal 3.5 km / 1.9 NM).
-
-Remaining steps:
-1. Card markup **07-D "Departure Climb Gradient (PDG)"** in `tab-desc` (span-all): inputs `dep-der` (DER elev ft), `dep-cat` (AE/H),
-   `dep-gs` (kt), hidden `dep-json`; obstacle table `tbody#dep-rows` (+ "Add obstacle" → `depAdd()`); results ids
-   `dep-res-pdg`, `dep-res-to`, `dep-res-ftnm`, `dep-res-roc`, `dep-res-turn`, `dep-res-std`, `dep-res-table`; note box `#dep-note`;
-   `.viz` with `canvas#depVizCanvas` + PNG button; reference note.
-2. Rename sheet 07 to "Departure & Missed Approach" (nav label, page title, subtitle).
-3. Hooks: `recalcAll` ('calcDeparture'), `switchTab` (`tab-desc`), `toggleTheme`, `redrawDiagrams`. CSS for the table rows (`tr.pdg`, `tr.close-in`) like `.msd-table`.
-4. Self-tests (hand-checked values):
-   - standard PDG = 0.025 + 0.008 = 0.033; Cat H 0.050
-   - distance to 394 ft at 3.3 %: `(394 − 16)/0.033/6076.12 ≈ 1.885 NM` (Doc ≈ 1.9 NM)
-   - obstacle 2.0 NM, 500 ft above DER → `P = 484/12152.24 + 0.008 ≈ 4.78 %`, end height = `500 + 0.008·12152 ≈ 597 ft`
-   - close-in: 0.3 NM, 80 ft → P ≈ 4.31 % but end ≈ 95 ft ≤ 200 → class `close-in`, published PDG stays 3.3 %
-   - ROC 3.3 % at 150 kt GS ≈ 501 ft/min
-5. QA-2 audit line, `HANDOVER.md`, browser + 360 px checks, commit + push, then **delete `wip/`**.
 
 ### Backlog (agreed with the user, in rough priority)
 - Limit warnings on all sheets (IAS > category max, outbound time outside 1–3 min, VPA/gradient limits, fix tolerance limits) with Doc refs.

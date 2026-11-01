@@ -1118,6 +1118,7 @@
         .msd-table td.num { font-family: var(--font-mono); white-space: nowrap; }
         .dep-table tr.pdg td { background: rgba(255, 122, 133, 0.08); }
         .dep-table tr.close-in td { background: rgba(255, 196, 87, 0.08); }
+        .dep-table td:first-child input { min-width: 110px; }
         .pt-presets { display: flex; flex-wrap: wrap; gap: 6px; }
         .pt-legs { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
         .pt-leg {
@@ -7298,7 +7299,7 @@
             const pdgEnd = maxD * 6076.12;
             const pathH = (x) => (A.P > S.pdg && x <= A.endX) ? O + A.P * x : O + A.P * A.endX + S.pdg * (x - A.endX);
             const maxH = Math.max(450, pathH(pdgEnd) * 1.05, ...A.rows.map((r) => r.h * 1.15 || 0));
-            const pad = { l: 58, r: 20, t: 30, b: 34 };
+            const pad = { l: 58, r: 20, t: 62, b: 34 };
             const X = (nm) => pad.l + (nm / maxD) * (w - pad.l - pad.r);
             const Y = (hf) => h - pad.b - (hf / maxH) * (h - pad.t - pad.b);
 
@@ -7340,10 +7341,10 @@
                 const col = r.cls === 'clear' ? C.success : r.cls === 'close-in' ? C.warning : C.danger;
                 const x = X(r.d), y = Y(r.h);
                 ctx.save(); ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + 5, Y(0)); ctx.lineTo(x - 5, Y(0)); ctx.closePath(); ctx.globalAlpha = 0.85; ctx.fill(); ctx.restore();
-                cvLabel(ctx, C, r.n, x, y - 9, { size: 9, color: col, box: false });
+                cvLabel(ctx, C, r.n, x + 7, y + 6, { size: 9, color: col, box: false, align: 'left' });
             });
-            cvLabel(ctx, C, '- - OIS ' + (S.ois * 100).toFixed(1) + '%  · · ' + (S.pdg * 100).toFixed(1) + '% std  — flight path', pad.l + 4, pad.t - 14, { size: 9, align: 'left', box: false, color: C.muted });
-            cvLabel(ctx, C, 'ft above DER · NM from DER · vertical exaggerated', w - pad.r, pad.t - 14, { size: 8.5, align: 'right', box: false, color: C.muted });
+            cvLabel(ctx, C, '- - OIS ' + (S.ois * 100).toFixed(1) + '%  · · ' + (S.pdg * 100).toFixed(1) + '% std  — flight path', pad.l, pad.t - 26, { size: 9, align: 'left', box: false, color: C.muted });
+            cvLabel(ctx, C, w < 420 ? 'ft above DER · NM · vert. exaggerated' : 'ft above DER · NM from DER · vertical exaggerated', pad.l, pad.t - 12, { size: 8.5, align: 'left', box: false, color: C.muted });
         }
 
 
