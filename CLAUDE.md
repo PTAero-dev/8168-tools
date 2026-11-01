@@ -15,7 +15,7 @@ Guide for Claude Code sessions working on this repo. Read this first; details ar
 3. **Never commit the ICAO PDFs** (`*.pdf` is git-ignored; they are ICAO copyright). Don't delete them either.
 4. **Every formula must trace to a Doc paragraph** and live in the `PANS` object with a comment reference.
    Add a self-test case to `PANS_TESTS` for every new or changed formula, using Doc tables / worked examples where possible.
-   The QA sheet must stay 100 % passing (currently **101/101**).
+   The QA sheet must stay 100 % passing (currently **109/109**).
 5. **Verify against the PDFs**, not memory. If something can't be verified, say so in the UI and the QA audit card.
 6. The user tests on an **Android phone** and sends screenshots. Every change must work at ~360 px width with no horizontal overflow.
 7. Keep the **Blueprint theme** (CSS variables; drawings use `bpColors()` — never hard-code colours) and the light "Whiteprint" theme.
@@ -59,6 +59,7 @@ To add a sheet: add a `.nav-item` to the right group — both navs pick it up.
 - `SELF-TEST` — `PANS_TESTS` array + `runPansTests()` / `renderSelfTest()`; badge in the sidebar.
 - `DIAGRAMS — HiDPI canvas` — drawing engine: `setupCanvas`, `vizView`, `makeTurtle`, `cv*` primitives, `svgPill`, `exportViz` (PNG 4×), `redrawDiagrams`.
 - `SAVE / SCENARIOS / PRINT` — autosave (`localStorage['8168tools:autosave']`), `collectState/applyState/recalcAll`, scenarios, `printSheet/preparePrint`.
+- `LIMIT WARNINGS` — `showLimits(anchor, [[level, text, ref]])` adds a `.limit-box` under the results panel containing `anchor` (levels `bad` = shall/max, `warn` = should/non-standard, `ok`); limit values live in `PANS` (`reversalMaxIas`, `outboundTimeOk`, `maxBank`, `descentLimits`, `vpaClass`). `resetCard` clears the boxes. Used on 02-A, 02-B, 02-C, 02-D, 04 legs, 05-A, 07-A, 08-C; 06-D has its own acceptance check.
 - `CARD TOOLS` — `decorateCards()`: "⌫ Clear" (inputs only) on cards with drawings; Reset also restores result placeholders (`data-init`) and clears drawings.
 - Dynamic lists are mirrored to hidden inputs so autosave captures them: `#pt-legs-json`, `#msd-json`, `#dep-json`.
 - Install/PWA script is a second `<script>` block at the end of `<body>`.
@@ -89,7 +90,7 @@ To add a sheet: add a `.nav-item` to the right group — both navs pick it up.
 - Tools available: Python 3.14 (+ Pillow, PyMuPDF), Node, pdftotext, Git Bash, PowerShell.
 
 ## Current status (2 Nov 2026)
-Last commit: navigation restructured into 5 sections with a phone bottom bar, sheet strip and card jump chips; 02-B…02-D moved to new sheet 02R. Before that: holding omnidirectional entry area (05-A).
+Last commit: limit warnings with Doc refs on 8 cards (07-A got segment/category selectors). Before that: navigation restructured into 5 sections with a phone bottom bar, sheet strip and card jump chips; 02-B…02-D moved to new sheet 02R. Before that: holding omnidirectional entry area (05-A).
 
 ### Done — 07-D Departure Climb Gradient (PDG)
 Card in `tab-desc` (sheet 07 renamed "Departure & Missed Approach"): `PANS.depStd/depPdgFor/depAnalyse/rocFor`, `calcDeparture()`, `drawDepViz()`, obstacle list in hidden `#dep-json`. Details in `HANDOVER.md`.
@@ -103,7 +104,6 @@ Card in `tab-desc` (sheet 07 renamed "Departure & Missed Approach"): `PANS.depSt
 - Turn height 120 m (394 ft) (Cat H 90 m); at 3.3 % reached at ≈ 1.9 NM (Doc: nominal 3.5 km / 1.9 NM).
 
 ### Backlog (agreed with the user, in rough priority)
-- Limit warnings on all sheets (IAS > category max, outbound time outside 1–3 min, VPA/gradient limits, fix tolerance limits) with Doc refs.
 - Drawing quality pass on all existing drawings (rule 9): label collision avoidance (e.g. holding footer overlaps the scale bar at 360 px), labels show/hide toggle, HiDPI check.
 - VNAV vs PAPI: compute true VPA with the Vol II III-3-4 App A method (currently temperature-ratio approximation).
 - Polish: ⓘ per result showing formula + Doc paragraph; ft/NM ↔ m/km toggle; "using TAS from Sheet 01" labels.

@@ -895,6 +895,16 @@
         .note.bad .note-title { color: var(--accent-danger); }
         .note.warn { border-color: var(--accent-warning); }
         .note.warn .note-title { color: var(--accent-warning); }
+        /* limit warnings (Doc limits) */
+        .limit-box { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line-soft); display: grid; gap: 4px; }
+        .limit-box[hidden] { display: none; }
+        .limit { display: flex; gap: 8px; align-items: baseline; font-size: 0.8rem; line-height: 1.4; color: var(--text-muted); }
+        .limit em { font-style: normal; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.04em; color: var(--text-muted); opacity: 0.85; white-space: nowrap; }
+        .limit-ico { flex: 0 0 16px; height: 16px; display: inline-grid; place-items: center; border: 1px solid currentColor; font-family: var(--font-mono); font-size: 0.62rem; font-weight: 700; }
+        .limit.bad { color: var(--accent-danger); }
+        .limit.warn { color: var(--accent-warning); }
+        .limit.ok { color: var(--accent-success); }
+
 
         .warn-text {
             margin-top: 6px;
@@ -2995,6 +3005,24 @@
                                 <input type="number" id="desc-grad" value="5.2" oninput="calcDescent()">
                             </div>
                         </div>
+                        <div class="vp-row">
+                            <div class="vp-input-group">
+                                <label>Segment</label>
+                                <select id="desc-seg" onchange="calcDescent()">
+                                    <option value="final">Final (NPA with FAF)</option>
+                                    <option value="intermediate">Intermediate</option>
+                                    <option value="initial">Initial approach</option>
+                                </select>
+                            </div>
+                            <div class="vp-input-group">
+                                <label>Category</label>
+                                <select id="desc-cat" onchange="calcDescent()">
+                                    <option value="C">C / D / E</option>
+                                    <option value="A">A / B</option>
+                                    <option value="H">H</option>
+                                </select>
+                            </div>
+                        </div>
                         <div class="results-panel">
                             <div class="result-row">
                                 <span class="result-label">Approx Flight Path Angle</span>
@@ -3465,6 +3493,7 @@
                                 <li><b>Confirmed:</b> TAS (I-2-1-App), r = V/(20πR), ICAO wind 2h+47, wind spiral E, φ = 36/t or 0.215·TAS/t, DME tolerance, turn anticipation, ROD.</li>
                                 <li><b>01-B Cold temperature</b> and <b>08 true altitude:</b> confirmed against Doc 8168 Vol III 2-4 §4.3.3 and Table 2-4-1 b); both now share one function.</li>
                                 <li><b>05-A Holding</b> (new): Table II-4-1-2 speeds, ISA+15, ICAO wind, template Table I-4-3-App C-4 (all 33 lines), entry sectors, buffer MOC. Omnidirectional entry area §3.3.3.2.1 (curves 5–8, convex-envelope approximation); template extents checked against Diagram I-4-3-App C-6.</li>
+                                <li><b>Limit warnings</b> (new, 2 Nov 2026): reversal max IAS Table I-4-1-2, outbound 1–3 min I-4-3 §3.4.5.1/§3.5.5, bank ≤ 25° Table I-2-3-1, descent gradients I-4-3 §3.3.5 / I-4-4 §4.3.3.2 / I-4-5 §5.3.1, Baro-VNAV VPA 2.5°–3.5° III-3-4 §4.2.1, holding speed/timing II-4-1. Shown under the results of 02-A, 02-B, 02-C, 02-D, 04 legs, 05-A, 07-A, 08.</li>
                                 <li><b>07-D Departure PDG</b> (new): OIS 2.5 %/4.2 % from 16 ft above DER, MOC 0.8 %, PDG end point and close-in rule (I-3-2 §2.7).</li>
                                 <li><b>09-D MSD</b> (new): fly-by / fly-over minimum stabilization distance (III-2-1 §1.4), leg checks §1.2.5 and Table III-2-1-21.</li>
                                 <li><b>09 Path terminators</b> (new): Tables III-2-5-App-1/App-2 and coding rules a–e, RNP subset.</li>
@@ -4011,6 +4040,25 @@
             },
             // climb rate (ft/min) for a gradient at a ground speed (kt)
             rocFor(grad, gs) { return grad * gs * 101.2685; },
+            // ---- LIMITS ----
+            // Table I-4-1-2 (* and **): maximum IAS for reversal and racetrack procedures (kt)
+            reversalMaxIas(cat, hFt) {
+                if (cat === 'H') return hFt > 6000 ? 110 : 100;
+                return { A: 110, B: 140, C: 240, D: 250, E: 250 }[cat];
+            },
+            // I-4-3 §3.4.5.1 (racetrack) / §3.5.5 (reversal): outbound time 1 to 3 min in ½-min increments
+            outboundTimeOk(t) { return t >= 1 && t <= 3 && Math.abs(t * 2 - Math.round(t * 2)) < 1e-9; },
+            // Table I-2-3-1: turn construction bank angles do not exceed 25°
+            maxBank: 25,
+            // Descent gradient optimum / maximum (%): initial I-4-3 §3.3.5, intermediate I-4-4 §4.3.3, final NPA with FAF I-4-5 §5.3.1
+            descentLimits(seg, cat) {
+                const H = cat === 'H';
+                if (seg === 'initial') return { opt: H ? 6.5 : 4.0, max: H ? 10 : 8.0 };
+                if (seg === 'intermediate') return { opt: 0, max: H ? 10 : 5.2 };
+                return { opt: 5.2, max: H ? 10 : (cat === 'A' || cat === 'B' ? 6.5 : 6.1) };
+            },
+            // III-3-4 §4.2.1: promulgated VPA ≥ 2.5° (shall), > 3.5° non-standard; effective VPA ≥ 2.5° at lowest, ≤ 3.5° at highest temperature
+            vpaClass(vpa) { return vpa < 2.5 - 1e-9 ? 'prohibited' : (vpa > 3.5 + 1e-9 ? 'non-standard' : 'standard'); },
             // ROD (ft/min) = GS (kt) × 6076.12/60 × gradient
             rod(gs, gradPct) { return gs * 101.2685 * gradPct / 100; },
 
@@ -4142,6 +4190,14 @@
             { g: 'Holding', n: 'Template extent, C side', ref: 'Diagram I-4-3-App C-6 (scaled ≈ 11.3 NM)', exp: 11.30, tol: 0.25, f: () => { const h = circlesHull(holdingTemplateGeometry(HOLD_SAMPLE()).circles, [[0, 0]], 0); return -Math.min(...h.map((q) => q[1])); } },
             { g: 'Holding', n: 'Template extent, B (holding) side', ref: 'Diagram I-4-3-App C-6 (scaled ≈ 8.0 NM)', exp: 7.98, tol: 0.25, f: () => { const h = circlesHull(holdingTemplateGeometry(HOLD_SAMPLE()).circles, [[0, 0]], 0); return Math.max(...h.map((q) => q[0])); } },
             { g: 'Holding', n: 'Entry area contains point E placed on every fix-area corner', ref: 'I-4-3-App C §3.3.3.2.1.2', exp: 1, tol: 0, f: () => { const tp = HOLD_SAMPLE(), geo = holdingTemplateGeometry(tp), fa = holdingFixArea('vor', 10000, NaN, NaN), basic = circlesHull(geo.circles, fa.corners, 0), en = holdingEntryArea(tp, geo, fa, basic); const ext = (pts, ux, uy) => Math.max(...pts.map((q) => q[0] * ux + q[1] * uy)); return [[0, -1], [-1, 0], [-0.7071, -0.7071]].every(([ux, uy]) => ext(en.area, ux, uy) >= ext(en.c5, ux, uy) - 1e-9 && ext(en.area, ux, uy) >= ext(basic, ux, uy) - 1e-9) ? 1 : 0; } },
+            { g: 'Limits', n: 'Reversal max IAS Cat B', ref: 'Table I-4-1-2 (*)', exp: 140, tol: 0, f: () => PANS.reversalMaxIas('B', 5000) },
+            { g: 'Limits', n: 'Reversal max IAS Cat H above 6 000 ft', ref: 'Table I-4-1-2 (**)', exp: 110, tol: 0, f: () => PANS.reversalMaxIas('H', 7000) },
+            { g: 'Limits', n: 'Outbound 2.5 min accepted, 3.5 / 1.2 min rejected', ref: 'I-4-3 §3.4.5.1, §3.5.5', exp: 1, tol: 0, f: () => (PANS.outboundTimeOk(2.5) && !PANS.outboundTimeOk(3.5) && !PANS.outboundTimeOk(1.2)) ? 1 : 0 },
+            { g: 'Limits', n: 'Final NPA max gradient Cat C', ref: 'I-4-5 §5.3.1.2 a)', exp: 6.1, tol: 0, f: () => PANS.descentLimits('final', 'C').max },
+            { g: 'Limits', n: 'Final NPA max gradient Cat A', ref: 'I-4-5 §5.3.1.2 a)', exp: 6.5, tol: 0, f: () => PANS.descentLimits('final', 'A').max },
+            { g: 'Limits', n: 'Initial approach max gradient', ref: 'I-4-3 §3.3.5', exp: 8.0, tol: 0, f: () => PANS.descentLimits('initial', 'D').max },
+            { g: 'Limits', n: 'Intermediate max gradient', ref: 'I-4-4 §4.3.3.2', exp: 5.2, tol: 0, f: () => PANS.descentLimits('intermediate', 'C').max },
+            { g: 'Limits', n: 'VPA 2.4° prohibited, 3.6° non-standard, 3.0° standard', ref: 'III-3-4 §4.2.1.3', exp: 1, tol: 0, f: () => (PANS.vpaClass(2.4) === 'prohibited' && PANS.vpaClass(3.6) === 'non-standard' && PANS.vpaClass(3.0) === 'standard') ? 1 : 0 },
             { g: 'Missed app.', n: 'ha ↔ hma round trip (hma 100, x −1500, xz 900, Z 2.5 %, θ 3°)', ref: 'II-1-1 §1.4.8.8.2.1', exp: 100, tol: 1e-9, f: () => PANS.equivHma(PANS.equivHa(100, -1500, 900, 2.5, 3), -1500, 900, 2.5, 3) },
             { g: 'Cold temp', n: '−10 °C, 1 000 ft above SL source (rounded up 10 ft)', ref: 'Vol III Table 2-4-1 b)', exp: 100, tol: 0, f: () => Math.ceil(PANS.coldTempCorr(1000, -10, 0) / 10) * 10 },
             { g: 'Cold temp', n: '−30 °C, 2 000 ft', ref: 'Vol III Table 2-4-1 b)', exp: 380, tol: 0, f: () => Math.ceil(PANS.coldTempCorr(2000, -30, 0) / 10) * 10 },
@@ -4213,7 +4269,23 @@
             btn.classList.add('active');
         }
 
+        // ---------- LIMIT WARNINGS: Doc limits listed under a results panel ----------
+        // items: [level ('bad' shall/must not | 'warn' should not / non-standard | 'ok'), text, Doc ref]
+        function showLimits(anchor, items) {
+            const el = typeof anchor === 'string' ? document.getElementById(anchor) : anchor;
+            const host = el && (el.closest('.results-panel') || el);
+            if (!host) return;
+            let box = host.querySelector(':scope > .limit-box');
+            if (!box) { box = document.createElement('div'); box.className = 'limit-box'; host.appendChild(box); }
+            box.innerHTML = items.map(([lvl, txt, ref]) => '<div class="limit ' + lvl + '"><span class="limit-ico">' + (lvl === 'bad' ? '✕' : lvl === 'warn' ? '!' : '✓') +
+                '</span><span>' + txt + (ref ? ' <em>' + ref + '</em>' : '') + '</span></div>').join('');
+            box.hidden = !items.length;
+        }
+        const radioVal = (name) => { const r = document.querySelector('input[name="' + name + '"]:checked'); return r ? r.value : null; };
+
         function resetCard(cardId, inputIds, callbackName) {
+            const card = document.getElementById(cardId);
+            if (card) card.querySelectorAll('.limit-box').forEach((b) => { b.hidden = true; b.innerHTML = ''; });
             inputIds.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) {
@@ -4362,6 +4434,16 @@
             // ROD (ft/min) = GS * 101.268 * (gradient / 100)
             const rod = gs * 101.268 * (grad / 100);
             document.getElementById('desc-rod').textContent = rod.toFixed(0) + " ft/min";
+
+            const seg = document.getElementById('desc-seg').value, cat = document.getElementById('desc-cat').value;
+            const lim = PANS.descentLimits(seg, cat);
+            const ref = { initial: 'I-4-3 §3.3.5', intermediate: 'I-4-4 §4.3.3.2', final: 'I-4-5 §5.3.1' }[seg];
+            const segName = { initial: 'initial approach', intermediate: 'intermediate', final: 'final NPA' }[seg];
+            const L = [];
+            if (grad > lim.max + 1e-9) L.push(['bad', grad + ' % exceeds the ' + segName + ' maximum ' + lim.max + ' %' + (seg === 'final' ? ' — aeronautical study and special approval required.' : '.'), ref]);
+            else if (grad > lim.opt + 1e-9) L.push(['warn', grad + ' % is above the ' + segName + ' optimum ' + (lim.opt || 'flat (0)') + ' %, within maximum ' + lim.max + ' %.', ref]);
+            else L.push(['ok', 'Within the ' + segName + ' optimum ' + (lim.opt || 0) + ' %.', ref]);
+            showLimits('desc-rod', L);
         }
 
         function calcReaction() {
@@ -4393,6 +4475,7 @@
             const alt = parseFloat(document.getElementById('turn-alt').value);
             const theta = parseFloat(document.getElementById('turn-theta').value);
             let wind = parseFloat(document.getElementById('turn-wind').value);
+            setTimeout(() => turnLimits(bank), 0);
 
             // If TAS is empty, fetch from TAS converter if available
             let tas = tasIn;
@@ -4462,6 +4545,14 @@
             calcPT();
         }
 
+        function turnLimits(bank) {
+            const L = [];
+            const tas = parseFloat(document.getElementById('turn-tas').value) || parseFloat(document.getElementById('tas-out').textContent);
+            if (!isNaN(bank) && bank > PANS.maxBank) L.push(['warn', 'Bank ' + bank + '° is above the 25° used for any phase in PANS-OPS turn construction.', 'Table I-2-3-1']);
+            if (!isNaN(bank) && tas > 0 && PANS.rateRaw(tas, bank) > 3) L.push(['warn', 'Rate of turn limited to 3°/s at this TAS — radius uses 3°/s, not ' + bank + '° bank.', 'I-2-3 §3.1.2.2 b)']);
+            showLimits('turn-rate-out', L);
+        }
+
         function calcPT() {
             const ias = parseFloat(document.getElementById('pt-ias').value);
             const alt = parseFloat(document.getElementById('pt-alt').value);
@@ -4491,6 +4582,13 @@
             const w = PANS.wind(alt);
 
             document.getElementById('pt-tas-wind').textContent = Math.round(tas) + " kt / " + Math.round(w) + " kt";
+            {
+                const L = [], catMax = parseFloat(radioVal('pt-cat'));
+                if (ias > 250) L.push(['bad', 'IAS ' + ias + ' kt exceeds every category maximum for reversal procedures (D/E 250 kt).', 'Table I-4-1-2']);
+                else if (catMax && ias > catMax) L.push(['bad', 'IAS ' + ias + ' kt exceeds the selected category maximum ' + catMax + ' kt.', 'Table I-4-1-2']);
+                if (!PANS.outboundTimeOk(t)) L.push(['warn', 'Outbound ' + t + ' min — normally 1 to 3 min in ½-min steps.', 'I-4-3 §3.5.5']);
+                showLimits('pt-radius', L);
+            }
 
             // R = 3°/s or 25° bank, whichever is less
             const R = PANS.rate(tas, 25);
@@ -4585,6 +4683,15 @@
 
             // 1. TAS at ISA+15 °C (I-4-3-App C, line 1)
             const tas = PANS.reversalTas(ias, alt);
+            setTimeout(() => {
+                const L = [], cat = radioVal('btp-cat'), tOut = isTime ? obValue : obValue / (tas / 60);
+                const mx = cat ? PANS.reversalMaxIas(cat, alt) : 250;
+                if (ias > mx) L.push(['bad', 'IAS ' + ias + ' kt exceeds the ' + (cat ? 'Cat ' + cat + ' ' : '') + 'maximum ' + mx + ' kt for reversal procedures.', 'Table I-4-1-2']);
+                if (bank > PANS.maxBank) L.push(['warn', 'Bank ' + bank + '° is above the 25° used for reversal procedures.', 'Table I-2-3-1']);
+                if (!PANS.outboundTimeOk(isTime ? tOut : Math.round(tOut * 2) / 2) || (!isTime && (tOut < 1 || tOut > 3)))
+                    L.push(['warn', 'Outbound ' + tOut.toFixed(2) + ' min — normally 1 to 3 min in ½-min steps.', 'I-4-3 §3.5.5']);
+                showLimits('btp-res-phi', L);
+            }, 0);
 
             // 2. Calculate active outbound time
             let activeTime = obValue;
@@ -4791,6 +4898,18 @@
             calculateGradient(prefix);
         }
 
+        // descent gradient against the segment optimum / maximum (I-4-3 §3.3.5, I-4-4 §4.3.3.2, I-4-5 §5.3.1)
+        function gradLimits(anchor, pct) {
+            if (!(pct > 0)) { showLimits(anchor, []); return; }
+            const p = pct.toFixed(2) + ' %', L = [];
+            const fin = PANS.descentLimits('final', 'C'), finAB = PANS.descentLimits('final', 'A');
+            L.push(pct <= 4.0 ? ['ok', 'Initial approach: within optimum 4.0 %.', 'I-4-3 §3.3.5'] : pct <= 8.0 ? ['warn', 'Initial approach: ' + p + ' above optimum 4.0 %, within max 8.0 %.', 'I-4-3 §3.3.5'] : ['bad', 'Initial approach: ' + p + ' exceeds max 8.0 %.', 'I-4-3 §3.3.5']);
+            L.push(pct <= 5.2 ? ['ok', 'Intermediate: within max 5.2 % (segment should be flat or have a flat part).', 'I-4-4 §4.3.3'] : ['bad', 'Intermediate: ' + p + ' exceeds max 5.2 %.', 'I-4-4 §4.3.3.2']);
+            L.push(pct <= 5.2 + 1e-9 ? ['ok', 'Final NPA: within optimum 5.2 %.', 'I-4-5 §5.3.1.1'] : pct <= fin.max ? ['warn', 'Final NPA: ' + p + ' above optimum 5.2 %, within max 6.1 % (Cat C–E) / 6.5 % (A, B).', 'I-4-5 §5.3.1.2'] :
+                pct <= finAB.max ? ['warn', 'Final NPA: ' + p + ' exceeds max 6.1 % for Cat C–E; within 6.5 % for Cat A, B only.', 'I-4-5 §5.3.1.2'] : ['bad', 'Final NPA: ' + p + ' exceeds max 6.5 % (fixed-wing) — aeronautical study / special approval.', 'I-4-5 §5.3.1.2']);
+            showLimits(anchor, L);
+        }
+
         function calculateGradient(prefix, source) {
             const FT_PER_NM = 6076.115;
             const sAltInput = document.getElementById(prefix + '-startAlt');
@@ -4922,6 +5041,7 @@
 
                 ftnmEl.textContent = Math.round(ftPerNM).toLocaleString();
                 pctEl.textContent = percent.toFixed(2) + "%";
+                gradLimits(pctEl, deltaAlt < 0 ? percent : 0);
                 angEl.textContent = angleDeg.toFixed(2) + "°";
 
                 if (angleInput && source !== 'angle' && source !== 'pct') angleInput.value = angleDeg.toFixed(4);
@@ -5206,6 +5326,15 @@
             const tempRatio = (temperature + 273.15) / (localISA + 273.15);
             const trueVpaRad = Math.atan(Math.tan(toRad(designVpa)) * tempRatio);
             const trueVpaDeg = trueVpaRad * (180 / Math.PI);
+            {
+                const L = [], c = PANS.vpaClass(designVpa);
+                if (c === 'prohibited') L.push(['bad', 'Promulgated VPA ' + designVpa + '° is below 2.5° — not permitted.', 'III-3-4 §4.2.1.3']);
+                else if (c === 'non-standard') L.push(['warn', 'Promulgated VPA ' + designVpa + '° is above 3.5° — non-standard: aeronautical study and special approval.', 'III-3-4 §4.2.1.3']);
+                if (trueVpaDeg < 2.5) L.push(['bad', 'Effective VPA ' + trueVpaDeg.toFixed(2) + '° at ' + temperature + ' °C is below 2.5° — raise the minimum temperature or the VPA.', 'III-3-4 §4.2.1']);
+                else if (trueVpaDeg > 3.5) L.push(['warn', 'Effective VPA ' + trueVpaDeg.toFixed(2) + '° at ' + temperature + ' °C is above 3.5° (should not exceed at the highest temperature).', 'III-3-4 §4.2.1']);
+                if (!L.length) L.push(['ok', 'Promulgated and effective VPA within 2.5°–3.5°.', 'III-3-4 §4.2.1']);
+                showLimits('vnp-res-truevpa', L);
+            }
 
             // ICAO Doc 8168 Vol III, Section 2, Chapter 4.3.3 (Exact Altimeter Correction)
             function getTrueHatVnav(indicatedHat) {
@@ -6347,6 +6476,12 @@
                 (e.xmin !== undefined ? ' · xmin ' + (e.xmin - fixErr).toFixed(1) : '') + ' NM';
             set('base-plot', plot);
             document.getElementById('base-warn').style.display = PANS.extentsValid(tas, wind, t) ? 'none' : 'block';
+            {
+                const L = [];
+                if (ias > 250) L.push(['bad', 'IAS ' + ias + ' kt exceeds every category maximum for reversal / racetrack (D/E 250 kt).', 'Table I-4-1-2']);
+                if (!PANS.outboundTimeOk(t)) L.push(['warn', 'Outbound ' + t + ' min — specify 1 to 3 min in ½-min steps.', type === 'racetrack' ? 'I-4-3 §3.4.5.1' : 'I-4-3 §3.5.5']);
+                showLimits('base-xmax', L);
+            }
 
             drawBaseTurnViz(tas, t, wind, e.xmax + fixErr, e.ymax + fixErr, e.ymin - fixErr, type, e.xmin !== undefined ? e.xmin - fixErr : undefined, fixErr);
         }
@@ -6794,6 +6929,13 @@
             set('hold-res-tas', Math.round(V) + ' kt · R ' + tp.R.toFixed(2) + '°/s · r ' + f2(tp.r) + ' NM');
             set('hold-res-wind', Math.round(wind) + ' kt · E45 ' + tp.E45.toFixed(3) + ' NM');
             set('hold-res-leg', f2(tp.L) + ' NM (' + T + ' min)');
+            {
+                const L = [];
+                if (!isNaN(preset.ias) && ias < preset.ias) L.push(['bad', 'IAS ' + ias + ' kt is below the Table II-4-1-2 speed ' + preset.ias + ' kt — the area does not protect the standard holding speed.', 'Table II-4-1-2']);
+                if (!isNaN(preset.ias) && ias > preset.ias) L.push(['ok', 'Area built for ' + ias + ' kt, above the Table II-4-1-2 speed ' + preset.ias + ' kt (publish the speed used).', 'II-4-1 §1.3.2']);
+                if (T !== PANS.holdingTime(alt)) L.push(['warn', 'Outbound ' + T + ' min differs from the standard ' + PANS.holdingTime(alt) + ' min at this level — publish the timing.', 'II-4-1 §1.3.2.2']);
+                showLimits('hold-res-tas', L);
+            }
             set('hold-res-xe', f2(tp.XE) + ' / ' + f2(tp.YE) + ' NM');
 
             // geometry
