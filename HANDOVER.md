@@ -381,6 +381,7 @@ Key development milestones from previous sessions:
 | 2026-05-01 | Coordinate Converter mobile UI redesigned (within FISB Tools project, separate app). Nested card-in-card layout replaced with fluid full-page scroll. |
 | 2026-05-02 | Context imported from Claude session. Session context continuity maintained. |
 | 2026-05-08 | Folder rename from `FVP Tools` → `8168 Tools` initiated. Handover document created. |
+| 2026-11-02 | 10-F stepdown fix: g1/g2 (to 50 ft, Cat H 35 ft) vs final limits, stabilized FAF→THR path vs SDF MOCA (I-4-5 §5.5.4), dual OCA/H reminder, close-to-fix 15 % plane (Cat H 2.5 × gradient) for up to 4 obstacles (I-2-2 §2.7.4); 2 checks → 160. |
 | 2026-11-02 | 10-E NPA missed approach: d (3 s) / X (15 s, H 5 s) at TAS + 10 kt, Tables I-4-6-1/-2 for distance MAPt (Cat A–D), SOC, initial phase with final MOC, 2.5 % climb with MOC 98 ft (secondary linear), OCA table for 2.5/3/4/5 %, 5.2 % path limit for MAPt before THR; 4 checks → 158. |
 | 2026-11-02 | 10-D CDFA table: H = RDH + 6 076·D·tanθ (+ 0.8833·D²), rows at whole DME / THR NM, FAF and OCA rows, rounding up/nearest 10 ft, ROD and FAF→THR time table, profile drawing; 2 checks vs Table II-1-1-App C-1b → 154. |
 | 2026-11-02 | New sheet 11 MSA & TAA (`tab-msa`): sectors from boundary bearings (+ optional DME arc subsectors), TAA areas for T/Y layout, 5 NM buffer, +1 000 ft (+ mountainous) rounded up to 100 ft, single-altitude check, obstacle textarea (paste from a spreadsheet; textareas now autosaved); 3 checks → 152. Also: long notes fold to one line. |

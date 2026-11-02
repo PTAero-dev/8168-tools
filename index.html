@@ -4479,6 +4479,119 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- 10-F STEPDOWN FIX -->
+                <div class="card" id="card-sdf">
+                    <div class="card-header minimizable" onclick="toggleCard(this)">
+                        <div class="card-heading"><span class="card-tag">10-F</span>
+                            <div class="card-title">Stepdown Fix · Obstacles Close to a Fix</div>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-reset" onclick="event.stopPropagation(); resetCard('card-sdf', ['sdf-thr', 'sdf-faf-d', 'sdf-faf-h', 'sdf-d', 'sdf-h', 'sdf-moca', 'cf-moca', 'sdf-o1-n', 'sdf-o1-x', 'sdf-o1-e', 'sdf-o2-n', 'sdf-o2-x', 'sdf-o2-e', 'sdf-o3-n', 'sdf-o3-x', 'sdf-o3-e', 'sdf-o4-n', 'sdf-o4-x', 'sdf-o4-e'], 'calcSdf');">↺ Reset</button>
+                        </div>
+                    </div>
+                    <div class="card-body split">
+                        <div class="form-grid">
+                            <div class="section-label">Stepdown fix in the final segment · I-4-5 §5.3, §5.5.4</div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>Threshold Elev (ft)</label>
+                                    <input type="number" id="sdf-thr" placeholder="e.g. 985" oninput="calcSdf()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Category</label>
+                                    <select id="sdf-cat" onchange="calcSdf()">
+                                        <option value="C">C</option><option value="D">D</option><option value="E">E</option>
+                                        <option value="B">B</option><option value="A">A</option><option value="H">H</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>FAF from THR (NM)</label>
+                                    <input type="number" id="sdf-faf-d" placeholder="e.g. 6" step="0.1" oninput="calcSdf()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>FAF altitude (ft)</label>
+                                    <input type="number" id="sdf-faf-h" placeholder="e.g. 3000" oninput="calcSdf()">
+                                </div>
+                            </div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>SDF from THR (NM)</label>
+                                    <input type="number" id="sdf-d" placeholder="e.g. 3" step="0.1" oninput="calcSdf()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>SDF altitude (ft)</label>
+                                    <input type="number" id="sdf-h" placeholder="e.g. 1900" oninput="calcSdf()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>SDF MOCA (ft)<span class="opt">OPT</span></label>
+                                    <input type="number" id="sdf-moca" placeholder="= SDF alt" oninput="calcSdf()">
+                                </div>
+                            </div>
+                            <div class="section-label">Obstacles close to the fix · I-2-2 §2.7.4</div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>MOCA before the fix (ft)</label>
+                                    <input type="number" id="cf-moca" placeholder="e.g. 2000" oninput="calcSdf()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>MOC of preceding segment</label>
+                                    <select id="cf-moc" onchange="calcSdf()">
+                                        <option value="246">Final with FAF (246 ft)</option>
+                                        <option value="492" selected>Intermediate (492 ft)</option>
+                                        <option value="984">Initial (984 ft)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="table-wrap"><table class="qa-table oca-table"><thead><tr><th>Obstacle</th><th>Past earliest fix pt (NM)</th><th>Elev (ft)</th></tr></thead><tbody>
+                                    <tr><td><input type="text" id="sdf-o1-n" placeholder="Obstacle 1" oninput="calcSdf()"></td>
+                                        <td><input type="number" id="sdf-o1-x" placeholder="NM" step="0.1" oninput="calcSdf()"></td>
+                                        <td><input type="number" id="sdf-o1-e" placeholder="ft" oninput="calcSdf()"></td></tr>
+                                    <tr><td><input type="text" id="sdf-o2-n" placeholder="Obstacle 2" oninput="calcSdf()"></td>
+                                        <td><input type="number" id="sdf-o2-x" placeholder="NM" step="0.1" oninput="calcSdf()"></td>
+                                        <td><input type="number" id="sdf-o2-e" placeholder="ft" oninput="calcSdf()"></td></tr>
+                                    <tr><td><input type="text" id="sdf-o3-n" placeholder="Obstacle 3" oninput="calcSdf()"></td>
+                                        <td><input type="number" id="sdf-o3-x" placeholder="NM" step="0.1" oninput="calcSdf()"></td>
+                                        <td><input type="number" id="sdf-o3-e" placeholder="ft" oninput="calcSdf()"></td></tr>
+                                    <tr><td><input type="text" id="sdf-o4-n" placeholder="Obstacle 4" oninput="calcSdf()"></td>
+                                        <td><input type="number" id="sdf-o4-x" placeholder="NM" step="0.1" oninput="calcSdf()"></td>
+                                        <td><input type="number" id="sdf-o4-e" placeholder="ft" oninput="calcSdf()"></td></tr>
+                            </tbody></table></div>
+                        </div>
+                        <div class="form-grid">
+                            <div class="results-panel flush">
+                                <div class="result-row key">
+                                    <span class="result-label">g1 FAF → SDF</span>
+                                    <span id="sdf-res-g1" class="result-value c-cyan">---</span>
+                                </div>
+                                <div class="result-row key">
+                                    <span class="result-label">g2 SDF → 50 ft over THR</span>
+                                    <span id="sdf-res-g2" class="result-value c-cyan">---</span>
+                                </div>
+                                <div class="result-row">
+                                    <span class="result-label">Stabilized FAF → THR path at the SDF</span>
+                                    <span id="sdf-res-path" class="result-value">---</span>
+                                </div>
+                                <div class="result-row">
+                                    <span class="result-label">Close-fix plane slope</span>
+                                    <span id="cf-res-slope" class="result-value">---</span>
+                                </div>
+                            </div>
+                            <div class="table-wrap"><table class="qa-table"><thead><tr><th>Obstacle</th><th>Plane (ft)</th><th>Result</th></tr></thead><tbody id="cf-rows"></tbody></table></div>
+                            <div class="note">
+                                <div class="note-title">Reference</div>
+                                Doc 8168 Vol II I-2-2 §2.7.3: a stepdown fix (preferably one in the final segment, at most two with DME / radar) meets the criteria of the fix of that
+                                segment; with an SDF in the final segment an OCA/H is published with and without the SDF (RNP: with only). I-4-5 §5.3: g1 = FAF → SDF, g2 = SDF →
+                                15 m (50 ft; Cat H 35 ft) over the threshold; §5.5.4: the stabilized descent path must clear the SDF MOCA (raise the FAF altitude or move the FAF).
+                                I-2-2 §2.7.4: obstacles in the fix tolerance area and within 5 NM past its earliest point may be ignored for the following segment when below a plane
+                                at 15 % (Cat H: max(15 %, 2.5 × gradient)) through the earliest point at MOCA − MOC of the preceding segment. Lateral containment in the fix
+                                tolerance area is not checked here.
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -4647,6 +4760,7 @@
                                 <li><b>05-A Holding</b> (new): Table II-4-1-2 speeds, ISA+15, ICAO wind, template Table I-4-3-App C-4 (all 33 lines), entry sectors, buffer MOC. Omnidirectional entry area §3.3.3.2.1 (curves 5–8, convex-envelope approximation); template extents checked against Diagram I-4-3-App C-6.</li>
                                 <li><b>05-A VOR/DME holding</b> (new, 2 Nov 2026): §3.3.4 distance parameters (Ds, DL rounding, DLs, d1/d2) and basic area towards / away from the station (convex-envelope approximation; along-radial entry areas not drawn).</li>
                                 <li><b>05-A holding entries</b> (new, 2 Nov 2026): VOR/DME sector 1 DME-arc and sector 2 entry areas (§3.3.4.1.2.6–7), radial-intersection entries (§3.3.3.2.2); VOR/DME DL checked against Diagrams C-13 (35 NM) and C-15 (26 NM). Sector-1 reduction (§3.3.3.3) not built (construction ambiguous).</li>
+                                <li><b>10-F Stepdown fix</b> (new, 2 Nov 2026): g1 / g2, stabilized path vs SDF MOCA (§5.5.4), close-to-fix 15 % plane (I-2-2 §2.7.4).</li>
                                 <li><b>10-E NPA missed approach</b> (new, 2 Nov 2026): d / X (Tables I-4-6-3/-4 checked), Tables I-4-6-1/-2, SOC, 2.5 % surface with MOC 98 ft, OCA gain table for 2.5–5 %, 5.2 % path limit for a MAPt before the threshold.</li>
                                 <li><b>10-D CDFA table</b> (new, 2 Nov 2026): profile heights per II-1-1-App C (checked against Table II-1-1-App C-1b), 1 NM table, DME offset, ROD table.</li>
                                 <li><b>11 MSA &amp; TAA</b> (new, 2 Nov 2026): I-4-8 sectors (+ DME arc subsectors), III-2-4 TAA areas, 5 NM buffer, + 1 000 ft rounded up to 100 ft, single-altitude check.</li>
@@ -5255,6 +5369,10 @@
                 const tas = PANS.tas(ias, adElevFt + 1000, 15), V = tas + 25, R = PANS.rate(V, 20), r = PANS.radius(V, R);
                 return { ias, tas, V, rate: R, r, seg: c.seg, Rthr: 2 * r + c.seg };
             },
+            // ---- Obstacle close to a FAF / stepdown fix (I-2-2 §2.7.4) ----
+            // plane from the earliest fix point at (MOCA before the fix − MOC of the preceding segment), descending at 15 % (Cat H: max(15 %, 2.5 × gradient)), up to 5 NM
+            closeFixSlope(catH, gradPct) { return catH ? Math.max(15, 2.5 * (gradPct || 0)) : 15; },
+            closeFixPlane(xNm, mocaFt, mocPrevFt, slopePct) { return mocaFt - mocPrevFt - xNm * 6076.12 * slopePct / 100; },
             // ---- NPA missed approach (I-4-6 §6.1.5–6.2) ----
             finalMaxIas(cat) { return { A: 100, B: 130, C: 160, D: 185, E: 230, H: 90 }[cat]; },          // Table I-4-1-2, final approach max (kt)
             // §6.1.6.2.1 d: 3 s at TAS (AD elevation, ISA + 15) + 10 kt; §6.1.6.2.2 X: 15 s (Cat H 5 s) at the same speed (NM)
@@ -5513,6 +5631,8 @@
             { g: 'Circling', n: 'Cat E radius from threshold R (Doc rounds TAS and r first)', ref: 'Table I-4-7-2 (6.94 NM)', exp: 6.94, tol: 0.03, f: () => PANS.circlingRadius('E', 1000).Rthr },
             { g: 'Circling', n: 'Cat D TAS + 25 kt at 2 000 ft', ref: 'Table I-4-7-2 (242 kt)', exp: 242, tol: 1, f: () => PANS.circlingRadius('D', 1000).V },
             { g: 'Circling', n: 'Cat C MOC / OCH lower limit / visibility', ref: 'Table I-4-7-3 (394 ft, 591 ft, 2.0 NM)', exp: 1, tol: 0, f: () => { const c = PANS.circlingCat('C'); return c.moc === 394 && c.och === 591 && c.vis === 2 ? 1 : 0; } },
+            { g: 'Stepdown fix', n: 'Plane 1 NM past the earliest fix point: MOCA 2 000, MOC 492', ref: 'I-2-2 §2.7.4 (15 %)', exp: 2000 - 492 - 911.418, tol: 0.01, f: () => PANS.closeFixPlane(1, 2000, 492, 15) },
+            { g: 'Stepdown fix', n: 'Cat H slope with a 7 % descent gradient', ref: 'I-2-2 §2.7.4 a) (2.5 × 7 = 17.5 %)', exp: 17.5, tol: 1e-9, f: () => PANS.closeFixSlope(true, 7) },
             { g: 'NPA missed app.', n: 'd (3 s) Cat C at 2 000 ft', ref: 'Table I-4-6-3 (0.15 NM)', exp: 0.15, tol: 0.006, f: () => PANS.maReaction('C', 2000) },
             { g: 'NPA missed app.', n: 'X (15 s) Cat A at 2 000 ft', ref: 'Table I-4-6-4 (0.48 NM)', exp: 0.48, tol: 0.006, f: () => PANS.maTransitional('A', 2000) },
             { g: 'NPA missed app.', n: 'X (5 s) Cat H at 2 000 ft', ref: 'Table I-4-6-4 (0.15 NM)', exp: 0.15, tol: 0.006, f: () => PANS.maTransitional('H', 2000) },
@@ -5685,6 +5805,9 @@
             'cdfa-res-faf': ['H = RDH + 6 076·D·tanθ (+ 0.8833·D²), rounded', 'II-1-1-App C; I-4-9 §9.4.3.5'],
             'ma-res-soc': ['fix MAPt: SOC = fix tolerance + d (3 s) + X (15 s) at TAS + 10 kt; distance MAPt: X from Table I-4-6-2', 'I-4-6 §6.1.6'],
             'ma-res-oca': ['OCA ≥ obstacle + 98 ft × (1 − sec.) − (x − x_SOC)·tan Z  (before SOC: + final-approach MOC)', 'I-4-6 §6.2.1–6.2.2'],
+            'sdf-res-g1': ['g1 = (FAF alt − SDF alt) / (FAF − SDF distance)', 'I-4-5 §5.3 c) 1)'],
+            'sdf-res-g2': ['g2 = (SDF alt − THR − 50 ft (Cat H 35 ft)) / SDF distance', 'I-4-5 §5.3 c) 2)'],
+            'cf-res-slope': ['plane = MOCA − MOC(prev) − x · 15 % (Cat H max(15 %, 2.5 × gradient)), up to 5 NM past the earliest fix point', 'I-2-2 §2.7.4'],
             'msd-res-tas': ['TAS at ISA + ΔISA;  r at the phase bank or 3°/s, whichever is less', 'Vol II III-2-1 §1.4']
         };
         RESULT_INFO['res-ta-before'] = RESULT_INFO['turn-ta-before'];
@@ -8202,7 +8325,7 @@
             if (lim) document.getElementById('btp-ob-unit').textContent = lim.checked ? 'min' : 'DME';
             run('toggleVnpIls');
             ['calcTAS', 'calcTempCorr', 'calcTurn', 'calcPT', 'calcBaseTurn', 'calcBaseTurnPhi', 'drawTurnViz', 'calcHoldB',
-                'calcPBN', 'calcTolerance', 'calcVEB', 'calcDescent', 'calcEqObs', 'calcReaction', 'calcVnavPapi', 'calcHoldArea', 'calcRnpHold', 'calcRacetrack', 'calcTurnArea', 'calcCircling', 'calcVss', 'calcNpaOca', 'calcCdfa', 'calcMissed', 'calcMsa', 'calcIfix', 'calcPathTerm', 'calcMsd', 'calcDeparture'].forEach((f) => run(f));
+                'calcPBN', 'calcTolerance', 'calcVEB', 'calcDescent', 'calcEqObs', 'calcReaction', 'calcVnavPapi', 'calcHoldArea', 'calcRnpHold', 'calcRacetrack', 'calcTurnArea', 'calcCircling', 'calcVss', 'calcNpaOca', 'calcCdfa', 'calcMissed', 'calcSdf', 'calcMsa', 'calcIfix', 'calcPathTerm', 'calcMsd', 'calcDeparture'].forEach((f) => run(f));
             gradLegIds().forEach((id) => run('calculateGradient', id));
         }
 
@@ -9478,6 +9601,46 @@
         }
 
         // =========================================================
+        // 10-F STEPDOWN FIX · OBSTACLES CLOSE TO A FIX (I-2-2 §2.7.3–2.7.4, I-4-5 §5.3, §5.5.4)
+        // =========================================================
+        function calcSdf() {
+            const g = (id) => parseFloat(document.getElementById(id).value);
+            const set = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+            const cat = document.getElementById('sdf-cat').value, catH = cat === 'H';
+            const thr = g('sdf-thr'), fd = g('sdf-faf-d'), fh = g('sdf-faf-h'), sd = g('sdf-d'), sh = g('sdf-h');
+            const L = [];
+            let g1 = NaN;
+            if (!isNaN(thr) && fd > 0 && !isNaN(fh) && sd > 0 && !isNaN(sh) && sd < fd) {
+                const tch = catH ? 35 : 50, fin = PANS.descentLimits('final', cat);
+                g1 = (fh - sh) / ((fd - sd) * 6076.12) * 100;
+                const g2 = (sh - thr - tch) / (sd * 6076.12) * 100;
+                set('sdf-res-g1', g1.toFixed(2) + ' %');
+                set('sdf-res-g2', g2.toFixed(2) + ' %');
+                [['g1', g1], ['g2', g2]].forEach(([n, v]) => { if (v > fin.max + 1e-9) L.push(['bad', n + ' ' + v.toFixed(2) + ' % exceeds the final maximum ' + fin.max + ' %.', 'I-4-5 §5.3.1.2']); else if (v > 5.2 + 1e-9) L.push(['warn', n + ' ' + v.toFixed(2) + ' % is above the optimum 5.2 %.', 'I-4-5 §5.3.1.1']); });
+                const pathAtSdf = thr + tch + (fh - thr - tch) * sd / fd;
+                const moca = isNaN(g('sdf-moca')) ? sh : g('sdf-moca');
+                set('sdf-res-path', Math.round(pathAtSdf).toLocaleString() + ' ft vs MOCA ' + Math.round(moca).toLocaleString() + ' ft');
+                if (pathAtSdf < moca - 0.5) L.push(['bad', 'The stabilized FAF → threshold path passes ' + Math.round(moca - pathAtSdf) + ' ft below the SDF MOCA — raise the FAF altitude or move the FAF towards the threshold.', 'I-4-5 §5.5.4']);
+                else L.push(['ok', 'The stabilized descent path clears the SDF MOCA.', 'I-4-5 §5.5.4']);
+                L.push(['ok', 'Publish OCA/H with and without the stepdown fix (RNP: with only).', 'I-2-2 §2.7.3.2']);
+            } else { set('sdf-res-g1', 'enter FAF / SDF'); set('sdf-res-g2', '---'); set('sdf-res-path', '---'); }
+            showLimits('sdf-res-path', L);
+            const moca = g('cf-moca'), moc = parseFloat(document.getElementById('cf-moc').value);
+            const slope = PANS.closeFixSlope(catH, isNaN(g1) ? 0 : g1);
+            set('cf-res-slope', slope.toFixed(1) + ' % from ' + (isNaN(moca) ? '—' : Math.round(moca - moc).toLocaleString() + ' ft') + ' at the earliest fix point');
+            const rows = [];
+            for (let i = 1; i <= 4; i++) {
+                const x = g('sdf-o' + i + '-x'), e = g('sdf-o' + i + '-e');
+                if (isNaN(x) || isNaN(e) || isNaN(moca)) continue;
+                const n = (document.getElementById('sdf-o' + i + '-n').value || 'Obstacle ' + i).replace(/[<>&]/g, '');
+                const plane = PANS.closeFixPlane(x, moca, moc, slope);
+                const res = x < 0 ? 'before the fix area' : x > 5 ? 'more than 5 NM — consider' : e <= plane ? 'below plane — may be ignored' : 'above plane by ' + Math.round(e - plane) + ' ft — consider';
+                rows.push('<tr><td>' + n + '</td><td class="num">' + Math.round(plane).toLocaleString() + '</td><td>' + res + '</td></tr>');
+            }
+            document.getElementById('cf-rows').innerHTML = rows.join('');
+        }
+
+        // =========================================================
         // 02-E RACETRACK PROTECTED AREA (I-4-3 §3.4, §3.6–3.8; App C §3.3) — holding template engine
         // =========================================================
         function calcRacetrack() {
@@ -10410,7 +10573,7 @@
                 if (id === 'tab-gradient') redrawGradients();
                 if (id === 'tab-reversal') { calcPT(); calcBaseTurn(); calcRacetrack(); }
                 if (id === 'tab-vnav-papi') calcVnavPapi();
-                if (id === 'tab-circ') { calcCircling(); calcVss(); calcNpaOca(); calcCdfa(); calcMissed(); }
+                if (id === 'tab-circ') { calcCircling(); calcVss(); calcNpaOca(); calcCdfa(); calcMissed(); calcSdf(); }
                 if (id === 'tab-msa') calcMsa();
                 if (id === 'tab-holdb') { calcHoldArea(); calcRnpHold(); }
                 if (id === 'tab-tol') calcIfix();
