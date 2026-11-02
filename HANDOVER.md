@@ -381,6 +381,7 @@ Key development milestones from previous sessions:
 | 2026-05-01 | Coordinate Converter mobile UI redesigned (within FISB Tools project, separate app). Nested card-in-card layout replaced with fluid full-page scroll. |
 | 2026-05-02 | Context imported from Claude session. Session context continuity maintained. |
 | 2026-05-08 | Folder rename from `FVP Tools` → `8168 Tools` initiated. Handover document created. |
+| 2026-11-02 | 05-A VOR/DME reciprocal direct entry (§3.3.4.1.3 / §3.3.4.2.3): entry radial RE (RE vs RP 8° for Doc example C-14 — self-test), curve RE towards the station; 1 check → 127. |
 | 2026-11-02 | 05-A holding entries: VOR/DME sector 1 DME arc (curves 13, 15) and sector 2 (curve 11, 1/1.5 min); radial intersection along the reciprocal (5·6) and the intersecting radial (7, 8) with optional VOR bearing input; VOR/DME outbound limits now splayed per the Doc; 3 checks incl. Doc examples C-13 (DL 35) / C-15 (DL 26) → 126. |
 | 2026-11-02 | 05-A VOR/DME holding: fix type "VOR/DME" with D, ds, towards/away; §3.3.4 Ds, DL (Doc rounding), DLs, d1/d2; basic area from A1–A4 and the C-points on DL1/DL2 with the template turned 180° (convex envelope; outbound limits parallel to the inbound track; limiting-radial reduction not applied); 4 checks → 123. |
 | 2026-11-02 | 05-C RNP holding area (III-3-7-App B): d2, d4 (printed formula inconsistent with the figures — flagged), d3 / 1.414·d3 area, buffer; 05-A fix type renamed "RNAV waypoint / fix area ATT × XTT" (III-3-7 §7.5); 3 checks → 119. |
