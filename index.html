@@ -3946,6 +3946,92 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- 08-E BARO-VNAV FAS -->
+                <div class="card span-all" id="card-fas">
+                    <div class="card-header minimizable" onclick="toggleCard(this)">
+                        <div class="card-heading"><span class="card-tag">08-E</span>
+                            <div class="card-title">APV Baro-VNAV · Final Approach Surface</div>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-reset" onclick="event.stopPropagation(); resetCard('card-fas', ['fas-thr', 'fas-fap', 'fas-tmin', 'fas-obs-x', 'fas-obs-h'], 'calcFas');">↺ Reset</button>
+                        </div>
+                    </div>
+                    <div class="card-body split">
+                        <div class="form-grid">
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>Threshold Elev (ft)</label>
+                                    <input type="number" id="fas-thr" placeholder="e.g. 1280" oninput="calcFas()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Promulgated VPA (°)</label>
+                                    <input type="number" id="fas-vpa" value="3.0" step="0.1" oninput="calcFas()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>RDH (ft)</label>
+                                    <input type="number" id="fas-rdh" value="50" oninput="calcFas()">
+                                </div>
+                            </div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>FAP height above THR (ft)</label>
+                                    <input type="number" id="fas-fap" placeholder="e.g. 2000" oninput="calcFas()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Min promulgated temp (°C)</label>
+                                    <input type="number" id="fas-tmin" placeholder="e.g. −10" oninput="calcFas()">
+                                </div>
+                            </div>
+                            <div class="section-label">Obstacle check</div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>Distance before THR (NM)</label>
+                                    <input type="number" id="fas-obs-x" placeholder="e.g. 3.0" step="0.1" oninput="calcFas()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Height above THR (ft)</label>
+                                    <input type="number" id="fas-obs-h" placeholder="e.g. 400" oninput="calcFas()">
+                                </div>
+                            </div>
+                            <div class="results-panel">
+                                <div class="result-row">
+                                    <span class="result-label">Δh at min temp (App A) · min VPA</span>
+                                    <span id="fas-res-dh" class="result-value">---</span>
+                                </div>
+                                <div class="result-row key">
+                                    <span class="result-label">FAS angle · gradient</span>
+                                    <span id="fas-res-ang" class="result-value c-cyan">---</span>
+                                </div>
+                                <div class="result-row key">
+                                    <span class="result-label">FAS origin before THR (Hi 75 m)</span>
+                                    <span id="fas-res-x" class="result-value c-warning">---</span>
+                                </div>
+                                <div class="result-row">
+                                    <span class="result-label">FAS′ / FAS″ origins (105 / 120 m)</span>
+                                    <span id="fas-res-x2" class="result-value">---</span>
+                                </div>
+                                <div class="result-row key">
+                                    <span class="result-label">Obstacle</span>
+                                    <span id="fas-res-obs" class="result-value">---</span>
+                                </div>
+                            </div>
+                            <div class="note">
+                                <div class="note-title">Reference</div>
+                                Doc 8168 Vol II III-3-4 §4.3.4.2: FAS origin at threshold level, (Hi − RDH)/tan VPA + ATT (444 m) before the threshold; tan FAS = (hFAP − Δh − Hi)·tan VPA /
+                                (hFAP − Hi), Δh = temperature correction at the minimum promulgated temperature (App A); Hi = 75 m below 5 000 ft AMSL, 105 m (FAS′) up to 10 000 ft and
+                                120 m (FAS″) above, the surfaces joined by horizontal planes at 5 000 ft and 10 000 ft (§4.3.4.2.4); the minimum VPA at the minimum temperature shall not
+                                be below 2.5° (§4.3.4.2.2). The FAS ends where it meets the horizontal OCS of the intermediate segment. Ground plane, Z surface and the side surfaces
+                                are not modelled; obstacle heights are referenced to the threshold (§4.2.3).
+                            </div>
+                        </div>
+                        <div class="viz">
+                            <span class="viz-label">Profile · ft above THR</span>
+                            <button class="viz-dl" onclick="exportViz(this)" data-name="baro-vnav-fas" title="Download high-resolution PNG">⤓ PNG</button>
+                            <canvas id="fasVizCanvas" width="600" height="320"></canvas>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
         <!-- =====================================================
@@ -4760,6 +4846,7 @@
                                 <li><b>05-A Holding</b> (new): Table II-4-1-2 speeds, ISA+15, ICAO wind, template Table I-4-3-App C-4 (all 33 lines), entry sectors, buffer MOC. Omnidirectional entry area §3.3.3.2.1 (curves 5–8, convex-envelope approximation); template extents checked against Diagram I-4-3-App C-6.</li>
                                 <li><b>05-A VOR/DME holding</b> (new, 2 Nov 2026): §3.3.4 distance parameters (Ds, DL rounding, DLs, d1/d2) and basic area towards / away from the station (convex-envelope approximation; along-radial entry areas not drawn).</li>
                                 <li><b>05-A holding entries</b> (new, 2 Nov 2026): VOR/DME sector 1 DME-arc and sector 2 entry areas (§3.3.4.1.2.6–7), radial-intersection entries (§3.3.3.2.2); VOR/DME DL checked against Diagrams C-13 (35 NM) and C-15 (26 NM). Sector-1 reduction (§3.3.3.3) not built (construction ambiguous).</li>
+                                <li><b>08-E Baro-VNAV FAS</b> (new, 2 Nov 2026): III-3-4 §4.3.4.2 FAS angle / origin with App A Δh, Hi bands with FAS′ / FAS″, minimum VPA ≥ 2.5° check, obstacle check.</li>
                                 <li><b>10-F Stepdown fix</b> (new, 2 Nov 2026): g1 / g2, stabilized path vs SDF MOCA (§5.5.4), close-to-fix 15 % plane (I-2-2 §2.7.4).</li>
                                 <li><b>10-E NPA missed approach</b> (new, 2 Nov 2026): d / X (Tables I-4-6-3/-4 checked), Tables I-4-6-1/-2, SOC, 2.5 % surface with MOC 98 ft, OCA gain table for 2.5–5 %, 5.2 % path limit for a MAPt before the threshold.</li>
                                 <li><b>10-D CDFA table</b> (new, 2 Nov 2026): profile heights per II-1-1-App C (checked against Table II-1-1-App C-1b), 1 NM table, DME offset, ROD table.</li>
@@ -5460,6 +5547,13 @@
                 for (let i = 0; i < 60; i++) { const m = (lo + hi) / 2; if (f(m) > 0) hi = m; else lo = m; }
                 return (lo + hi) / 2;
             },
+            // III-3-4 §4.3.4.2: Hi = 75 m below 5 000 ft AMSL, 105 m 5 000–10 000 ft, 120 m at or above 10 000 ft
+            baroHi(band) { return [75, 105, 120][band]; },
+            // §4.3.4.2.5 (metres): tan FAS = (hFAP − Δh − Hi)·tan VPA / (hFAP − Hi); X_FAS = (Hi − RDH)/tan VPA + ATT (444 m) before the threshold
+            baroFas(vpaDeg, hFapM, dhM, HiM, rdhM, attM) {
+                const t = Math.tan(vpaDeg * Math.PI / 180);
+                return { tanFas: (hFapM - dhM - HiM) * t / (hFapM - HiM), xFas: (HiM - rdhM) / t + (attM === undefined ? 444 : attM) };
+            },
             // III-3-4 §4.2.1: promulgated VPA ≥ 2.5° (shall), > 3.5° non-standard; effective VPA ≥ 2.5° at lowest, ≤ 3.5° at highest temperature
             vpaClass(vpa) { return vpa < 2.5 - 1e-9 ? 'prohibited' : (vpa > 3.5 + 1e-9 ? 'non-standard' : 'standard'); },
             // ROD (ft/min) = GS (kt) × 6076.12/60 × gradient
@@ -5601,6 +5695,8 @@
             { g: 'Limits', n: 'Initial approach max gradient', ref: 'I-4-3 §3.3.5', exp: 8.0, tol: 0, f: () => PANS.descentLimits('initial', 'D').max },
             { g: 'Limits', n: 'Intermediate max gradient', ref: 'I-4-4 §4.3.3.2', exp: 5.2, tol: 0, f: () => PANS.descentLimits('intermediate', 'C').max },
             { g: 'Limits', n: 'VPA 2.4° prohibited, 3.6° non-standard, 3.0° standard', ref: 'III-3-4 §4.2.1.3', exp: 1, tol: 0, f: () => (PANS.vpaClass(2.4) === 'prohibited' && PANS.vpaClass(3.6) === 'non-standard' && PANS.vpaClass(3.0) === 'standard') ? 1 : 0 },
+            { g: 'Baro-VNAV', n: 'FAS origin, VPA 3°, Hi 75 m, RDH 15 m', ref: 'III-3-4 §4.3.4.2.5 ((Hi − RDH)/tan VPA + 444 m)', exp: 60 / Math.tan(3 * Math.PI / 180) + 444, tol: 1e-6, f: () => PANS.baroFas(3, 600, 0, 75, 15).xFas },
+            { g: 'Baro-VNAV', n: 'FAS gradient = VPA gradient when Δh = 0', ref: 'III-3-4 §4.3.4.2.5', exp: Math.tan(3 * Math.PI / 180), tol: 1e-12, f: () => PANS.baroFas(3, 600, 0, 75, 15).tanFas },
             { g: 'Baro-VNAV', n: 'Temp correction, FAP 2 000 ft, MSL, −20 °C', ref: 'Table III-3-4-App A-4', exp: 245, tol: 1, f: () => PANS.vnavTempCorr(2000, -20, 0) },
             { g: 'Baro-VNAV', n: 'Temp correction, FAP 1 000 ft, MSL, +50 °C', ref: 'Table III-3-4-App A-4', exp: -122, tol: 1, f: () => PANS.vnavTempCorr(1000, 50, 0) },
             { g: 'Baro-VNAV', n: 'Temp correction, FAP 3 000 ft, THR 3 000 ft, −30 °C', ref: 'Table III-3-4-App A-5', exp: 420, tol: 1, f: () => PANS.vnavTempCorr(3000, -30, 3000) },
@@ -5808,6 +5904,8 @@
             'sdf-res-g1': ['g1 = (FAF alt − SDF alt) / (FAF − SDF distance)', 'I-4-5 §5.3 c) 1)'],
             'sdf-res-g2': ['g2 = (SDF alt − THR − 50 ft (Cat H 35 ft)) / SDF distance', 'I-4-5 §5.3 c) 2)'],
             'cf-res-slope': ['plane = MOCA − MOC(prev) − x · 15 % (Cat H max(15 %, 2.5 × gradient)), up to 5 NM past the earliest fix point', 'I-2-2 §2.7.4'],
+            'fas-res-ang': ['tan FAS = (hFAP − Δh − Hi)·tan VPA / (hFAP − Hi)', 'III-3-4 §4.3.4.2.5'],
+            'fas-res-x': ['X_FAS = (Hi − RDH) / tan VPA + ATT (444 m)', 'III-3-4 §4.3.4.2.5'],
             'msd-res-tas': ['TAS at ISA + ΔISA;  r at the phase bank or 3°/s, whichever is less', 'Vol II III-2-1 §1.4']
         };
         RESULT_INFO['res-ta-before'] = RESULT_INFO['turn-ta-before'];
@@ -8125,6 +8223,7 @@
             if (typeof calcCircling === 'function') { calcCircling(); calcVss(); }
             if (typeof calcMsa === 'function') calcMsa();
             if (typeof calcCdfa === 'function') calcCdfa();
+            if (typeof calcFas === 'function') calcFas();
             if (typeof calcIfix === 'function') calcIfix();
             if (typeof calcDeparture === 'function') calcDeparture();
             if (typeof calcMsd === 'function') calcMsd();
@@ -8325,7 +8424,7 @@
             if (lim) document.getElementById('btp-ob-unit').textContent = lim.checked ? 'min' : 'DME';
             run('toggleVnpIls');
             ['calcTAS', 'calcTempCorr', 'calcTurn', 'calcPT', 'calcBaseTurn', 'calcBaseTurnPhi', 'drawTurnViz', 'calcHoldB',
-                'calcPBN', 'calcTolerance', 'calcVEB', 'calcDescent', 'calcEqObs', 'calcReaction', 'calcVnavPapi', 'calcHoldArea', 'calcRnpHold', 'calcRacetrack', 'calcTurnArea', 'calcCircling', 'calcVss', 'calcNpaOca', 'calcCdfa', 'calcMissed', 'calcSdf', 'calcMsa', 'calcIfix', 'calcPathTerm', 'calcMsd', 'calcDeparture'].forEach((f) => run(f));
+                'calcPBN', 'calcTolerance', 'calcVEB', 'calcDescent', 'calcEqObs', 'calcReaction', 'calcVnavPapi', 'calcHoldArea', 'calcRnpHold', 'calcRacetrack', 'calcTurnArea', 'calcCircling', 'calcVss', 'calcNpaOca', 'calcCdfa', 'calcMissed', 'calcSdf', 'calcFas', 'calcMsa', 'calcIfix', 'calcPathTerm', 'calcMsd', 'calcDeparture'].forEach((f) => run(f));
             gradLegIds().forEach((id) => run('calculateGradient', id));
         }
 
@@ -9641,6 +9740,82 @@
         }
 
         // =========================================================
+        // 08-E APV BARO-VNAV FINAL APPROACH SURFACE (III-3-4 §4.3.4.2)
+        // =========================================================
+        function fasSurface(o) {
+            // height of the composite FAS / FAS′ / FAS″ (ft above THR) at x NM before the threshold
+            const thr = o.thr, ft = (m) => m / 0.3048;
+            const seg = (f) => (x) => (x * 1852 - f.xFas) * f.tanFas / 0.3048;
+            const h1 = seg(o.f[0]), h2 = seg(o.f[1]), h3 = seg(o.f[2]);
+            return (x) => {
+                let h = h1(x);
+                if (thr + h <= 5000) return Math.max(0, h);
+                h = Math.max(5000 - thr, h2(x));
+                if (thr + h <= 10000) return h;
+                return Math.max(10000 - thr, h3(x));
+            };
+        }
+
+        function calcFas() {
+            const g = (id) => parseFloat(document.getElementById(id).value);
+            const set = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+            const thr = g('fas-thr'), vpa = g('fas-vpa'), rdh = isNaN(g('fas-rdh')) ? 50 : g('fas-rdh'), fap = g('fas-fap'), tmin = g('fas-tmin');
+            if (isNaN(thr) || !(vpa > 0) || !(fap > 0) || isNaN(tmin)) return;
+            const M = 0.3048, dh = PANS.vnavTempCorr(fap, tmin, thr), minVpa = PANS.effectiveVpa(vpa, fap, tmin, thr);
+            const f = [0, 1, 2].map((b) => PANS.baroFas(vpa, fap * M, dh * M, PANS.baroHi(b), rdh * M));
+            set('fas-res-dh', Math.round(dh) + ' ft · ' + minVpa.toFixed(2) + '°');
+            set('fas-res-ang', (Math.atan(f[0].tanFas) / DEG).toFixed(2) + '° · ' + (f[0].tanFas * 100).toFixed(2) + ' %');
+            set('fas-res-x', Math.round(f[0].xFas) + ' m (' + (f[0].xFas / 1852).toFixed(2) + ' NM)');
+            set('fas-res-x2', Math.round(f[1].xFas) + ' m · ' + Math.round(f[2].xFas) + ' m');
+            const surf = fasSurface({ thr, f });
+            const L = [];
+            if (minVpa < 2.5) L.push(['bad', 'Minimum VPA ' + minVpa.toFixed(2) + '° at ' + tmin + ' °C is below 2.5° — raise the VPA or the minimum promulgated temperature.', 'III-3-4 §4.3.4.2.2']);
+            else L.push(['ok', 'Minimum VPA ' + minVpa.toFixed(2) + '° at ' + tmin + ' °C (≥ 2.5°).', 'III-3-4 §4.3.4.2.2']);
+            if (fap / (6076.12 * Math.tan(vpa * DEG)) > 10) L.push(['warn', 'FAP more than 10 NM before the threshold.', 'III-3-4 §4.3.2']);
+            const x = g('fas-obs-x'), hOb = g('fas-obs-h');
+            let obs = null;
+            if (!isNaN(x) && !isNaN(hOb)) {
+                const hs = surf(x);
+                obs = { x, h: hOb, hs };
+                set('fas-res-obs', hOb > hs ? 'penetrates FAS by ' + Math.round(hOb - hs) + ' ft (surface ' + Math.round(hs) + ' ft)' : 'below FAS by ' + Math.round(hs - hOb) + ' ft (surface ' + Math.round(hs) + ' ft)');
+                if (hOb > hs) L.push(['bad', 'Obstacle penetrates the FAS — it is accountable for the OCA/H (III-3-4 §4.4).', 'III-3-4 §4.3.4']);
+            } else set('fas-res-obs', 'enter an obstacle');
+            showLimits('fas-res-obs', L);
+            drawFasViz({ thr, vpa, rdh, fap, surf, f, obs, minVpa });
+        }
+
+        function drawFasViz(o) {
+            const canvas = document.getElementById('fasVizCanvas');
+            if (!canvas) return;
+            const { ctx, w, h } = setupCanvas(canvas, 0.5, 340, 240);
+            const C = bpColors();
+            const pad = { l: 44, r: 18, t: 56, b: 28 };
+            const xFap = o.fap / (6076.12 * Math.tan(o.vpa * DEG)), xMax = xFap * 1.15, hMax = (o.fap + o.rdh) * 1.15;
+            const X = (x) => w - pad.r - x / xMax * (w - pad.l - pad.r), Y = (hf) => h - pad.b - hf / hMax * (h - pad.t - pad.b);
+            ctx.save(); ctx.strokeStyle = C.line; ctx.beginPath(); ctx.moveTo(X(xMax), Y(0)); ctx.lineTo(X(0), Y(0)); ctx.stroke(); ctx.restore();
+            // FAS (filled below)
+            ctx.save(); ctx.beginPath(); ctx.moveTo(X(xMax), Y(0));
+            for (let x = xMax; x >= 0; x -= xMax / 200) ctx.lineTo(X(x), Y(o.surf(x)));
+            ctx.lineTo(X(0), Y(0)); ctx.closePath(); ctx.fillStyle = C.fill; ctx.fill(); ctx.restore();
+            ctx.save(); ctx.beginPath(); for (let x = xMax, i = 0; x >= 0; x -= xMax / 200, i++) (i ? ctx.lineTo(X(x), Y(o.surf(x))) : ctx.moveTo(X(x), Y(o.surf(x))));
+            ctx.strokeStyle = C.warning; ctx.lineWidth = 1.8; ctx.stroke(); ctx.restore();
+            // promulgated path and the path at the minimum temperature
+            const path = (ang, col, dash) => { ctx.save(); ctx.setLineDash(dash || []); ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(X(0), Y(o.rdh)); ctx.lineTo(X(xMax), Y(o.rdh + xMax * 6076.12 * Math.tan(ang * DEG))); ctx.stroke(); ctx.restore(); };
+            path(o.vpa, C.primary);
+            path(o.minVpa, C.cyan, [5, 4]);
+            cvDot(ctx, C, X(xFap), Y(o.fap + o.rdh), C.primary, 3);
+            cvLabel(ctx, C, 'FAP', X(xFap), Y(o.fap + o.rdh) - 12, { size: 9, bold: true, color: C.primary });
+            cvLabel(ctx, C, 'FAS origin', X(o.f[0].xFas / 1852), Y(0) + 12, { size: 8, color: C.warning });
+            if (o.obs) {
+                const col = o.obs.h > o.obs.hs ? C.danger : C.success;
+                ctx.save(); ctx.strokeStyle = col; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(X(o.obs.x), Y(0)); ctx.lineTo(X(o.obs.x), Y(o.obs.h)); ctx.stroke(); ctx.restore();
+                cvLabel(ctx, C, Math.round(o.obs.h) + ' ft', X(o.obs.x), Y(o.obs.h) - 10, { size: 9, color: col });
+            }
+            cvLabel(ctx, C, 'THR', X(0), Y(0) + 12, { size: 9, bold: true, keep: true });
+            cvLabel(ctx, C, '━ VPA ' + o.vpa.toFixed(1) + '° · ┄ at min temp ' + o.minVpa.toFixed(2) + '° · ▭ FAS', 10, 30, { align: 'left', size: 9, box: false, color: C.primary });
+        }
+
+        // =========================================================
         // 02-E RACETRACK PROTECTED AREA (I-4-3 §3.4, §3.6–3.8; App C §3.3) — holding template engine
         // =========================================================
         function calcRacetrack() {
@@ -10572,7 +10747,7 @@
                 if (id === 'tab-turnviz') drawTurnViz();
                 if (id === 'tab-gradient') redrawGradients();
                 if (id === 'tab-reversal') { calcPT(); calcBaseTurn(); calcRacetrack(); }
-                if (id === 'tab-vnav-papi') calcVnavPapi();
+                if (id === 'tab-vnav-papi') { calcVnavPapi(); calcFas(); }
                 if (id === 'tab-circ') { calcCircling(); calcVss(); calcNpaOca(); calcCdfa(); calcMissed(); calcSdf(); }
                 if (id === 'tab-msa') calcMsa();
                 if (id === 'tab-holdb') { calcHoldArea(); calcRnpHold(); }
@@ -10615,6 +10790,7 @@
             if (typeof calcCircling === 'function') { calcCircling(); calcVss(); }
             if (typeof calcMsa === 'function') calcMsa();
             if (typeof calcCdfa === 'function') calcCdfa();
+            if (typeof calcFas === 'function') calcFas();
             if (typeof calcIfix === 'function') calcIfix();
             if (typeof calcPathTerm === 'function') calcPathTerm();
             if (typeof calcMsd === 'function') calcMsd();
