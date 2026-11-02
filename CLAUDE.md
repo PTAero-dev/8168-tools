@@ -15,7 +15,7 @@ Guide for Claude Code sessions working on this repo. Read this first; details ar
 3. **Never commit the ICAO PDFs** (`*.pdf` is git-ignored; they are ICAO copyright). Don't delete them either.
 4. **Every formula must trace to a Doc paragraph** and live in the `PANS` object with a comment reference.
    Add a self-test case to `PANS_TESTS` for every new or changed formula, using Doc tables / worked examples where possible.
-   The QA sheet must stay 100 % passing (currently **123/123**).
+   The QA sheet must stay 100 % passing (currently **126/126**).
 5. **Verify against the PDFs**, not memory. If something can't be verified, say so in the UI and the QA audit card.
 6. The user tests on an **Android phone** and sends screenshots. Every change must work at ~360 px width with no horizontal overflow.
 7. Keep the **Blueprint theme** (CSS variables; drawings use `bpColors()` — never hard-code colours) and the light "Whiteprint" theme.
@@ -113,7 +113,7 @@ Card in `tab-desc` (sheet 07 renamed "Departure & Missed Approach"): `PANS.depSt
 - Turn height 120 m (394 ft) (Cat H 90 m); at 3.3 % reached at ≈ 1.9 NM (Doc: nominal 3.5 km / 1.9 NM).
 
 ### Backlog (agreed with the user, in rough priority)
-- Holding: VOR/DME along-radial entry areas (§3.3.4.1.2: sector 1 DME arc, sector 2, reciprocal direct entry); entry area for radial-intersection fixes (§3.3.3.2.2); sector-1 area reduction (§3.3.3.3). (Done: RNP holding 05-C, RNAV waypoint, VOR/DME basic area.)
+- Holding leftovers: VOR/DME reciprocal direct entry to a secondary point (§3.3.4.1.3); sector-1 area reduction (§3.3.3.3) — Doc text / Diagram C-11 ambiguous, needs the user's reading before building.
 - Racetrack protected area on sheet 02R from the same template (primary + 2.5 NM secondary, §3.3.1.3).
 - Turn area construction for departure / missed approach turns (wind spiral, turn at altitude / at a TP).
 - Circling area (radii by category, Table I-4-7-1) and visual segment surface check.
@@ -135,7 +135,8 @@ Card in `tab-desc` (sheet 07 renamed "Departure & Missed Approach"): `PANS.depSt
 
 ### Known approximations (documented in UI)
 - Holding basic area = convex envelope of the template wind circles swept around a quadrilateral fix area (approximation of the TTT construction).
-- Holding entry area = convex envelope of basic area + curves 5–8 and the arc about A; curves 6–8 use only the template ahead of "a". Only the VOR/NDB overhead construction is built.
+- Holding entry areas = convex envelope of basic area + entry curves: VOR/NDB omni (5–8 + arc), radial intersection (5·6; 7, 8 both turn directions), VOR/DME (13, 15, 11).
+- VOR/DME basic area: splayed outbound limits (parallel fallback for short D), limiting-radial reduction not applied; vs Diagram C-13 within ~0.8 NM, vs C-15 up to ~2 NM smaller.
 - Fix tolerance area for VOR/NDB overhead is an approximation of the I-2-2 §2.5 construction.
 - MSD tables: the 25° fly-by table's 130 kt column in the Doc appears computed without the 3°/s limit; the app applies the footnote rule.
 - PAPI units modelled at nominal ±10′/±30′; PAPI 1 000 ft past THR, TCH 50 ft fixed on sheet 08.
