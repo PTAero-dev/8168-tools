@@ -381,6 +381,7 @@ Key development milestones from previous sessions:
 | 2026-05-01 | Coordinate Converter mobile UI redesigned (within FISB Tools project, separate app). Nested card-in-card layout replaced with fluid full-page scroll. |
 | 2026-05-02 | Context imported from Claude session. Session context continuity maintained. |
 | 2026-05-08 | Folder rename from `FVP Tools` → `8168 Tools` initiated. Handover document created. |
+| 2026-11-02 | New sheet 10 Circling & Visual Segment (`tab-circ`): circling radius R = 2r + segment (I-4-7 §7.2), OCA/H with Table I-4-7-3 MOC / lower limit / visibility, drawing for one runway with all categories; VSS (I-4-5 §5.4.6) slope, width, length to OCH, obstacle check with the 15 m rule; 6 checks vs Tables I-4-7-2/-3 → 144. |
 | 2026-11-02 | 07-E follow-ups: bounding-circle method (§3.3.3), track guidance after the turn (VOR ±1.0 NM/7.8°, NDB ±1.25 NM/10.3°; §3.3.4.2 connections), secondary areas with guidance (§3.3.5, Fig. I-2-3-6: 30° lines to the primary edge), filled primary area; 2 checks → 138. |
 | 2026-11-02 | 07-E turn area: wind spiral from A (I-2-3 §3.3.2.2), P + 15° splay, inner boundary §3.2.1/3.2.2, Table I-2-3-1 phase defaults (bank, wind, c); 6 checks vs Table I-2-3-3 → 136. |
 | 2026-11-02 | 02-E racetrack protected area: §3.6.2 parameters (category IAS Table I-4-1-2, ISA+15, 2h+47, 25°/3°/s, 1–3 min), 05-A template engine + omni entry, 2.5 NM secondary, Table I-4-3-1 max/min descents, MOC 984 ft; `drawHoldViz` takes `canvasId` / `bufLabel`; 3 checks (Doc example §3.7.1) → 130. |

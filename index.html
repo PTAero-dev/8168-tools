@@ -1430,6 +1430,7 @@
                 <div class="nav-group-title">Departure &amp; Approach</div>
                 <div class="nav-item" data-tab="tab-desc" data-short="Departure" onclick="switchTab('tab-desc', this)"><span class="nav-num">07</span>Departure &amp; Missed App</div>
                 <div class="nav-item" data-tab="tab-vnav-papi" data-short="VNAV · PAPI" onclick="switchTab('tab-vnav-papi', this)"><span class="nav-num">08</span>VNAV vs PAPI</div>
+                <div class="nav-item" data-tab="tab-circ" data-short="Circling · VSS" onclick="switchTab('tab-circ', this)"><span class="nav-num">10</span>Circling &amp; Visual Segment</div>
             </div>
             <div class="nav-group" data-group="qa" data-short="QA">
                 <div class="nav-group-title">Quality</div>
@@ -3935,6 +3936,206 @@
         <!-- =====================================================
              QA · DOC 8168 SELF-TEST
              ===================================================== -->
+        <!-- =====================================================
+             10 · CIRCLING & VISUAL SEGMENT SURFACE
+             ===================================================== -->
+        <section id="tab-circ" class="tab-content" style="display:none;">
+            <header class="page-header">
+                <div class="ph-main">
+                    <div class="ph-crumb">Departure &amp; Approach / Sheet 10</div>
+                    <h1 class="page-title">Circling &amp; Visual Segment</h1>
+                    <p class="page-subtitle">Visual manoeuvring (circling) area, OCA/H and the visual segment surface check</p>
+                </div>
+                <dl class="ph-block">
+                    <div><dt>Sheet</dt><dd>10</dd></div>
+                    <div><dt>Reference</dt><dd>Doc 8168 Vol II I-4-7, I-4-5</dd></div>
+                </dl>
+            </header>
+
+            <div class="stack">
+                <!-- 10-A CIRCLING AREA -->
+                <div class="card" id="card-circ">
+                    <div class="card-header minimizable" onclick="toggleCard(this)">
+                        <div class="card-heading"><span class="card-tag">10-A</span>
+                            <div class="card-title">Visual Manoeuvring (Circling) Area</div>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-reset" onclick="event.stopPropagation(); resetCard('card-circ', ['circ-elev', 'circ-ias', 'circ-rwylen', 'circ-obs'], 'calcCircling');">↺ Reset</button>
+                        </div>
+                    </div>
+                    <div class="card-body split">
+                        <div class="form-grid">
+                            <div class="section-label">Aerodrome · runway · I-4-7 §7.2</div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>Aerodrome Elev (ft)</label>
+                                    <input type="number" id="circ-elev" placeholder="e.g. 1000" oninput="calcCircling()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Category</label>
+                                    <select id="circ-cat" onchange="calcCircling()">
+                                        <option value="C">C</option><option value="D">D</option><option value="E">E</option>
+                                        <option value="B">B</option><option value="A">A</option>
+                                    </select>
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>IAS (kt)<span class="opt">OPT</span></label>
+                                    <input type="number" id="circ-ias" placeholder="Auto" oninput="calcCircling()">
+                                </div>
+                            </div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>Runway length (m)</label>
+                                    <input type="number" id="circ-rwylen" placeholder="e.g. 3000" oninput="calcCircling()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Runway bearing (°)</label>
+                                    <input type="number" id="circ-rwybrg" value="010" oninput="calcCircling()">
+                                </div>
+                            </div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>Highest obstacle in area (ft AMSL)<span class="opt">OPT</span></label>
+                                    <input type="number" id="circ-obs" placeholder="elevation" oninput="calcCircling()">
+                                </div>
+                            </div>
+                            <div class="results-panel">
+                                <div class="result-row">
+                                    <span class="result-label">TAS (AD + 1 000 ft, ISA+15) + 25 kt</span>
+                                    <span id="circ-res-tas" class="result-value">---</span>
+                                </div>
+                                <div class="result-row">
+                                    <span class="result-label">Rate · radius r</span>
+                                    <span id="circ-res-r" class="result-value">---</span>
+                                </div>
+                                <div class="result-row key">
+                                    <span class="result-label">Radius from threshold R</span>
+                                    <span id="circ-res-R" class="result-value c-warning">---</span>
+                                </div>
+                                <div class="result-row">
+                                    <span class="result-label">MOC · OCH lower limit · visibility</span>
+                                    <span id="circ-res-moc" class="result-value">---</span>
+                                </div>
+                                <div class="result-row key">
+                                    <span class="result-label">Circling OCA / OCH</span>
+                                    <span id="circ-res-oca" class="result-value c-success">---</span>
+                                </div>
+                                <div class="result-row">
+                                    <span class="result-label">All categories R (NM)</span>
+                                    <span id="circ-res-all" class="result-value">---</span>
+                                </div>
+                            </div>
+                            <div class="note">
+                                <div class="note-title">Reference</div>
+                                Doc 8168 Vol II I-4-7 §7.2: arcs of radius R = 2r + straight segment from each usable threshold joined by tangents; r from TAS
+                                (aerodrome elevation + 1 000 ft, ISA + 15) + 25 kt wind, 20° bank or 3°/s; circling IAS Table I-4-1-2, straight segment Table I-4-7-2.
+                                OCA/H = highest obstacle + MOC, not below the lower limit (Table I-4-7-3; I-4-5 §5.4.4). Not for Cat H (§7.1.3). One runway (both thresholds)
+                                is drawn; with more runways use the arcs from every usable threshold. Sector exclusion (§7.4) is not modelled.
+                            </div>
+                        </div>
+                        <div class="viz">
+                            <span class="viz-label">Plan view · to scale</span>
+                            <button class="viz-dl" onclick="exportViz(this)" data-name="circling-area" title="Download high-resolution PNG">⤓ PNG</button>
+                            <canvas id="circVizCanvas" width="600" height="460"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 10-B VISUAL SEGMENT SURFACE -->
+                <div class="card" id="card-vss">
+                    <div class="card-header minimizable" onclick="toggleCard(this)">
+                        <div class="card-heading"><span class="card-tag">10-B</span>
+                            <div class="card-title">Visual Segment Surface (VSS)</div>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-reset" onclick="event.stopPropagation(); resetCard('card-vss', ['vss-och', 'vss-obs-x', 'vss-obs-y', 'vss-obs-h'], 'calcVss');">↺ Reset</button>
+                        </div>
+                    </div>
+                    <div class="card-body split">
+                        <div class="form-grid">
+                            <div class="section-label">Approach · I-4-5 §5.4.6</div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>Lateral guidance</label>
+                                    <select id="vss-type" onchange="calcVss()">
+                                        <option value="other">Other (NPA / RNAV, splay 15 %)</option>
+                                        <option value="loc">LOC-aligned (LOC, APV I, PA)</option>
+                                    </select>
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Runway code</label>
+                                    <select id="vss-code" onchange="calcVss()">
+                                        <option value="34">3 or 4</option>
+                                        <option value="12">1 or 2</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>Approach angle (°)</label>
+                                    <input type="number" id="vss-angle" value="3.0" step="0.1" oninput="calcVss()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>OCH (ft)</label>
+                                    <input type="number" id="vss-och" placeholder="e.g. 400" oninput="calcVss()">
+                                </div>
+                            </div>
+                            <div class="section-label">Obstacle check</div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>Distance before THR (m)</label>
+                                    <input type="number" id="vss-obs-x" placeholder="e.g. 1500" oninput="calcVss()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Offset from CL (m)</label>
+                                    <input type="number" id="vss-obs-y" placeholder="0" oninput="calcVss()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Height above THR (ft)</label>
+                                    <input type="number" id="vss-obs-h" placeholder="e.g. 120" oninput="calcVss()">
+                                </div>
+                            </div>
+                            <div class="results-panel">
+                                <div class="result-row key">
+                                    <span class="result-label">VSS slope</span>
+                                    <span id="vss-res-slope" class="result-value c-cyan">---</span>
+                                </div>
+                                <div class="result-row">
+                                    <span class="result-label">Base half-width at THR − 60 m</span>
+                                    <span id="vss-res-base" class="result-value">---</span>
+                                </div>
+                                <div class="result-row key">
+                                    <span class="result-label">Length to OCH (from THR)</span>
+                                    <span id="vss-res-len" class="result-value c-warning">---</span>
+                                </div>
+                                <div class="result-row">
+                                    <span class="result-label">Half-width at the end</span>
+                                    <span id="vss-res-end" class="result-value">---</span>
+                                </div>
+                                <div class="result-row key">
+                                    <span class="result-label">Obstacle</span>
+                                    <span id="vss-res-obs" class="result-value">---</span>
+                                </div>
+                            </div>
+                            <div class="note">
+                                <div class="note-title">Reference</div>
+                                Doc 8168 Vol II I-4-5 §5.4.6: laterally from 60 m before the threshold — LOC-aligned: Annex 14 inner approach surface width
+                                (120 m code 3/4, 90 m code 1/2), parallel; other procedures: runway strip width (280 m code 3/4, 140 m code 1/2), splaying 15 % each side;
+                                vertically from threshold height at the promulgated angle − 1.12°, ending where it reaches the OCH. Obstacles lower than 15 m above the
+                                threshold may be disregarded; a penetration needs an aeronautical study (§5.4.6.4). Offset final approach tracks (Figures I-4-5-7/8) and the
+                                OCS of §5.4.6.6 are not modelled. Annex 14 widths: check the current Annex 14 amendment for the runway.
+                            </div>
+                        </div>
+                        <div class="viz">
+                            <span class="viz-label">Plan &amp; profile · distances in m</span>
+                            <button class="viz-dl" onclick="exportViz(this)" data-name="vss" title="Download high-resolution PNG">⤓ PNG</button>
+                            <canvas id="vssVizCanvas" width="600" height="420"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <section id="tab-selftest" class="tab-content" style="display:none;">
             <header class="page-header">
                 <div class="ph-main">
@@ -3999,6 +4200,7 @@
                                 <li><b>05-A Holding</b> (new): Table II-4-1-2 speeds, ISA+15, ICAO wind, template Table I-4-3-App C-4 (all 33 lines), entry sectors, buffer MOC. Omnidirectional entry area §3.3.3.2.1 (curves 5–8, convex-envelope approximation); template extents checked against Diagram I-4-3-App C-6.</li>
                                 <li><b>05-A VOR/DME holding</b> (new, 2 Nov 2026): §3.3.4 distance parameters (Ds, DL rounding, DLs, d1/d2) and basic area towards / away from the station (convex-envelope approximation; along-radial entry areas not drawn).</li>
                                 <li><b>05-A holding entries</b> (new, 2 Nov 2026): VOR/DME sector 1 DME-arc and sector 2 entry areas (§3.3.4.1.2.6–7), radial-intersection entries (§3.3.3.2.2); VOR/DME DL checked against Diagrams C-13 (35 NM) and C-15 (26 NM). Sector-1 reduction (§3.3.3.3) not built (construction ambiguous).</li>
+                                <li><b>10 Circling &amp; VSS</b> (new, 2 Nov 2026): circling radius I-4-7 §7.2 (Table I-4-7-2 values checked), MOC / OCH lower limit / visibility Table I-4-7-3, VSS I-4-5 §5.4.6 (slope, width, length, obstacle check).</li>
                                 <li><b>07-E Turn area</b> (new, 2 Nov 2026): wind spiral (I-2-3 §3.3.2), inner boundary rules (§3.2), Table I-2-3-1 phase defaults; checked against Table I-2-3-3.</li>
                                 <li><b>02-E Racetrack area</b> (new, 2 Nov 2026): §3.6.2 parameters, template engine of 05-A, 2.5 NM secondary, Table I-4-3-1 descents (Doc example §3.7.1 checked), MOC 984 ft.</li>
                                 <li><b>05-C RNP holding</b> (new, 2 Nov 2026): III-3-7-App B d2, area (d3 / 1.414·d3), buffer; d4 formula flagged (printed formula inconsistent with Figures B-1/B-2).</li>
@@ -4589,6 +4791,23 @@
                 const X = [r, 0], Xp = [width + r, 0], Y = [Xp[0] + E, Xp[1]], Z = [Xp[0], Xp[1] - E], rho = Math.sqrt(r * r + E * E);
                 return [{ c: X, R: rho, b0: 270, b1: 360 }, { c: Xp, R: rho, b0: 270, b1: 360 }, { c: Y, R: r + E, b0: 0, b1: 90 }, { c: Z, R: r + 2 * E, b0: 90, b1: 180 }];
             },
+            // ---- Visual manoeuvring (circling), I-4-7 ----
+            // Table I-4-1-2 circling IAS; Table I-4-7-2 straight segment (NM); Table I-4-7-3 MOC / OCH lower limit (ft), visibility (NM)
+            circlingCat(cat) {
+                return { A: { ias: 100, seg: 0.30, moc: 295, och: 394, vis: 1.0 }, B: { ias: 135, seg: 0.40, moc: 295, och: 492, vis: 1.5 },
+                    C: { ias: 180, seg: 0.50, moc: 394, och: 591, vis: 2.0 }, D: { ias: 205, seg: 0.60, moc: 394, och: 689, vis: 2.5 },
+                    E: { ias: 240, seg: 0.70, moc: 492, och: 787, vis: 3.5 } }[cat];
+            },
+            // §7.2.2–7.2.3: TAS at aerodrome elevation + 1 000 ft, ISA + 15, plus 25 kt wind; 20° bank or 3°/s; R = 2r + straight segment
+            circlingRadius(cat, adElevFt, iasOver) {
+                const c = PANS.circlingCat(cat), ias = iasOver > 0 ? iasOver : c.ias;
+                const tas = PANS.tas(ias, adElevFt + 1000, 15), V = tas + 25, R = PANS.rate(V, 20), r = PANS.radius(V, R);
+                return { ias, tas, V, rate: R, r, seg: c.seg, Rthr: 2 * r + c.seg };
+            },
+            // ---- Visual segment surface, I-4-5 §5.4.6 ----
+            // slope = promulgated angle − 1.12°, origin at threshold height, starts 60 m before THR; ends where it reaches the OCH
+            vssSlope(angleDeg) { return angleDeg - 1.12; },
+            vssLength(angleDeg, ochFt) { return ochFt * 0.3048 / Math.tan(PANS.vssSlope(angleDeg) * Math.PI / 180); },   // m from THR
             // ---- Racetrack (I-4-3 §3.4, §3.6–3.8) ----
             // Table I-4-3-1: maximum / minimum descent per minute of nominal outbound time (ft); null = N/A
             racetrackDescent(cat) {
@@ -4809,6 +5028,12 @@
             { g: 'Turn area', n: 'Wind spiral: wind effect at 90° equals E', ref: 'I-2-3 §3.3.2.2', exp: 0, tol: 1e-9, f: () => { const V = 211, R = PANS.rate(V, 15), r = PANS.radius(V, R), q = PANS.windSpiralPoint(90, r, R, 30, V); return Math.abs(Math.hypot(q[0] - r, q[1] - r) - PANS.windEffect(90, R, 30)); } },
             { g: 'Turn area', n: 'Bounding circles: extent at 180° of turn = r + 2E beyond X′', ref: 'I-2-3 §3.3.3 (arc r + E about Y)', exp: 0, tol: 1e-9, f: () => { const r = 2, E = 0.5, a = PANS.boundingCircles(r, E, 3)[2]; return Math.abs((a.c[0] + a.R) - (3 + r) - (r + 2 * E)); } },
             { g: 'Turn area', n: 'Navaid band VOR ±1.0 NM / 7.8°, NDB ±1.25 NM / 10.3°', ref: 'I-4-6, Figure I-4-6-7', exp: 1, tol: 0, f: () => { const v = PANS.navaidBand('vor'), n = PANS.navaidBand('ndb'); return v.hw0 === 1 && v.splay === 7.8 && n.hw0 === 1.25 && n.splay === 10.3 ? 1 : 0; } },
+            { g: 'Circling', n: 'Cat A radius r, aerodrome 1 000 ft', ref: 'Table I-4-7-2 (0.69 NM)', exp: 0.69, tol: 0.01, f: () => PANS.circlingRadius('A', 1000).r },
+            { g: 'Circling', n: 'Cat C radius from threshold R', ref: 'Table I-4-7-2 (4.20 NM)', exp: 4.20, tol: 0.02, f: () => PANS.circlingRadius('C', 1000).Rthr },
+            { g: 'Circling', n: 'Cat E radius from threshold R (Doc rounds TAS and r first)', ref: 'Table I-4-7-2 (6.94 NM)', exp: 6.94, tol: 0.03, f: () => PANS.circlingRadius('E', 1000).Rthr },
+            { g: 'Circling', n: 'Cat D TAS + 25 kt at 2 000 ft', ref: 'Table I-4-7-2 (242 kt)', exp: 242, tol: 1, f: () => PANS.circlingRadius('D', 1000).V },
+            { g: 'Circling', n: 'Cat C MOC / OCH lower limit / visibility', ref: 'Table I-4-7-3 (394 ft, 591 ft, 2.0 NM)', exp: 1, tol: 0, f: () => { const c = PANS.circlingCat('C'); return c.moc === 394 && c.och === 591 && c.vis === 2 ? 1 : 0; } },
+            { g: 'VSS', n: 'VSS slope for a 3° approach', ref: 'I-4-5 §5.4.6.2 (3° − 1.12°)', exp: 1.88, tol: 1e-9, f: () => PANS.vssSlope(3) },
             { g: 'Racetrack', n: 'Doc example: reversal 2.5 min Cat A/B, max descent outbound', ref: 'I-4-3 §3.7.1 (2 010 ft)', exp: 2010, tol: 0, f: () => PANS.racetrackDescent('A').outMax * 2.5 },
             { g: 'Racetrack', n: 'Doc example: max descent inbound 2.5 min Cat A/B', ref: 'I-4-3 §3.7.1 (1 638 ft; 656 ft/min table value)', exp: 1638, tol: 3, f: () => PANS.racetrackDescent('B').inMax * 2.5 },
             { g: 'Racetrack', n: 'Inbound max Cat H / min Cat C (ft per min)', ref: 'Table I-4-3-1', exp: 1, tol: 0, f: () => (PANS.racetrackDescent('H').inMax === 755 && PANS.racetrackDescent('H').inMin === null && PANS.racetrackDescent('C').inMin === 591) ? 1 : 0 },
@@ -4957,6 +5182,10 @@
             'ta-res-c': ['c distance = (TAS + w)·c / 3600, c = bank establishment + pilot reaction time', 'Table I-2-3-1'],
             'ta-res-p': ['spiral: still-air circle point + E, arcsin(w/V) before the tangent (or bounding circles); P where the tangent is parallel to the new track; then 15° splay or the track-guidance connection', 'Vol II I-2-3 §3.3.1–3.3.4'],
             'ta-res-inner': ['TP: K-line, converge at A/2 or diverge 15°; altitude: TIA start, splay 15°', 'Vol II I-2-3 §3.2'],
+            'circ-res-R': ['R = 2r + straight segment;  r = V / (20πR) with V = TAS (AD + 1 000 ft, ISA + 15) + 25 kt, 20° bank or 3°/s', 'I-4-7 §7.2, Table I-4-7-2'],
+            'circ-res-oca': ['OCH = max(highest obstacle + MOC − AD elevation, lower limit)', 'I-4-5 §5.4.4, Table I-4-7-3'],
+            'vss-res-slope': ['VSS slope = promulgated angle − 1.12°', 'I-4-5 §5.4.6.2'],
+            'vss-res-len': ['length = OCH / tan(VSS slope) from the threshold', 'I-4-5 §5.4.6.1'],
             'msd-res-tas': ['TAS at ISA + ΔISA;  r at the phase bank or 3°/s, whichever is less', 'Vol II III-2-1 §1.4']
         };
         RESULT_INFO['res-ta-before'] = RESULT_INFO['turn-ta-before'];
@@ -7271,6 +7500,7 @@
             if (typeof calcRnpHold === 'function') calcRnpHold();
             if (typeof calcRacetrack === 'function') calcRacetrack();
             if (typeof calcTurnArea === 'function') calcTurnArea();
+            if (typeof calcCircling === 'function') { calcCircling(); calcVss(); }
             if (typeof calcIfix === 'function') calcIfix();
             if (typeof calcDeparture === 'function') calcDeparture();
             if (typeof calcMsd === 'function') calcMsd();
@@ -7471,7 +7701,7 @@
             if (lim) document.getElementById('btp-ob-unit').textContent = lim.checked ? 'min' : 'DME';
             run('toggleVnpIls');
             ['calcTAS', 'calcTempCorr', 'calcTurn', 'calcPT', 'calcBaseTurn', 'calcBaseTurnPhi', 'drawTurnViz', 'calcHoldB',
-                'calcPBN', 'calcTolerance', 'calcVEB', 'calcDescent', 'calcEqObs', 'calcReaction', 'calcVnavPapi', 'calcHoldArea', 'calcRnpHold', 'calcRacetrack', 'calcTurnArea', 'calcIfix', 'calcPathTerm', 'calcMsd', 'calcDeparture'].forEach((f) => run(f));
+                'calcPBN', 'calcTolerance', 'calcVEB', 'calcDescent', 'calcEqObs', 'calcReaction', 'calcVnavPapi', 'calcHoldArea', 'calcRnpHold', 'calcRacetrack', 'calcTurnArea', 'calcCircling', 'calcVss', 'calcIfix', 'calcPathTerm', 'calcMsd', 'calcDeparture'].forEach((f) => run(f));
             gradLegIds().forEach((id) => run('calculateGradient', id));
         }
 
@@ -8302,6 +8532,131 @@
             drawTurnAreaViz(geo, o, document.getElementById('ta-dir').value === 'left');
         }
 
+
+        // =========================================================
+        // 10-A CIRCLING AREA (I-4-7) · 10-B VISUAL SEGMENT SURFACE (I-4-5 §5.4.6)
+        // =========================================================
+        function calcCircling() {
+            const g = (id) => parseFloat(document.getElementById(id).value);
+            const set = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+            const elev = g('circ-elev'), len = g('circ-rwylen');
+            if (isNaN(elev)) return;
+            const cat = document.getElementById('circ-cat').value, c = PANS.circlingCat(cat);
+            document.getElementById('circ-ias').placeholder = 'Auto ' + c.ias;
+            const rr = PANS.circlingRadius(cat, elev, g('circ-ias'));
+            const f2 = (n) => n.toFixed(2);
+            set('circ-res-tas', Math.round(rr.tas) + ' + 25 = ' + Math.round(rr.V) + ' kt (IAS ' + rr.ias + ')');
+            set('circ-res-r', rr.rate.toFixed(2) + '°/s · ' + f2(rr.r) + ' NM');
+            set('circ-res-R', f2(rr.Rthr) + ' NM (2r + ' + f2(rr.seg) + ')');
+            set('circ-res-moc', c.moc + ' ft · ' + c.och + ' ft · ' + c.vis.toFixed(1) + ' NM');
+            const obs = g('circ-obs');
+            if (!isNaN(obs)) {
+                const och = Math.max(obs + c.moc - elev, c.och);
+                set('circ-res-oca', Math.round(elev + och).toLocaleString() + ' / ' + Math.round(och) + ' ft' + (obs + c.moc - elev < c.och ? ' (lower limit)' : ''));
+            } else set('circ-res-oca', 'lower limit OCH ' + c.och + ' ft');
+            set('circ-res-all', ['A', 'B', 'C', 'D', 'E'].map((k) => k + ' ' + PANS.circlingRadius(k, elev).Rthr.toFixed(2)).join(' · '));
+            if (len > 0) drawCirclingViz(len / 1852, isNaN(g('circ-rwybrg')) ? 10 : g('circ-rwybrg'), rr, cat, elev);
+        }
+
+        function drawCirclingViz(Lnm, brg, rr, cat, elev) {
+            const canvas = document.getElementById('circVizCanvas');
+            if (!canvas) return;
+            const { ctx, w, h } = setupCanvas(canvas, 0.8, 520, 300);
+            const C = bpColors();
+            const u = [Math.sin(brg * DEG), Math.cos(brg * DEG)];
+            const T1 = [-u[0] * Lnm / 2, -u[1] * Lnm / 2], T2 = [u[0] * Lnm / 2, u[1] * Lnm / 2];
+            const pts = [];
+            [T1, T2].forEach((T) => { for (let k = 0; k < 120; k++) { const a = k * 3 * DEG; pts.push([T[0] + rr.Rthr * Math.cos(a), T[1] + rr.Rthr * Math.sin(a)]); } });
+            const area = convexHull(pts);
+            const others = ['A', 'B', 'C', 'D', 'E'].filter((k) => k !== cat).map((k) => {
+                const R = PANS.circlingRadius(k, elev).Rthr, q = [];
+                [T1, T2].forEach((T) => { for (let i = 0; i < 120; i++) { const a = i * 3 * DEG; q.push([T[0] + R * Math.cos(a), T[1] + R * Math.sin(a)]); } });
+                return [k, convexHull(q), R];
+            });
+            const allPts = area.concat(...others.map((o) => o[1]));
+            const B = boundsOf(allPts, 0.05);
+            const V = vizView(B, w, h, { t: 44, b: 44, l: 18, r: 18 });
+            others.forEach(([k, poly]) => { ctx.save(); cvPath(ctx, V, poly); ctx.closePath(); ctx.setLineDash([2, 4]); ctx.strokeStyle = C.muted; ctx.lineWidth = 0.8; ctx.stroke(); ctx.restore(); });
+            ctx.save(); cvPath(ctx, V, area); ctx.closePath(); ctx.fillStyle = C.fill; ctx.fill(); ctx.strokeStyle = C.warning; ctx.lineWidth = 1.8; ctx.stroke(); ctx.restore();
+            cvFooter(ctx, C, V, w, h, 'Cat ' + cat + ' · R ' + rr.Rthr.toFixed(2) + ' NM · AD ' + Math.round(elev) + ' ft');
+            // runway and the radius from one threshold
+            cvStroke(ctx, C, V, [T1, T2], C.ink, 4);
+            const ra = (brg + 90) * DEG, Rp = [T2[0] + Math.sin(ra) * rr.Rthr, T2[1] + Math.cos(ra) * rr.Rthr];
+            cvDim(ctx, C, V.X(T2[0]), V.Y(T2[1]), V.X(Rp[0]), V.Y(Rp[1]), 'R ' + rr.Rthr.toFixed(2) + ' NM', C.warning);
+            others.forEach(([k, poly, R]) => { const q = poly.reduce((a, b) => (b[1] > a[1] ? b : a)); cvLabel(ctx, C, k, V.X(q[0]), V.Y(q[1]) + 8, { size: 9, color: C.muted }); });
+            cvLabel(ctx, C, '▭ circling area Cat ' + cat + ' · ┄ other categories', 10, 34, { align: 'left', size: 9, box: false, color: C.warning });
+        }
+
+        function calcVss() {
+            const g = (id) => parseFloat(document.getElementById(id).value);
+            const set = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+            const ang = g('vss-angle'), och = g('vss-och');
+            if (!(ang > 1.2) || !(och > 0)) return;
+            const loc = document.getElementById('vss-type').value === 'loc', big = document.getElementById('vss-code').value === '34';
+            const hw0 = loc ? (big ? 60 : 45) : (big ? 140 : 70);
+            const slope = PANS.vssSlope(ang), L = PANS.vssLength(ang, och);
+            const hwAt = (x) => hw0 + (loc ? 0 : 0.15 * (x + 60));
+            set('vss-res-slope', slope.toFixed(2) + '° (' + (Math.tan(slope * DEG) * 100).toFixed(2) + ' %)');
+            set('vss-res-base', hw0 + ' m (' + (loc ? 'inner approach surface' : 'runway strip') + ')');
+            set('vss-res-len', Math.round(L).toLocaleString() + ' m (' + (L / 1852).toFixed(2) + ' NM)');
+            set('vss-res-end', Math.round(hwAt(L)) + ' m');
+            const x = g('vss-obs-x'), y = Math.abs(g('vss-obs-y') || 0), hOb = g('vss-obs-h');
+            let obs = null, L2 = [];
+            if (!isNaN(x) && !isNaN(hOb)) {
+                const inside = x >= -60 && x <= L && y <= hwAt(x);
+                const surf = Math.max(0, x) * Math.tan(slope * DEG) / 0.3048;
+                obs = { x, y, h: hOb, surf, inside };
+                if (!inside) set('vss-res-obs', 'outside the VSS');
+                else {
+                    const pen = hOb - surf;
+                    set('vss-res-obs', pen > 0 ? 'penetrates by ' + Math.round(pen) + ' ft (surface ' + Math.round(surf) + ' ft)' : 'clear by ' + Math.round(-pen) + ' ft (surface ' + Math.round(surf) + ' ft)');
+                    if (pen > 0 && hOb < 49.2) L2.push(['ok', 'Lower than 15 m (49 ft) above the threshold — may be disregarded.', 'I-4-5 §5.4.6.4']);
+                    else if (pen > 0) L2.push(['bad', 'VSS penetrated — the procedure shall not be promulgated without an aeronautical study; promulgate in AIP AD 2.25.', 'I-4-5 §5.4.6.4–5']);
+                    else L2.push(['ok', 'Obstacle below the VSS.', 'I-4-5 §5.4.6']);
+                }
+            } else set('vss-res-obs', 'enter an obstacle');
+            showLimits('vss-res-obs', L2);
+            drawVssViz({ hw0, loc, L, slope, och, hwAt, obs });
+        }
+
+        function drawVssViz(o) {
+            const canvas = document.getElementById('vssVizCanvas');
+            if (!canvas) return;
+            const { ctx, w, h } = setupCanvas(canvas, 0.75, 460, 300);
+            const C = bpColors();
+            const split = h * 0.56, pad = 34;
+            const Xmax = o.L * 1.05, Xmin = -260;
+            const X = (x) => pad + (x - Xmin) / (Xmax - Xmin) * (w - 2 * pad);       // x = metres before THR, approach from the right
+            const XR = (x) => w - X(x) + pad * 0;                                    // drawn with the threshold on the left
+            const sx = (x) => pad + (x - Xmin) / (Xmax - Xmin) * (w - 2 * pad);
+            // plan (top)
+            const ymax = o.hwAt(o.L) * 1.2, Yp = (y) => 44 + (split - 70) / 2 - y / ymax * (split - 70) / 2;
+            ctx.save(); ctx.beginPath();
+            ctx.moveTo(sx(-60), Yp(o.hw0)); ctx.lineTo(sx(o.L), Yp(o.hwAt(o.L))); ctx.lineTo(sx(o.L), Yp(-o.hwAt(o.L))); ctx.lineTo(sx(-60), Yp(-o.hw0)); ctx.closePath();
+            ctx.fillStyle = C.fill; ctx.fill(); ctx.strokeStyle = C.warning; ctx.lineWidth = 1.4; ctx.stroke(); ctx.restore();
+            ctx.save(); ctx.strokeStyle = C.ink; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(sx(Xmin), Yp(0)); ctx.lineTo(sx(0), Yp(0)); ctx.stroke(); ctx.restore();
+            ctx.save(); ctx.setLineDash([5, 4]); ctx.strokeStyle = C.muted; ctx.beginPath(); ctx.moveTo(sx(0), Yp(0)); ctx.lineTo(sx(Xmax), Yp(0)); ctx.stroke(); ctx.restore();
+            cvLabel(ctx, C, 'THR', sx(0), Yp(0) - 12, { size: 9, bold: true });
+            cvLabel(ctx, C, 'plan · half-width ' + o.hw0 + ' → ' + Math.round(o.hwAt(o.L)) + ' m', 10, 34, { align: 'left', size: 9, box: false, color: C.warning });
+            // profile (bottom)
+            const hmaxFt = Math.max(o.och, o.obs ? o.obs.h : 0) * 1.25, Yh = (ft) => h - 30 - ft / hmaxFt * (h - 30 - split - 10);
+            ctx.save(); ctx.strokeStyle = C.line; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(sx(Xmin), Yh(0)); ctx.lineTo(sx(Xmax), Yh(0)); ctx.stroke(); ctx.restore();
+            ctx.save(); ctx.beginPath(); ctx.moveTo(sx(0), Yh(0)); ctx.lineTo(sx(o.L), Yh(o.och)); ctx.lineTo(sx(o.L), Yh(0)); ctx.closePath(); ctx.fillStyle = C.fill; ctx.fill();
+            ctx.strokeStyle = C.warning; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(sx(0), Yh(0)); ctx.lineTo(sx(o.L), Yh(o.och)); ctx.stroke(); ctx.restore();
+            ctx.save(); ctx.setLineDash([4, 4]); ctx.strokeStyle = C.success; ctx.beginPath(); ctx.moveTo(sx(Xmin), Yh(o.och)); ctx.lineTo(sx(Xmax), Yh(o.och)); ctx.stroke(); ctx.restore();
+            cvLabel(ctx, C, 'OCH ' + o.och + ' ft', sx(Xmax) - 4, Yh(o.och) - 10, { size: 9, color: C.success, align: 'right' });
+            cvLabel(ctx, C, 'VSS ' + o.slope.toFixed(2) + '°', sx(o.L * 0.55), Yh(o.och * 0.55) - 12, { size: 9, color: C.warning, border: C.soft });
+            if (o.obs) {
+                const col = o.obs.inside && o.obs.h > o.obs.surf ? C.danger : C.cyan;
+                ctx.save(); ctx.strokeStyle = col; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(sx(o.obs.x), Yh(0)); ctx.lineTo(sx(o.obs.x), Yh(o.obs.h)); ctx.stroke(); ctx.restore();
+                cvDot(ctx, C, sx(o.obs.x), Yp(Math.min(o.obs.y, ymax)), col, 3);
+                cvLabel(ctx, C, Math.round(o.obs.h) + ' ft', sx(o.obs.x), Yh(o.obs.h) - 10, { size: 9, color: col });
+            }
+            cvLabel(ctx, C, 'profile · ft above THR', 10, split + 4, { align: 'left', size: 9, box: false, color: C.muted, keep: true });
+            cvLabel(ctx, C, Math.round(o.L).toLocaleString() + ' m', sx(o.L), h - 14, { size: 9, color: C.muted, keep: true });
+            cvLabel(ctx, C, '0', sx(0), h - 14, { size: 9, color: C.muted, keep: true });
+            void X; void XR;
+        }
 
         // =========================================================
         // 02-E RACETRACK PROTECTED AREA (I-4-3 §3.4, §3.6–3.8; App C §3.3) — holding template engine
@@ -9214,6 +9569,7 @@
                 if (id === 'tab-gradient') redrawGradients();
                 if (id === 'tab-reversal') { calcPT(); calcBaseTurn(); calcRacetrack(); }
                 if (id === 'tab-vnav-papi') calcVnavPapi();
+                if (id === 'tab-circ') { calcCircling(); calcVss(); }
                 if (id === 'tab-holdb') { calcHoldArea(); calcRnpHold(); }
                 if (id === 'tab-tol') calcIfix();
                 if (id === 'tab-pt') { ptRenderReference(); calcPathTerm(); calcMsd(); }
@@ -9251,6 +9607,7 @@
             if (typeof calcRnpHold === 'function') calcRnpHold();
             if (typeof calcRacetrack === 'function') calcRacetrack();
             if (typeof calcTurnArea === 'function') calcTurnArea();
+            if (typeof calcCircling === 'function') { calcCircling(); calcVss(); }
             if (typeof calcIfix === 'function') calcIfix();
             if (typeof calcPathTerm === 'function') calcPathTerm();
             if (typeof calcMsd === 'function') calcMsd();
