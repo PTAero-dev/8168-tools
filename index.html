@@ -923,6 +923,9 @@
         .info-pop em { display: block; margin-top: 2px; font-style: normal; font-family: var(--font-mono); font-size: 0.64rem; letter-spacing: 0.04em; color: var(--text-muted); }
         .units-switch { display: inline-flex; }
         .units-switch .btn-mini + .btn-mini { margin-left: -1px; }
+        .oca-table input { width: 100%; min-width: 0; padding: 6px 8px; font-size: 0.8rem; }
+        .oca-table td { padding: 3px 4px; }
+        .oca-table th { font-size: 0.62rem; }
         /* limit warnings (Doc limits) */
         .limit-box { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line-soft); display: grid; gap: 4px; }
         .limit-box[hidden] { display: none; }
@@ -4133,6 +4136,127 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- 10-C NPA OCA/H -->
+                <div class="card" id="card-oca">
+                    <div class="card-header minimizable" onclick="toggleCard(this)">
+                        <div class="card-heading"><span class="card-tag">10-C</span>
+                            <div class="card-title">OCA/H · Non-Precision Approach</div>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-reset" onclick="event.stopPropagation(); resetCard('card-oca', ['oca-ad', 'oca-thr', 'oca-theta', 'oca-grad', 'oca-mount', 'oca-ras', 'oca-ma', 'oca-o1-n', 'oca-o1-e', 'oca-o1-s', 'oca-o2-n', 'oca-o2-e', 'oca-o2-s', 'oca-o3-n', 'oca-o3-e', 'oca-o3-s', 'oca-o4-n', 'oca-o4-e', 'oca-o4-s', 'oca-o5-n', 'oca-o5-e', 'oca-o5-s'], 'calcNpaOca');">↺ Reset</button>
+                        </div>
+                    </div>
+                    <div class="card-body split">
+                        <div class="form-grid">
+                            <div class="section-label">Approach · I-4-5 §5.4</div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>Aerodrome Elev (ft)</label>
+                                    <input type="number" id="oca-ad" placeholder="e.g. 1000" oninput="calcNpaOca()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Threshold Elev (ft)<span class="opt">OPT</span></label>
+                                    <input type="number" id="oca-thr" placeholder="= AD" oninput="calcNpaOca()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Category</label>
+                                    <select id="oca-cat" onchange="calcNpaOca()">
+                                        <option value="C">C</option><option value="D">D</option><option value="E">E</option>
+                                        <option value="B">B</option><option value="A">A</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>FAF</label>
+                                    <select id="oca-faf" onchange="calcNpaOca()">
+                                        <option value="yes">With FAF</option>
+                                        <option value="no">Without FAF</option>
+                                    </select>
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Offset θ to RWY CL (°)</label>
+                                    <input type="number" id="oca-theta" placeholder="0" oninput="calcNpaOca()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Descent gradient (%)</label>
+                                    <input type="number" id="oca-grad" placeholder="5.2" step="0.1" oninput="calcNpaOca()">
+                                </div>
+                            </div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>Mountainous MOC + (%)<span class="opt">OPT</span></label>
+                                    <input type="number" id="oca-mount" placeholder="0 – 100" oninput="calcNpaOca()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Remote altimeter (NM)<span class="opt">OPT</span></label>
+                                    <input type="number" id="oca-ras" placeholder="AD source" oninput="calcNpaOca()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Missed app. OCA (ft)<span class="opt">OPT</span></label>
+                                    <input type="number" id="oca-ma" placeholder="from MA" oninput="calcNpaOca()">
+                                </div>
+                            </div>
+                            <div class="section-label">Final approach obstacles · secondary position 0 % = primary / inner edge, 100 % = outer edge</div>
+                            <div class="table-wrap"><table class="qa-table oca-table"><thead><tr><th>Obstacle</th><th>Elev (ft)</th><th>Secondary %</th></tr></thead><tbody>
+                                    <tr><td><input type="text" id="oca-o1-n" placeholder="Obstacle 1" oninput="calcNpaOca()"></td>
+                                        <td><input type="number" id="oca-o1-e" placeholder="ft AMSL" oninput="calcNpaOca()"></td>
+                                        <td><input type="number" id="oca-o1-s" placeholder="0" min="0" max="100" oninput="calcNpaOca()"></td></tr>
+                                    <tr><td><input type="text" id="oca-o2-n" placeholder="Obstacle 2" oninput="calcNpaOca()"></td>
+                                        <td><input type="number" id="oca-o2-e" placeholder="ft AMSL" oninput="calcNpaOca()"></td>
+                                        <td><input type="number" id="oca-o2-s" placeholder="0" min="0" max="100" oninput="calcNpaOca()"></td></tr>
+                                    <tr><td><input type="text" id="oca-o3-n" placeholder="Obstacle 3" oninput="calcNpaOca()"></td>
+                                        <td><input type="number" id="oca-o3-e" placeholder="ft AMSL" oninput="calcNpaOca()"></td>
+                                        <td><input type="number" id="oca-o3-s" placeholder="0" min="0" max="100" oninput="calcNpaOca()"></td></tr>
+                                    <tr><td><input type="text" id="oca-o4-n" placeholder="Obstacle 4" oninput="calcNpaOca()"></td>
+                                        <td><input type="number" id="oca-o4-e" placeholder="ft AMSL" oninput="calcNpaOca()"></td>
+                                        <td><input type="number" id="oca-o4-s" placeholder="0" min="0" max="100" oninput="calcNpaOca()"></td></tr>
+                                    <tr><td><input type="text" id="oca-o5-n" placeholder="Obstacle 5" oninput="calcNpaOca()"></td>
+                                        <td><input type="number" id="oca-o5-e" placeholder="ft AMSL" oninput="calcNpaOca()"></td>
+                                        <td><input type="number" id="oca-o5-s" placeholder="0" min="0" max="100" oninput="calcNpaOca()"></td></tr>
+                            </tbody></table></div>
+                        </div>
+                        <div class="form-grid">
+                            <div class="results-panel flush">
+                                <div class="result-row">
+                                    <span class="result-label">MOC (primary)</span>
+                                    <span id="oca-res-moc" class="result-value">---</span>
+                                </div>
+                                <div class="result-row">
+                                    <span class="result-label">Controlling obstacle</span>
+                                    <span id="oca-res-ctl" class="result-value c-warning">---</span>
+                                </div>
+                                <div class="result-row">
+                                    <span class="result-label">OCH reference</span>
+                                    <span id="oca-res-ref" class="result-value">---</span>
+                                </div>
+                                <div class="result-row">
+                                    <span class="result-label">Obstacle OCA / OCH</span>
+                                    <span id="oca-res-obs" class="result-value">---</span>
+                                </div>
+                                <div class="result-row">
+                                    <span class="result-label">Lower limits / adjustments</span>
+                                    <span id="oca-res-adj" class="result-value">---</span>
+                                </div>
+                                <div class="result-row key">
+                                    <span class="result-label">Publish OCA / OCH (↑ 10 ft)</span>
+                                    <span id="oca-res-pub" class="result-value c-success">---</span>
+                                </div>
+                            </div>
+                            <div class="table-wrap"><table class="qa-table"><tbody id="oca-rows"></tbody></table></div>
+                            <div class="note">
+                                <div class="note-title">Reference</div>
+                                Doc 8168 Vol II I-4-5 §5.4: MOC 75 m (246 ft) with FAF, 90 m (295 ft) without (§5.4.3.1), increased by up to 100 % in mountainous areas
+                                (I-2-1 §1.7); in the secondary area the MOC reduces linearly to zero at the outer edge (I-2-1 §1.3). OCH referenced to the aerodrome, or to the
+                                threshold when it is more than 7 ft below the aerodrome (§5.4.1.3). Remote altimeter beyond 5 NM: + 5 ft/NM (§5.4.5.3.1). Offset 5°–30°:
+                                lower limit Table I-4-5-3, + 18 % per % of gradient above 5.2 % (§5.4.3.2); offset above 30° (C–E above 15°) or gradient above 6.5 %:
+                                the circling OCA/H (sheet 10-A) is the lower limit (§5.4.5.4 c). The OCA/H must also cover the missed approach (§5.4.3.1). Published in
+                                10-ft increments, rounded up (§5.5.5). Forecast altimeter settings and RASS in mountainous areas (§5.4.5.3.2, §5.4.5.4 a) are not modelled.
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -4200,6 +4324,7 @@
                                 <li><b>05-A Holding</b> (new): Table II-4-1-2 speeds, ISA+15, ICAO wind, template Table I-4-3-App C-4 (all 33 lines), entry sectors, buffer MOC. Omnidirectional entry area §3.3.3.2.1 (curves 5–8, convex-envelope approximation); template extents checked against Diagram I-4-3-App C-6.</li>
                                 <li><b>05-A VOR/DME holding</b> (new, 2 Nov 2026): §3.3.4 distance parameters (Ds, DL rounding, DLs, d1/d2) and basic area towards / away from the station (convex-envelope approximation; along-radial entry areas not drawn).</li>
                                 <li><b>05-A holding entries</b> (new, 2 Nov 2026): VOR/DME sector 1 DME-arc and sector 2 entry areas (§3.3.4.1.2.6–7), radial-intersection entries (§3.3.3.2.2); VOR/DME DL checked against Diagrams C-13 (35 NM) and C-15 (26 NM). Sector-1 reduction (§3.3.3.3) not built (construction ambiguous).</li>
+                                <li><b>10-C NPA OCA/H</b> (new, 2 Nov 2026): MOC with/without FAF, mountainous increase, secondary-area linear MOC, OCH reference, remote altimeter, Table I-4-5-3 offset limits with the gradient factor, circling lower limit, missed approach, 10-ft rounding.</li>
                                 <li><b>10 Circling &amp; VSS</b> (new, 2 Nov 2026): circling radius I-4-7 §7.2 (Table I-4-7-2 values checked), MOC / OCH lower limit / visibility Table I-4-7-3, VSS I-4-5 §5.4.6 (slope, width, length, obstacle check).</li>
                                 <li><b>07-E Turn area</b> (new, 2 Nov 2026): wind spiral (I-2-3 §3.3.2), inner boundary rules (§3.2), Table I-2-3-1 phase defaults; checked against Table I-2-3-3.</li>
                                 <li><b>02-E Racetrack area</b> (new, 2 Nov 2026): §3.6.2 parameters, template engine of 05-A, 2.5 NM secondary, Table I-4-3-1 descents (Doc example §3.7.1 checked), MOC 984 ft.</li>
@@ -4804,6 +4929,21 @@
                 const tas = PANS.tas(ias, adElevFt + 1000, 15), V = tas + 25, R = PANS.rate(V, 20), r = PANS.radius(V, R);
                 return { ias, tas, V, rate: R, r, seg: c.seg, Rthr: 2 * r + c.seg };
             },
+            // ---- OCA/H for non-precision approaches, I-4-5 §5.4 ----
+            npaMoc(withFaf) { return withFaf ? 246 : 295; },                                   // §5.4.3.1 (ft)
+            // Table I-4-5-3: lower limit on OCH (ft) for offset final approach tracks; null = not permitted (only circling)
+            npaOffsetLimit(cat, thetaDeg) {
+                if (thetaDeg <= 5) return 0;
+                if (thetaDeg <= 15) return { A: 340, B: 380, C: 410, D: 430, E: 480 }[cat];
+                if (thetaDeg <= 30) return { A: 380, B: 410 }[cat] || null;
+                return null;
+            },
+            // §5.4.3.2: lower limits increased by 18 % for each per cent of nominal descent gradient above 5.2 %
+            npaGradFactor(gradPct) { return gradPct > 5.2 ? 1 + 0.18 * (gradPct - 5.2) : 1; },
+            // §5.4.5.3.1: remote altimeter setting > 5 NM from the threshold: + 5 ft per NM beyond 5 NM
+            npaRemoteAlt(distNm) { return distNm > 5 ? 5 * (distNm - 5) : 0; },
+            // §5.5.5: NPA OCA/H published in 10-ft increments, rounded up
+            roundUp10(ft) { return Math.ceil(ft / 10 - 1e-9) * 10; },
             // ---- Visual segment surface, I-4-5 §5.4.6 ----
             // slope = promulgated angle − 1.12°, origin at threshold height, starts 60 m before THR; ends where it reaches the OCH
             vssSlope(angleDeg) { return angleDeg - 1.12; },
@@ -5033,6 +5173,11 @@
             { g: 'Circling', n: 'Cat E radius from threshold R (Doc rounds TAS and r first)', ref: 'Table I-4-7-2 (6.94 NM)', exp: 6.94, tol: 0.03, f: () => PANS.circlingRadius('E', 1000).Rthr },
             { g: 'Circling', n: 'Cat D TAS + 25 kt at 2 000 ft', ref: 'Table I-4-7-2 (242 kt)', exp: 242, tol: 1, f: () => PANS.circlingRadius('D', 1000).V },
             { g: 'Circling', n: 'Cat C MOC / OCH lower limit / visibility', ref: 'Table I-4-7-3 (394 ft, 591 ft, 2.0 NM)', exp: 1, tol: 0, f: () => { const c = PANS.circlingCat('C'); return c.moc === 394 && c.och === 591 && c.vis === 2 ? 1 : 0; } },
+            { g: 'NPA OCA/H', n: 'MOC with / without FAF', ref: 'I-4-5 §5.4.3.1 (246 / 295 ft)', exp: 1, tol: 0, f: () => PANS.npaMoc(true) === 246 && PANS.npaMoc(false) === 295 ? 1 : 0 },
+            { g: 'NPA OCA/H', n: 'Offset lower limit Cat D 5–15°, Cat B 15–30°, Cat C 20° not permitted', ref: 'Table I-4-5-3 (430 / 410 ft)', exp: 1, tol: 0, f: () => PANS.npaOffsetLimit('D', 10) === 430 && PANS.npaOffsetLimit('B', 20) === 410 && PANS.npaOffsetLimit('C', 20) === null ? 1 : 0 },
+            { g: 'NPA OCA/H', n: 'Gradient 6.0 %: lower limit × 1.144', ref: 'I-4-5 §5.4.3.2 (+18 % per %)', exp: 1.144, tol: 1e-9, f: () => PANS.npaGradFactor(6.0) },
+            { g: 'NPA OCA/H', n: 'Remote altimeter 12 NM: + 35 ft', ref: 'I-4-5 §5.4.5.3.1', exp: 35, tol: 0, f: () => PANS.npaRemoteAlt(12) },
+            { g: 'NPA OCA/H', n: 'Rounding up to 10 ft: 1 841 → 1 850, 1 850 → 1 850', ref: 'I-4-5 §5.5.5', exp: 1, tol: 0, f: () => PANS.roundUp10(1841) === 1850 && PANS.roundUp10(1850) === 1850 ? 1 : 0 },
             { g: 'VSS', n: 'VSS slope for a 3° approach', ref: 'I-4-5 §5.4.6.2 (3° − 1.12°)', exp: 1.88, tol: 1e-9, f: () => PANS.vssSlope(3) },
             { g: 'Racetrack', n: 'Doc example: reversal 2.5 min Cat A/B, max descent outbound', ref: 'I-4-3 §3.7.1 (2 010 ft)', exp: 2010, tol: 0, f: () => PANS.racetrackDescent('A').outMax * 2.5 },
             { g: 'Racetrack', n: 'Doc example: max descent inbound 2.5 min Cat A/B', ref: 'I-4-3 §3.7.1 (1 638 ft; 656 ft/min table value)', exp: 1638, tol: 3, f: () => PANS.racetrackDescent('B').inMax * 2.5 },
@@ -5186,6 +5331,8 @@
             'circ-res-oca': ['OCH = max(highest obstacle + MOC − AD elevation, lower limit)', 'I-4-5 §5.4.4, Table I-4-7-3'],
             'vss-res-slope': ['VSS slope = promulgated angle − 1.12°', 'I-4-5 §5.4.6.2'],
             'vss-res-len': ['length = OCH / tan(VSS slope) from the threshold', 'I-4-5 §5.4.6.1'],
+            'oca-res-obs': ['OCA = max(obstacle elevation + MOC × (1 − secondary position)); OCH = OCA − reference elevation', 'I-4-5 §5.4.3.1, I-2-1 §1.3'],
+            'oca-res-pub': ['max(obstacle OCH + remote altimeter, offset lower limit × gradient factor, circling (θ > 30° / G > 6.5 %), missed approach), rounded up to 10 ft', 'I-4-5 §5.4.3–5.4.5, §5.5.5'],
             'msd-res-tas': ['TAS at ISA + ΔISA;  r at the phase bank or 3°/s, whichever is less', 'Vol II III-2-1 §1.4']
         };
         RESULT_INFO['res-ta-before'] = RESULT_INFO['turn-ta-before'];
@@ -7701,7 +7848,7 @@
             if (lim) document.getElementById('btp-ob-unit').textContent = lim.checked ? 'min' : 'DME';
             run('toggleVnpIls');
             ['calcTAS', 'calcTempCorr', 'calcTurn', 'calcPT', 'calcBaseTurn', 'calcBaseTurnPhi', 'drawTurnViz', 'calcHoldB',
-                'calcPBN', 'calcTolerance', 'calcVEB', 'calcDescent', 'calcEqObs', 'calcReaction', 'calcVnavPapi', 'calcHoldArea', 'calcRnpHold', 'calcRacetrack', 'calcTurnArea', 'calcCircling', 'calcVss', 'calcIfix', 'calcPathTerm', 'calcMsd', 'calcDeparture'].forEach((f) => run(f));
+                'calcPBN', 'calcTolerance', 'calcVEB', 'calcDescent', 'calcEqObs', 'calcReaction', 'calcVnavPapi', 'calcHoldArea', 'calcRnpHold', 'calcRacetrack', 'calcTurnArea', 'calcCircling', 'calcVss', 'calcNpaOca', 'calcIfix', 'calcPathTerm', 'calcMsd', 'calcDeparture'].forEach((f) => run(f));
             gradLegIds().forEach((id) => run('calculateGradient', id));
         }
 
@@ -8556,6 +8703,7 @@
             } else set('circ-res-oca', 'lower limit OCH ' + c.och + ' ft');
             set('circ-res-all', ['A', 'B', 'C', 'D', 'E'].map((k) => k + ' ' + PANS.circlingRadius(k, elev).Rthr.toFixed(2)).join(' · '));
             if (len > 0) drawCirclingViz(len / 1852, isNaN(g('circ-rwybrg')) ? 10 : g('circ-rwybrg'), rr, cat, elev);
+            if (typeof calcNpaOca === 'function') calcNpaOca();
         }
 
         function drawCirclingViz(Lnm, brg, rr, cat, elev) {
@@ -8656,6 +8804,66 @@
             cvLabel(ctx, C, Math.round(o.L).toLocaleString() + ' m', sx(o.L), h - 14, { size: 9, color: C.muted, keep: true });
             cvLabel(ctx, C, '0', sx(0), h - 14, { size: 9, color: C.muted, keep: true });
             void X; void XR;
+        }
+
+        // =========================================================
+        // 10-C OCA/H — NON-PRECISION APPROACH (I-4-5 §5.4)
+        // =========================================================
+        function calcNpaOca() {
+            const g = (id) => parseFloat(document.getElementById(id).value);
+            const set = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+            const ad = g('oca-ad');
+            if (isNaN(ad)) return;
+            const thr = isNaN(g('oca-thr')) ? ad : g('oca-thr');
+            const cat = document.getElementById('oca-cat').value, faf = document.getElementById('oca-faf').value === 'yes';
+            const theta = Math.abs(g('oca-theta') || 0), grad = isNaN(g('oca-grad')) ? 5.2 : g('oca-grad');
+            const mount = Math.min(100, Math.max(0, g('oca-mount') || 0));
+            const moc = PANS.npaMoc(faf) * (1 + mount / 100);
+            const ref = thr < ad - 7 ? thr : ad;
+            set('oca-res-moc', Math.round(moc) + ' ft' + (mount ? ' (+' + mount + ' % mountainous)' : ''));
+            set('oca-res-ref', (thr < ad - 7 ? 'threshold ' : 'aerodrome ') + Math.round(ref) + ' ft');
+            const obs = [];
+            for (let i = 1; i <= 5; i++) {
+                const e = g('oca-o' + i + '-e');
+                if (isNaN(e)) continue;
+                const sp = Math.min(100, Math.max(0, g('oca-o' + i + '-s') || 0));
+                const m = moc * (1 - sp / 100);
+                obs.push({ n: document.getElementById('oca-o' + i + '-n').value || 'Obstacle ' + i, e, sp, m, req: e + m });
+            }
+            document.getElementById('oca-rows').innerHTML = obs.map((o) => '<tr><td>' + o.n.replace(/[<>&]/g, '') + '</td><td class="num">' + Math.round(o.e) +
+                ' + ' + Math.round(o.m) + (o.sp ? ' (' + o.sp + ' % sec.)' : '') + '</td><td class="num">' + Math.round(o.req) + '</td></tr>').join('');
+            let oca = -Infinity, ctl = null;
+            obs.forEach((o) => { if (o.req > oca) { oca = o.req; ctl = o; } });
+            const adj = [], L = [];
+            if (ctl) {
+                set('oca-res-ctl', ctl.n + ' ' + Math.round(ctl.e) + ' ft');
+                set('oca-res-obs', Math.round(oca) + ' / ' + Math.round(oca - ref) + ' ft');
+            } else { set('oca-res-ctl', 'enter obstacles'); set('oca-res-obs', '---'); oca = ref; }
+            let och = oca - ref;
+            const ras = g('oca-ras');
+            if (ras > 5) { och += PANS.npaRemoteAlt(ras); adj.push('RAS +' + Math.round(PANS.npaRemoteAlt(ras))); }
+            const lim = PANS.npaOffsetLimit(cat, theta);
+            const fin = PANS.descentLimits('final', cat);
+            let circlingOnly = theta > 30 || lim === null || grad > 6.5;
+            if (lim > 0) { const ll = lim * PANS.npaGradFactor(grad); if (och < ll) { och = ll; } adj.push('offset ' + Math.round(ll)); }
+            if (circlingOnly) {
+                const cElev = parseFloat(document.getElementById('circ-elev').value), cObs = parseFloat(document.getElementById('circ-obs').value);
+                if (!isNaN(cElev) && !isNaN(cObs)) {
+                    const cc = PANS.circlingCat(cat), cOch = Math.max(cObs + cc.moc - cElev, cc.och);
+                    if (cElev + cOch - ref > och) och = cElev + cOch - ref;
+                    adj.push('circling ' + Math.round(cElev + cOch));
+                } else adj.push('circling OCA/H (enter on 10-A)');
+                L.push(['warn', theta > 30 || lim === null ? 'Offset ' + theta + '° — straight-in OCA/H not permitted for Cat ' + cat + '; the circling OCA/H is the lower limit / only circling may be published.' :
+                    'Descent gradient ' + grad + ' % > 6.5 % — the circling OCA/H becomes the lower limit.', 'I-4-5 §5.4.5.4 c)']);
+            }
+            if (grad > fin.max) L.push(['bad', 'Gradient ' + grad + ' % exceeds the final approach maximum ' + fin.max + ' % — straight-in OCA/H shall not be published (circling only) unless approved.', 'I-4-5 §5.3.1.2, §5.4.3.1']);
+            const ma = g('oca-ma');
+            if (!isNaN(ma) && ma - ref > och) { och = ma - ref; adj.push('missed app. ' + Math.round(ma)); }
+            set('oca-res-adj', adj.length ? adj.join(' · ') : 'none');
+            const ochPub = PANS.roundUp10(och);
+            set('oca-res-pub', Math.round(ref + ochPub).toLocaleString() + ' / ' + ochPub + ' ft');
+            if (isNaN(ma)) L.push(['warn', 'Missed approach OCA not entered — the OCA/H must also provide missed approach clearance.', 'I-4-5 §5.4.3.1']);
+            showLimits('oca-res-pub', L);
         }
 
         // =========================================================
@@ -9569,7 +9777,7 @@
                 if (id === 'tab-gradient') redrawGradients();
                 if (id === 'tab-reversal') { calcPT(); calcBaseTurn(); calcRacetrack(); }
                 if (id === 'tab-vnav-papi') calcVnavPapi();
-                if (id === 'tab-circ') { calcCircling(); calcVss(); }
+                if (id === 'tab-circ') { calcCircling(); calcVss(); calcNpaOca(); }
                 if (id === 'tab-holdb') { calcHoldArea(); calcRnpHold(); }
                 if (id === 'tab-tol') calcIfix();
                 if (id === 'tab-pt') { ptRenderReference(); calcPathTerm(); calcMsd(); }
