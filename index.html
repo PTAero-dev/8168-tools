@@ -4354,6 +4354,131 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- 10-E NPA MISSED APPROACH -->
+                <div class="card" id="card-ma">
+                    <div class="card-header minimizable" onclick="toggleCard(this)">
+                        <div class="card-heading"><span class="card-tag">10-E</span>
+                            <div class="card-title">Missed Approach · Non-Precision</div>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-reset" onclick="event.stopPropagation(); resetCard('card-ma', ['ma-ad', 'ma-att', 'ma-d', 'ma-thr', 'ma-oca', 'ma-o1-n', 'ma-o1-x', 'ma-o1-e', 'ma-o1-s', 'ma-o2-n', 'ma-o2-x', 'ma-o2-e', 'ma-o2-s', 'ma-o3-n', 'ma-o3-x', 'ma-o3-e', 'ma-o3-s', 'ma-o4-n', 'ma-o4-x', 'ma-o4-e', 'ma-o4-s', 'ma-o5-n', 'ma-o5-x', 'ma-o5-e', 'ma-o5-s'], 'calcMissed');">↺ Reset</button>
+                        </div>
+                    </div>
+                    <div class="card-body split">
+                        <div class="form-grid">
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>Aerodrome Elev (ft)</label>
+                                    <input type="number" id="ma-ad" placeholder="e.g. 1000" oninput="calcMissed()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Category</label>
+                                    <select id="ma-cat" onchange="calcMissed()">
+                                        <option value="C">C</option><option value="D">D</option><option value="E">E</option>
+                                        <option value="B">B</option><option value="A">A</option><option value="H">H</option>
+                                    </select>
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>FAF</label>
+                                    <select id="ma-faf" onchange="calcMissed()"><option value="yes">With FAF</option><option value="no">Without FAF</option></select>
+                                </div>
+                            </div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>MAPt defined by</label>
+                                    <select id="ma-type" onchange="calcMissed()">
+                                        <option value="fix">Facility / fix</option>
+                                        <option value="dist">Distance from the FAF</option>
+                                    </select>
+                                </div>
+                                <div class="vp-input-group" id="ma-att-grp">
+                                    <label>Fix tolerance ± (NM)</label>
+                                    <input type="number" id="ma-att" placeholder="0 = overhead" step="0.01" oninput="calcMissed()">
+                                </div>
+                                <div class="vp-input-group" id="ma-d-grp" style="display:none;">
+                                    <label>FAF → MAPt (NM)</label>
+                                    <input type="number" id="ma-d" placeholder="e.g. 5" step="0.1" oninput="calcMissed()">
+                                </div>
+                            </div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>MAPt before THR (NM)<span class="opt">OPT</span></label>
+                                    <input type="number" id="ma-thr" placeholder="0 = at THR" step="0.1" oninput="calcMissed()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Final descent gradient (%)</label>
+                                    <input type="number" id="ma-grad" value="5.2" step="0.1" oninput="calcMissed()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Final-approach OCA (ft)<span class="opt">OPT</span></label>
+                                    <input type="number" id="ma-oca" placeholder="from 10-C" oninput="calcMissed()">
+                                </div>
+                            </div>
+                            <div class="section-label">Missed approach obstacles · distance from the nominal MAPt (+ beyond) · secondary %</div>
+                            <div class="table-wrap"><table class="qa-table oca-table"><thead><tr><th>Obstacle</th><th>Dist (NM)</th><th>Elev (ft)</th><th>Sec. %</th></tr></thead><tbody>
+                                    <tr><td><input type="text" id="ma-o1-n" placeholder="Obstacle 1" oninput="calcMissed()"></td>
+                                        <td><input type="number" id="ma-o1-x" placeholder="NM" step="0.1" oninput="calcMissed()"></td>
+                                        <td><input type="number" id="ma-o1-e" placeholder="ft" oninput="calcMissed()"></td>
+                                        <td><input type="number" id="ma-o1-s" placeholder="0" oninput="calcMissed()"></td></tr>
+                                    <tr><td><input type="text" id="ma-o2-n" placeholder="Obstacle 2" oninput="calcMissed()"></td>
+                                        <td><input type="number" id="ma-o2-x" placeholder="NM" step="0.1" oninput="calcMissed()"></td>
+                                        <td><input type="number" id="ma-o2-e" placeholder="ft" oninput="calcMissed()"></td>
+                                        <td><input type="number" id="ma-o2-s" placeholder="0" oninput="calcMissed()"></td></tr>
+                                    <tr><td><input type="text" id="ma-o3-n" placeholder="Obstacle 3" oninput="calcMissed()"></td>
+                                        <td><input type="number" id="ma-o3-x" placeholder="NM" step="0.1" oninput="calcMissed()"></td>
+                                        <td><input type="number" id="ma-o3-e" placeholder="ft" oninput="calcMissed()"></td>
+                                        <td><input type="number" id="ma-o3-s" placeholder="0" oninput="calcMissed()"></td></tr>
+                                    <tr><td><input type="text" id="ma-o4-n" placeholder="Obstacle 4" oninput="calcMissed()"></td>
+                                        <td><input type="number" id="ma-o4-x" placeholder="NM" step="0.1" oninput="calcMissed()"></td>
+                                        <td><input type="number" id="ma-o4-e" placeholder="ft" oninput="calcMissed()"></td>
+                                        <td><input type="number" id="ma-o4-s" placeholder="0" oninput="calcMissed()"></td></tr>
+                                    <tr><td><input type="text" id="ma-o5-n" placeholder="Obstacle 5" oninput="calcMissed()"></td>
+                                        <td><input type="number" id="ma-o5-x" placeholder="NM" step="0.1" oninput="calcMissed()"></td>
+                                        <td><input type="number" id="ma-o5-e" placeholder="ft" oninput="calcMissed()"></td>
+                                        <td><input type="number" id="ma-o5-s" placeholder="0" oninput="calcMissed()"></td></tr>
+                            </tbody></table></div>
+                        </div>
+                        <div class="form-grid">
+                            <div class="results-panel flush">
+                                <div class="result-row">
+                                    <span class="result-label">Earliest / latest MAPt</span>
+                                    <span id="ma-res-mapt" class="result-value">---</span>
+                                </div>
+                                <div class="result-row">
+                                    <span class="result-label">d (3 s) · X (15 s)</span>
+                                    <span id="ma-res-dx" class="result-value">---</span>
+                                </div>
+                                <div class="result-row key">
+                                    <span class="result-label">SOC from nominal MAPt</span>
+                                    <span id="ma-res-soc" class="result-value c-cyan">---</span>
+                                </div>
+                                <div class="result-row">
+                                    <span class="result-label">MAPt before THR: lowest OCA (5.2 % path)</span>
+                                    <span id="ma-res-path" class="result-value">---</span>
+                                </div>
+                                <div class="result-row key">
+                                    <span class="result-label">OCA required by the missed approach (2.5 %)</span>
+                                    <span id="ma-res-oca" class="result-value c-warning">---</span>
+                                </div>
+                                <div class="result-row key">
+                                    <span class="result-label">Publish OCA / OCH (↑ 10 ft)</span>
+                                    <span id="ma-res-pub" class="result-value c-success">---</span>
+                                </div>
+                            </div>
+                            <div class="table-wrap"><table class="qa-table"><thead><tr><th>Z</th><th>MA OCA</th><th>OCA / OCH</th></tr></thead><tbody id="ma-grads"></tbody></table></div>
+                            <div class="note">
+                                <div class="note-title">Reference</div>
+                                Doc 8168 Vol II I-4-6. MAPt by a facility / fix: tolerance = fix tolerance (0 overhead) + d, d = 3 s at TAS (AD, ISA + 15) + 10 kt (§6.1.6.2.1); SOC = latest MAPt +
+                                X, X = 15 s (Cat H 5 s) at the same speed (§6.1.6.2.2). MAPt by distance (simplified, below 13 000 ft): earliest / latest = nominal ∓ Z (Table I-4-6-1), SOC =
+                                nominal + X (Table I-4-6-2; Cat A–D only). Initial phase level at the OCA with the final-approach MOC (§6.2.1); from SOC a climb at tan Z = 2.5 % (2–5 %
+                                allowed, the 2.5 % OCA/H is always published) with MOC 98 ft in the primary area, linear to zero in the secondary (§6.2.2); this card applies 98 ft throughout
+                                (the final phase needs 164 ft where it is reached). MAPt before the threshold: OCA/H not below the 5.2 % (or steeper) path at the MAPt (§6.1.5.2).
+                                Turning missed approaches use the turn area on 07-E.
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -4522,6 +4647,7 @@
                                 <li><b>05-A Holding</b> (new): Table II-4-1-2 speeds, ISA+15, ICAO wind, template Table I-4-3-App C-4 (all 33 lines), entry sectors, buffer MOC. Omnidirectional entry area §3.3.3.2.1 (curves 5–8, convex-envelope approximation); template extents checked against Diagram I-4-3-App C-6.</li>
                                 <li><b>05-A VOR/DME holding</b> (new, 2 Nov 2026): §3.3.4 distance parameters (Ds, DL rounding, DLs, d1/d2) and basic area towards / away from the station (convex-envelope approximation; along-radial entry areas not drawn).</li>
                                 <li><b>05-A holding entries</b> (new, 2 Nov 2026): VOR/DME sector 1 DME-arc and sector 2 entry areas (§3.3.4.1.2.6–7), radial-intersection entries (§3.3.3.2.2); VOR/DME DL checked against Diagrams C-13 (35 NM) and C-15 (26 NM). Sector-1 reduction (§3.3.3.3) not built (construction ambiguous).</li>
+                                <li><b>10-E NPA missed approach</b> (new, 2 Nov 2026): d / X (Tables I-4-6-3/-4 checked), Tables I-4-6-1/-2, SOC, 2.5 % surface with MOC 98 ft, OCA gain table for 2.5–5 %, 5.2 % path limit for a MAPt before the threshold.</li>
                                 <li><b>10-D CDFA table</b> (new, 2 Nov 2026): profile heights per II-1-1-App C (checked against Table II-1-1-App C-1b), 1 NM table, DME offset, ROD table.</li>
                                 <li><b>11 MSA &amp; TAA</b> (new, 2 Nov 2026): I-4-8 sectors (+ DME arc subsectors), III-2-4 TAA areas, 5 NM buffer, + 1 000 ft rounded up to 100 ft, single-altitude check.</li>
                                 <li><b>10-C NPA OCA/H</b> (new, 2 Nov 2026): MOC with/without FAF, mountainous increase, secondary-area linear MOC, OCH reference, remote altimeter, Table I-4-5-3 offset limits with the gradient factor, circling lower limit, missed approach, 10-ft rounding.</li>
@@ -5129,6 +5255,15 @@
                 const tas = PANS.tas(ias, adElevFt + 1000, 15), V = tas + 25, R = PANS.rate(V, 20), r = PANS.radius(V, R);
                 return { ias, tas, V, rate: R, r, seg: c.seg, Rthr: 2 * r + c.seg };
             },
+            // ---- NPA missed approach (I-4-6 §6.1.5–6.2) ----
+            finalMaxIas(cat) { return { A: 100, B: 130, C: 160, D: 185, E: 230, H: 90 }[cat]; },          // Table I-4-1-2, final approach max (kt)
+            // §6.1.6.2.1 d: 3 s at TAS (AD elevation, ISA + 15) + 10 kt; §6.1.6.2.2 X: 15 s (Cat H 5 s) at the same speed (NM)
+            maReaction(cat, adElevFt) { return (PANS.tas(PANS.finalMaxIas(cat), adElevFt, 15) + 10) * 3 / 3600; },
+            maTransitional(cat, adElevFt) { return (PANS.tas(PANS.finalMaxIas(cat), adElevFt, 15) + 10) * (cat === 'H' ? 5 : 15) / 3600; },
+            // Tables I-4-6-1 / I-4-6-2 (MAPt by distance from the FAF, simplified method, D in m → m): Z = MAPt tolerance, X = transitional distance
+            maTableZ(cat, Dm) { const k = { A: [0.3897, 1086], B: [0.2984, 1408], C: [0.1907, 1787], D: [0.1562, 1908] }[cat]; return k ? Math.max(2463, k[0] * Dm + k[1]) : NaN; },
+            maTableX(cat, Dm) { const k = { A: [0.0875, 2591, 0.3954, 1604], B: [0.0681, 3352, 0.3246, 1653], C: [0.0567, 3794, 0.2328, 1945], D: [0.0495, 4153, 0.2055, 2073] }[cat];
+                return k ? Math.max(k[0] * Dm + k[1], k[2] * Dm + k[3]) : NaN; },
             // ---- CDFA profile (I-4-9 §9.4.3.5; II-1-1-App C): H = h + 6 076·D·tanθ + 0.8833·D² (ft, NM; curvature term optional) ----
             profileHeight(Dnm, angleDeg, rdhFt, curvature) { return rdhFt + 6076 * Dnm * Math.tan(angleDeg * Math.PI / 180) + (curvature ? 0.8833 * Dnm * Dnm : 0); },
             // ---- MSA (I-4-8) / TAA (III-2-4): highest elevation + 1 000 ft (+ mountainous ≤ 1 000 ft), rounded up to 100 ft ----
@@ -5378,6 +5513,10 @@
             { g: 'Circling', n: 'Cat E radius from threshold R (Doc rounds TAS and r first)', ref: 'Table I-4-7-2 (6.94 NM)', exp: 6.94, tol: 0.03, f: () => PANS.circlingRadius('E', 1000).Rthr },
             { g: 'Circling', n: 'Cat D TAS + 25 kt at 2 000 ft', ref: 'Table I-4-7-2 (242 kt)', exp: 242, tol: 1, f: () => PANS.circlingRadius('D', 1000).V },
             { g: 'Circling', n: 'Cat C MOC / OCH lower limit / visibility', ref: 'Table I-4-7-3 (394 ft, 591 ft, 2.0 NM)', exp: 1, tol: 0, f: () => { const c = PANS.circlingCat('C'); return c.moc === 394 && c.och === 591 && c.vis === 2 ? 1 : 0; } },
+            { g: 'NPA missed app.', n: 'd (3 s) Cat C at 2 000 ft', ref: 'Table I-4-6-3 (0.15 NM)', exp: 0.15, tol: 0.006, f: () => PANS.maReaction('C', 2000) },
+            { g: 'NPA missed app.', n: 'X (15 s) Cat A at 2 000 ft', ref: 'Table I-4-6-4 (0.48 NM)', exp: 0.48, tol: 0.006, f: () => PANS.maTransitional('A', 2000) },
+            { g: 'NPA missed app.', n: 'X (5 s) Cat H at 2 000 ft', ref: 'Table I-4-6-4 (0.15 NM)', exp: 0.15, tol: 0.006, f: () => PANS.maTransitional('H', 2000) },
+            { g: 'NPA missed app.', n: 'Z and X Cat C, D = 10 000 m', ref: 'Tables I-4-6-1 / -2 (3 694 m, 4 361 m)', exp: 1, tol: 0, f: () => Math.abs(PANS.maTableZ('C', 10000) - 3694) < 0.5 && Math.abs(PANS.maTableX('C', 10000) - 4361) < 0.5 ? 1 : 0 },
             { g: 'CDFA', n: 'Profile height 2.5°, 1 NM, RDH 49 ft, with curvature', ref: 'Table II-1-1-App C-1b (315 ft)', exp: 315, tol: 0.5, f: () => PANS.profileHeight(1, 2.5, 49, true) },
             { g: 'CDFA', n: 'Profile height 2.5°, 10 NM, RDH 49 ft, with curvature', ref: 'Table II-1-1-App C-1b (2 790 ft)', exp: 2790, tol: 1, f: () => PANS.profileHeight(10, 2.5, 49, true) },
             { g: 'MSA / TAA', n: 'Highest 2 345 ft → 3 400 ft; 2 400 ft → 3 400 ft', ref: 'I-4-8 §8.1.1, III-2-4 §4.1.4', exp: 1, tol: 0, f: () => PANS.msaAlt(2345) === 3400 && PANS.msaAlt(2400) === 3400 ? 1 : 0 },
@@ -5544,6 +5683,8 @@
             'oca-res-obs': ['OCA = max(obstacle elevation + MOC × (1 − secondary position)); OCH = OCA − reference elevation', 'I-4-5 §5.4.3.1, I-2-1 §1.3'],
             'oca-res-pub': ['max(obstacle OCH + remote altimeter, offset lower limit × gradient factor, circling (θ > 30° / G > 6.5 %), missed approach), rounded up to 10 ft', 'I-4-5 §5.4.3–5.4.5, §5.5.5'],
             'cdfa-res-faf': ['H = RDH + 6 076·D·tanθ (+ 0.8833·D²), rounded', 'II-1-1-App C; I-4-9 §9.4.3.5'],
+            'ma-res-soc': ['fix MAPt: SOC = fix tolerance + d (3 s) + X (15 s) at TAS + 10 kt; distance MAPt: X from Table I-4-6-2', 'I-4-6 §6.1.6'],
+            'ma-res-oca': ['OCA ≥ obstacle + 98 ft × (1 − sec.) − (x − x_SOC)·tan Z  (before SOC: + final-approach MOC)', 'I-4-6 §6.2.1–6.2.2'],
             'msd-res-tas': ['TAS at ISA + ΔISA;  r at the phase bank or 3°/s, whichever is less', 'Vol II III-2-1 §1.4']
         };
         RESULT_INFO['res-ta-before'] = RESULT_INFO['turn-ta-before'];
@@ -8061,7 +8202,7 @@
             if (lim) document.getElementById('btp-ob-unit').textContent = lim.checked ? 'min' : 'DME';
             run('toggleVnpIls');
             ['calcTAS', 'calcTempCorr', 'calcTurn', 'calcPT', 'calcBaseTurn', 'calcBaseTurnPhi', 'drawTurnViz', 'calcHoldB',
-                'calcPBN', 'calcTolerance', 'calcVEB', 'calcDescent', 'calcEqObs', 'calcReaction', 'calcVnavPapi', 'calcHoldArea', 'calcRnpHold', 'calcRacetrack', 'calcTurnArea', 'calcCircling', 'calcVss', 'calcNpaOca', 'calcCdfa', 'calcMsa', 'calcIfix', 'calcPathTerm', 'calcMsd', 'calcDeparture'].forEach((f) => run(f));
+                'calcPBN', 'calcTolerance', 'calcVEB', 'calcDescent', 'calcEqObs', 'calcReaction', 'calcVnavPapi', 'calcHoldArea', 'calcRnpHold', 'calcRacetrack', 'calcTurnArea', 'calcCircling', 'calcVss', 'calcNpaOca', 'calcCdfa', 'calcMissed', 'calcMsa', 'calcIfix', 'calcPathTerm', 'calcMsd', 'calcDeparture'].forEach((f) => run(f));
             gradLegIds().forEach((id) => run('calculateGradient', id));
         }
 
@@ -9272,6 +9413,71 @@
         }
 
         // =========================================================
+        // 10-E MISSED APPROACH — NON-PRECISION (I-4-6)
+        // x = distance from the nominal MAPt along track (NM, + beyond)
+        // =========================================================
+        function calcMissed() {
+            const g = (id) => parseFloat(document.getElementById(id).value);
+            const set = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+            const ad = g('ma-ad');
+            if (isNaN(ad)) return;
+            const cat = document.getElementById('ma-cat').value, type = document.getElementById('ma-type').value;
+            document.getElementById('ma-att-grp').style.display = type === 'fix' ? '' : 'none';
+            document.getElementById('ma-d-grp').style.display = type === 'dist' ? '' : 'none';
+            const d = PANS.maReaction(cat, ad), X = PANS.maTransitional(cat, ad);
+            let early, late, soc, note = '';
+            if (type === 'fix') {
+                const att = Math.max(0, g('ma-att') || 0);
+                early = -att; late = att + d; soc = late + X;
+            } else {
+                const D = g('ma-d');
+                if (!(D > 0)) { set('ma-res-soc', 'enter FAF → MAPt'); return; }
+                const Dm = D * 1852, Z = PANS.maTableZ(cat, Dm) / 1852, Xt = PANS.maTableX(cat, Dm) / 1852;
+                if (isNaN(Z)) { set('ma-res-soc', 'Tables I-4-6-1/2 cover Cat A–D only — use the refined method'); return; }
+                early = -Z; late = Z; soc = Xt; note = ' (Table I-4-6-2)';
+            }
+            const f2 = (n) => n.toFixed(2);
+            set('ma-res-mapt', f2(early) + ' / +' + f2(late) + ' NM');
+            set('ma-res-dx', f2(d) + ' · ' + f2(X) + ' NM');
+            set('ma-res-soc', '+' + f2(soc) + ' NM' + note);
+            const mocF = PANS.npaMoc(document.getElementById('ma-faf').value === 'yes');
+            const obs = [];
+            for (let i = 1; i <= 5; i++) {
+                const x = g('ma-o' + i + '-x'), e = g('ma-o' + i + '-e');
+                if (isNaN(x) || isNaN(e)) continue;
+                obs.push({ n: document.getElementById('ma-o' + i + '-n').value || 'Obstacle ' + i, x, e, sp: Math.min(100, Math.max(0, g('ma-o' + i + '-s') || 0)) });
+            }
+            const ocaFor = (Zpct) => {
+                let req = -Infinity, ctl = null;
+                obs.forEach((o) => {
+                    let r;
+                    if (o.x < early) return;                                                  // before the missed approach area
+                    if (o.x <= soc) r = o.e + mocF * (1 - o.sp / 100);                        // initial phase: final-approach MOC, level flight
+                    else r = o.e + 98 * (1 - o.sp / 100) - (o.x - soc) * 6076.12 * Zpct / 100;  // intermediate phase: MOC 98 ft, climb from SOC
+                    if (r > req) { req = r; ctl = o; }
+                });
+                return { req, ctl };
+            };
+            const thrNm = Math.max(0, g('ma-thr') || 0), grad = g('ma-grad') > 0 ? g('ma-grad') : 5.2;
+            const pathOca = thrNm > 0 ? ad + 50 + thrNm * 6076.12 * Math.max(5.2, grad) / 100 : NaN;
+            set('ma-res-path', isNaN(pathOca) ? 'MAPt at THR' : Math.round(pathOca).toLocaleString() + ' ft');
+            const fin = g('ma-oca');
+            const pub = (ocaMa) => { const o = Math.max(isNaN(fin) ? -Infinity : fin, ocaMa, isNaN(pathOca) ? -Infinity : pathOca, ad); const h = PANS.roundUp10(o - ad); return [ad + h, h]; };
+            const r25 = ocaFor(2.5);
+            set('ma-res-oca', r25.ctl ? Math.round(r25.req).toLocaleString() + ' ft (' + r25.ctl.n.replace(/[<>&]/g, '') + ')' : 'enter obstacles');
+            const p25 = pub(r25.ctl ? r25.req : -Infinity);
+            set('ma-res-pub', p25[0].toLocaleString() + ' / ' + p25[1] + ' ft');
+            document.getElementById('ma-grads').innerHTML = [2.5, 3, 4, 5].map((z) => {
+                const r = ocaFor(z), pp = pub(r.ctl ? r.req : -Infinity);
+                return '<tr><td class="num">' + z.toFixed(1) + ' %' + (z === 2.5 ? ' *' : '') + '</td><td class="num">' + (r.ctl ? Math.round(r.req).toLocaleString() : '—') + '</td><td class="num">' + pp[0].toLocaleString() + ' / ' + pp[1] + '</td></tr>';
+            }).join('');
+            const L = [];
+            if (isNaN(fin)) L.push(['warn', 'Final-approach OCA not entered — the published OCA/H is the higher of final approach and missed approach.', 'I-4-5 §5.4.3.1']);
+            L.push(['ok', 'Publish the 2.5 % OCA/H; steeper gradients only as alternatives with their own OCA/H.', 'I-4-6 §6.2.2.3.2']);
+            showLimits('ma-res-pub', L);
+        }
+
+        // =========================================================
         // 02-E RACETRACK PROTECTED AREA (I-4-3 §3.4, §3.6–3.8; App C §3.3) — holding template engine
         // =========================================================
         function calcRacetrack() {
@@ -10204,7 +10410,7 @@
                 if (id === 'tab-gradient') redrawGradients();
                 if (id === 'tab-reversal') { calcPT(); calcBaseTurn(); calcRacetrack(); }
                 if (id === 'tab-vnav-papi') calcVnavPapi();
-                if (id === 'tab-circ') { calcCircling(); calcVss(); calcNpaOca(); calcCdfa(); }
+                if (id === 'tab-circ') { calcCircling(); calcVss(); calcNpaOca(); calcCdfa(); calcMissed(); }
                 if (id === 'tab-msa') calcMsa();
                 if (id === 'tab-holdb') { calcHoldArea(); calcRnpHold(); }
                 if (id === 'tab-tol') calcIfix();
