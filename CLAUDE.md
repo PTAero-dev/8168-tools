@@ -70,6 +70,7 @@ To add a sheet: add a `.nav-item` to the right group — both navs pick it up.
 - `RESULT INFO · RESULT UNITS` — `RESULT_INFO = { resultId: [formula, Doc ref] }` → `attachResultInfo()` adds an ⓘ button to the row label and a hidden `.info-pop` row. Add an entry for every new key result.
   Units switch (project bar, `setResultUnits('ft'|'si')`, saved in `localStorage['8168tools:units']`): a MutationObserver rewrites `.result-value`/`.stat-value` text (ft→m, NM→km, kt→km/h, ft/min→m/s, ft/NM→m/km); the original stays in `data-orig`.
   Inputs and drawings stay ft/NM/kt. **Code that reads a result back must use `resultText(id)`**, never `.textContent`.
+- Long notes fold to their title (`decorateNotes()`: `.note` with > 160 characters, not `.warn`/`.bad`; print shows them open).
 - `CARD TOOLS` — `decorateCards()`: "⌫ Clear" (inputs only) on cards with drawings; Reset also restores result placeholders (`data-init`) and clears drawings.
 - Dynamic lists are mirrored to hidden inputs so autosave captures them: `#pt-legs-json`, `#msd-json`, `#dep-json`.
 - Install/PWA script is a second `<script>` block at the end of `<body>`.

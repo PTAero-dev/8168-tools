@@ -926,6 +926,13 @@
         .oca-table input { width: 100%; min-width: 0; padding: 6px 8px; font-size: 0.8rem; }
         .oca-table td { padding: 3px 4px; }
         .oca-table th { font-size: 0.62rem; }
+        /* foldable long notes */
+        .note-fold > .note-title { cursor: pointer; user-select: none; display: flex; align-items: center; gap: 8px; margin-bottom: 0; }
+        .note-fold > .note-title::after { content: '▾'; margin-left: auto; font-size: 0.8rem; color: var(--text-muted); transition: transform 0.15s; }
+        .note-fold.folded > .note-title::after { transform: rotate(-90deg); }
+        .note-fold > .note-body { margin-top: 4px; }
+        .note-fold.folded > .note-body { display: none; }
+        .note-fold.folded { padding-top: 7px; padding-bottom: 7px; }
         /* limit warnings (Doc limits) */
         .limit-box { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line-soft); display: grid; gap: 4px; }
         .limit-box[hidden] { display: none; }
@@ -1083,6 +1090,8 @@
                 background: #ffffff !important; background-image: none !important;
             }
             * { animation: none !important; transition: none !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .note-fold.folded > .note-body { display: block !important; }
+            .note-fold > .note-title::after { display: none; }
             aside, .theme-fab, .project-bar, .viz-dl, .info-btn, .card-actions, .btn-add, .install-help, .legend + .legend, .mobile-bar, .card-index { display: none !important; }
             main { overflow: visible; padding: 0; }
             .tab-content { max-width: none; }
@@ -9439,8 +9448,30 @@
             });
         }
 
+        // Long notes (Reference, How to read …) fold to their title; tap the title to open. Warnings stay open.
+        function decorateNotes(root) {
+            (root || document).querySelectorAll('main .note').forEach((note) => {
+                if (note.dataset.fold || note.classList.contains('warn') || note.classList.contains('bad')) return;
+                const title = note.querySelector(':scope > .note-title');
+                if (!title || note.textContent.length - title.textContent.length < 160) return;
+                note.dataset.fold = '1';
+                const body = document.createElement('div');
+                body.className = 'note-body';
+                while (title.nextSibling) body.appendChild(title.nextSibling);
+                note.appendChild(body);
+                note.classList.add('note-fold', 'folded');
+                title.setAttribute('role', 'button');
+                title.setAttribute('tabindex', '0');
+                title.setAttribute('aria-expanded', 'false');
+                const toggle = () => { const f = note.classList.toggle('folded'); title.setAttribute('aria-expanded', String(!f)); };
+                title.addEventListener('click', toggle);
+                title.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+            });
+        }
+
         function decorateCards(root) {
             decorateViz(root);
+            decorateNotes(root);
             snapshotResultDefaults(root);
             (root || document).querySelectorAll('main .card').forEach((card) => {
                 if (card.dataset.tools) return;
