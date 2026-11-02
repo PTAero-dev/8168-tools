@@ -15,7 +15,7 @@ Guide for Claude Code sessions working on this repo. Read this first; details ar
 3. **Never commit the ICAO PDFs** (`*.pdf` is git-ignored; they are ICAO copyright). Don't delete them either.
 4. **Every formula must trace to a Doc paragraph** and live in the `PANS` object with a comment reference.
    Add a self-test case to `PANS_TESTS` for every new or changed formula, using Doc tables / worked examples where possible.
-   The QA sheet must stay 100 % passing (currently **127/127**).
+   The QA sheet must stay 100 % passing (currently **130/130**).
 5. **Verify against the PDFs**, not memory. If something can't be verified, say so in the UI and the QA audit card.
 6. The user tests on an **Android phone** and sends screenshots. Every change must work at ~360 px width with no horizontal overflow.
 7. Keep the **Blueprint theme** (CSS variables; drawings use `bpColors()` — never hard-code colours) and the light "Whiteprint" theme.
@@ -37,7 +37,7 @@ Guide for Claude Code sessions working on this repo. Read this first; details ar
 |---|---|---|---|
 | 01 | Speed & Temp Correction | `tas` | 01-A TAS, 01-B cold temp (Vol III) |
 | 02 | Turn Calculator | `turn` | 02-A turn |
-| 02R | Reversal & Racetrack | `reversal` | 02-B procedure turn (to-scale), 02-C reversal/racetrack template (Table I-4-3-App C-5), 02-D base turn φ + overshoot analysis |
+| 02R | Reversal & Racetrack | `reversal` | 02-B procedure turn (to-scale), 02-C reversal/racetrack template (Table I-4-3-App C-5), 02-D base turn φ + overshoot analysis, 02-E racetrack protected area (template engine, 2.5 NM secondary, Table I-4-3-1) |
 | 03 | Turn Anticipation | `turnviz` | 03-A intercept geometry |
 | 04 | IFP Gradient | `gradient` | legs (dynamic, ids `grad`, `grad2`…) |
 | 05 | Holding | `holdb` | 05-A holding template & area (Table I-4-3-App C-4), 05-C RNP holding area (III-3-7-App B), 05-B ATC point B on ARC |
@@ -114,7 +114,6 @@ Card in `tab-desc` (sheet 07 renamed "Departure & Missed Approach"): `PANS.depSt
 
 ### Backlog (agreed with the user, in rough priority)
 - (Holding done. Sector-1 area reduction §3.3.3.3 deliberately left out — user decision 2 Nov 2026: the Doc construction is ambiguous; the card says so.)
-- Racetrack protected area on sheet 02R from the same template (primary + 2.5 NM secondary, §3.3.1.3).
 - Turn area construction for departure / missed approach turns (wind spiral, turn at altitude / at a TP).
 - Circling area (radii by category, Table I-4-7-1) and visual segment surface check.
 - OCA/H helper for non-precision approaches (MOC per segment + controlling obstacle).

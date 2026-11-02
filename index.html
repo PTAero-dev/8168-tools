@@ -2292,6 +2292,149 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- 02-E RACETRACK PROTECTED AREA -->
+                <div class="card" id="card-race">
+                    <div class="card-header minimizable" onclick="toggleCard(this)">
+                        <div class="card-heading"><span class="card-tag">02-E</span>
+                            <div class="card-title">Racetrack Protected Area</div>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-reset"
+                                onclick="event.stopPropagation(); resetCard('card-race', ['race-alt', 'race-ias', 'race-fac-elev', 'race-att', 'race-xtt', 'race-obs'], 'calcRacetrack');">↺ Reset</button>
+                        </div>
+                    </div>
+                    <div class="card-body split">
+                        <div class="form-grid">
+                            <div class="section-label">Area parameters · I-4-3 §3.6.2</div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>Altitude (ft)</label>
+                                    <input type="number" id="race-alt" placeholder="e.g. 5000" oninput="calcRacetrack()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Category</label>
+                                    <select id="race-cat" onchange="calcRacetrack()">
+                                        <option value="D">D / E (250 kt)</option>
+                                        <option value="C">C (240 kt)</option>
+                                        <option value="B">B (140 kt)</option>
+                                        <option value="A">A (110 kt)</option>
+                                        <option value="H">H (100 / 110 kt)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>IAS (kt)<span class="opt">OPT</span></label>
+                                    <input type="number" id="race-ias" placeholder="Auto" oninput="calcRacetrack()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Outbound (min)</label>
+                                    <select id="race-time" onchange="calcRacetrack()">
+                                        <option value="1">1</option><option value="1.5">1.5</option><option value="2">2</option>
+                                        <option value="2.5">2.5</option><option value="3">3</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>Turns</label>
+                                    <select id="race-dir" onchange="calcRacetrack()">
+                                        <option value="right">Right (standard)</option>
+                                        <option value="left">Left</option>
+                                    </select>
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Inbound Track (°)</label>
+                                    <input type="number" id="race-crs" value="360" oninput="calcRacetrack()">
+                                </div>
+                            </div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>Fix</label>
+                                    <select id="race-fix" onchange="calcRacetrack()">
+                                        <option value="vor">VOR overhead (cone 50°)</option>
+                                        <option value="ndb">NDB overhead (cone 40°)</option>
+                                        <option value="custom">Fix area ATT × XTT</option>
+                                        <option value="none">No fix tolerance</option>
+                                    </select>
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Facility Elev (ft)<span class="opt">OPT</span></label>
+                                    <input type="number" id="race-fac-elev" placeholder="0" oninput="calcRacetrack()">
+                                </div>
+                            </div>
+                            <div class="vp-row" id="race-custom-grp" style="display:none;">
+                                <div class="vp-input-group">
+                                    <label>Along-track ± (NM)</label>
+                                    <input type="number" id="race-att" placeholder="e.g. 1.2" step="0.01" oninput="calcRacetrack()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Cross-track ± (NM)</label>
+                                    <input type="number" id="race-xtt" placeholder="e.g. 0.8" step="0.01" oninput="calcRacetrack()">
+                                </div>
+                            </div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>Entry Area</label>
+                                    <select id="race-entry" onchange="calcRacetrack()">
+                                        <option value="omni">Omnidirectional (§3.3.3.2.1)</option>
+                                        <option value="off">Restricted entry (basic area only)</option>
+                                    </select>
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Highest Obstacle, primary (ft)<span class="opt">OPT</span></label>
+                                    <input type="number" id="race-obs" placeholder="elevation" oninput="calcRacetrack()">
+                                </div>
+                            </div>
+
+                            <div class="results-panel">
+                                <div class="result-row">
+                                    <span class="result-label">TAS (ISA+15) · R · r</span>
+                                    <span id="race-res-tas" class="result-value">---</span>
+                                </div>
+                                <div class="result-row">
+                                    <span class="result-label">Wind · outbound leg</span>
+                                    <span id="race-res-leg" class="result-value">---</span>
+                                </div>
+                                <div class="result-row key">
+                                    <span class="result-label">Primary area (L × W)</span>
+                                    <span id="race-res-area" class="result-value c-warning">---</span>
+                                </div>
+                                <div class="result-row">
+                                    <span class="result-label">With secondary 2.5 NM</span>
+                                    <span id="race-res-sec" class="result-value">---</span>
+                                </div>
+                                <div class="result-row key">
+                                    <span class="result-label">Max descent outbound / inbound</span>
+                                    <span id="race-res-desc" class="result-value c-cyan">---</span>
+                                </div>
+                                <div class="result-row">
+                                    <span class="result-label">Min descent inbound</span>
+                                    <span id="race-res-descmin" class="result-value">---</span>
+                                </div>
+                                <div class="result-row key">
+                                    <span class="result-label">Minimum altitude (primary MOC 984 ft)</span>
+                                    <span id="race-res-moca" class="result-value c-success">---</span>
+                                </div>
+                            </div>
+
+                            <div class="note">
+                                <div class="note-title">Reference</div>
+                                Doc 8168 Vol II I-4-3 §3.4 (racetrack), §3.6.2 (ISA+15, 2h + 47 kt wind, 25° bank ≤ 3°/s, highest category IAS of Table I-4-1-2),
+                                §3.7 / Table I-4-3-1 (descent per minute of nominal outbound time, no descent in turns), §3.8 (MOC 984 ft primary, secondary 984 ft → 0)
+                                and I-4-3-App C §3.3 (template swept round the fix area, omnidirectional entry, secondary area 2.5 NM). Same template engine as 05-A,
+                                so the same approximations apply (convex envelope of the template construction).
+                            </div>
+                        </div>
+
+                        <div class="viz">
+                            <span class="viz-label">Plan view · to scale</span>
+                            <button class="viz-dl" onclick="exportViz(this)" data-name="racetrack-area" title="Download high-resolution PNG">⤓ PNG</button>
+                            <canvas id="raceVizCanvas" width="600" height="540"></canvas>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -3693,6 +3836,7 @@
                                 <li><b>05-A Holding</b> (new): Table II-4-1-2 speeds, ISA+15, ICAO wind, template Table I-4-3-App C-4 (all 33 lines), entry sectors, buffer MOC. Omnidirectional entry area §3.3.3.2.1 (curves 5–8, convex-envelope approximation); template extents checked against Diagram I-4-3-App C-6.</li>
                                 <li><b>05-A VOR/DME holding</b> (new, 2 Nov 2026): §3.3.4 distance parameters (Ds, DL rounding, DLs, d1/d2) and basic area towards / away from the station (convex-envelope approximation; along-radial entry areas not drawn).</li>
                                 <li><b>05-A holding entries</b> (new, 2 Nov 2026): VOR/DME sector 1 DME-arc and sector 2 entry areas (§3.3.4.1.2.6–7), radial-intersection entries (§3.3.3.2.2); VOR/DME DL checked against Diagrams C-13 (35 NM) and C-15 (26 NM). Sector-1 reduction (§3.3.3.3) not built (construction ambiguous).</li>
+                                <li><b>02-E Racetrack area</b> (new, 2 Nov 2026): §3.6.2 parameters, template engine of 05-A, 2.5 NM secondary, Table I-4-3-1 descents (Doc example §3.7.1 checked), MOC 984 ft.</li>
                                 <li><b>05-C RNP holding</b> (new, 2 Nov 2026): III-3-7-App B d2, area (d3 / 1.414·d3), buffer; d4 formula flagged (printed formula inconsistent with Figures B-1/B-2).</li>
                                 <li><b>08 Baro-VNAV effective VPA</b> (2 Nov 2026): replaced the temperature-ratio approximation by III-3-4-App A §1.3 (ESDU 770221 correction with hFAP = FAF height above THR) and §4.3.4.2.5; checked against Tables III-3-4-App A-4/A-5 and III-3-4-1. Adds the §4.7.3 c)/d) temperatures.</li>
                                 <li><b>Limit warnings</b> (new, 2 Nov 2026): reversal max IAS Table I-4-1-2, outbound 1–3 min I-4-3 §3.4.5.1/§3.5.5, bank ≤ 25° Table I-2-3-1, descent gradients I-4-3 §3.3.5 / I-4-4 §4.3.3.2 / I-4-5 §5.3.1, Baro-VNAV VPA 2.5°–3.5° III-3-4 §4.2.1, holding speed/timing II-4-1. Shown under the results of 02-A, 02-B, 02-C, 02-D, 04 legs, 05-A, 07-A, 08.</li>
@@ -4253,6 +4397,14 @@
                 const DL = toward ? (frac < cut ? fl : fl + 1) : (frac > cut ? fl + 1 : fl);
                 return { Ds, DLraw, DL, DLs: Math.sqrt(DL * DL - k), d1: PANS.dmeTol(D), d2: PANS.dmeTol(DL) };
             },
+            // ---- Racetrack (I-4-3 §3.4, §3.6–3.8) ----
+            // Table I-4-3-1: maximum / minimum descent per minute of nominal outbound time (ft); null = N/A
+            racetrackDescent(cat) {
+                const ab = cat === 'A' || cat === 'B', h = cat === 'H';
+                return { outMax: ab ? 804 : 1197, inMax: ab ? 656 : (h ? 755 : 1000), inMin: ab ? 394 : (h ? null : 591) };
+            },
+            // I-4-3-App C §3.3.1.3: secondary area 2.5 NM around the racetrack basic area
+            racetrackSecondary: 2.5,
             // ---- RNP holding (Vol II III-3-7-App B) ----
             // §1.2.1: d2 = 2·(V + W) / (20·π·R); V = TAS at ISA+15, W = max wind (tail wind through the turn), R at 23° (FL < 245) or 15° bank
             rnpHoldBank(hFt) { return hFt < 24500 ? 23 : 15; },
@@ -4457,6 +4609,9 @@
             { g: 'VOR/DME holding', n: 'Doc example away: D 30 NM, 14 000 ft, 220 kt, 1 min → DL 26 NM', ref: 'Diagram I-4-3-App C-15', exp: 26, tol: 0, f: () => { const tp = PANS.holdingTemplate(PANS.tas(220, 14000, 15), PANS.wind(14000), 1); return PANS.vorDmeParams(30, tp.v * tp.t, tp.r, 14000, false).DL; } },
             { g: 'VOR/DME holding', n: 'Basic area extent, holding side (Doc example towards)', ref: 'Diagram I-4-3-App C-13 (scaled ≈ 12.4 NM incl. entries)', exp: 12.4, tol: 0.6, f: () => { const tp = PANS.holdingTemplate(PANS.tas(220, 14000, 15), PANS.wind(14000), 1), geo = holdingTemplateGeometry(tp), P = PANS.vorDmeParams(30, tp.v * tp.t, tp.r, 14000, true), a = holdingVorDmeArea(tp, geo, P, true, 5.2); return Math.max(...a.area.map((q) => q[0])); } },
             { g: 'VOR/DME holding', n: 'Entry radial RE: angle to RP for the Doc example towards', ref: 'Diagram I-4-3-App C-14 (8°)', exp: 8, tol: 0, f: () => { const tp = PANS.holdingTemplate(PANS.tas(220, 14000, 15), PANS.wind(14000), 1), geo = holdingTemplateGeometry(tp), P = PANS.vorDmeParams(30, tp.v * tp.t, tp.r, 14000, true); return holdingVorDmeArea(tp, geo, P, true, 5.2, true).RE; } },
+            { g: 'Racetrack', n: 'Doc example: reversal 2.5 min Cat A/B, max descent outbound', ref: 'I-4-3 §3.7.1 (2 010 ft)', exp: 2010, tol: 0, f: () => PANS.racetrackDescent('A').outMax * 2.5 },
+            { g: 'Racetrack', n: 'Doc example: max descent inbound 2.5 min Cat A/B', ref: 'I-4-3 §3.7.1 (1 638 ft; 656 ft/min table value)', exp: 1638, tol: 3, f: () => PANS.racetrackDescent('B').inMax * 2.5 },
+            { g: 'Racetrack', n: 'Inbound max Cat H / min Cat C (ft per min)', ref: 'Table I-4-3-1', exp: 1, tol: 0, f: () => (PANS.racetrackDescent('H').inMax === 755 && PANS.racetrackDescent('H').inMin === null && PANS.racetrackDescent('C').inMin === 591) ? 1 : 0 },
             { g: 'RNP holding', n: 'Bank 23° below FL245, 15° above', ref: 'III-3-7-App B §1.2.1', exp: 1, tol: 0, f: () => (PANS.rnpHoldBank(20000) === 23 && PANS.rnpHoldBank(25000) === 15) ? 1 : 0 },
             { g: 'RNP holding', n: 'd2 = 2(V+W)/(20πR): V 300, W 80, R 1.5°/s', ref: 'III-3-7-App B §1.2.1', exp: 2 * 380 / (20 * Math.PI * 1.5), tol: 1e-9, f: () => PANS.rnpHoldD2(300, 80, 1.5) },
             { g: 'RNP holding', n: 'Buffer width RNP 1: 5 NM; RNP 4: 6 NM; Cat H RNP 1: 3 NM', ref: 'III-3-7-App B §1.4.2', exp: 1, tol: 0, f: () => (PANS.rnpHoldBuffer(1, false) === 5 && PANS.rnpHoldBuffer(4, false) === 6 && PANS.rnpHoldBuffer(1, true) === 3) ? 1 : 0 },
@@ -4594,6 +4749,10 @@
             'rnph-res-d4': ['d4 = d2·(1 − sin 20°) / (2·cos 20°)  (see note: printed formula not consistent with the figures)', 'III-3-7-App B §1.3.1'],
             'rnph-res-area': ['d3 around straight segments, 1.414·d3 around the turns, + d4 sector 4 limit', 'III-3-7-App B §1.4.1'],
             'rnph-res-buf': ['greater of RNP + 2.0 NM and 5.0 NM (Cat H 2.0 NM)', 'III-3-7-App B §1.4.2'],
+            'race-res-area': ['template (Table I-4-3-App C-4) swept round the fix area + omnidirectional entry', 'I-4-3-App C §3.3.3'],
+            'race-res-sec': ['primary area + 2.5 NM', 'I-4-3-App C §3.3.1.3'],
+            'race-res-desc': ['max descent = Table I-4-3-1 rate × nominal outbound time (no descent in turns)', 'I-4-3 §3.7, Table I-4-3-1'],
+            'race-res-moca': ['highest obstacle in the primary area + 984 ft, rounded up to 100 ft', 'I-4-3 §3.8'],
             'msd-res-tas': ['TAS at ISA + ΔISA;  r at the phase bank or 3°/s, whichever is less', 'Vol II III-2-1 §1.4']
         };
         RESULT_INFO['res-ta-before'] = RESULT_INFO['turn-ta-before'];
@@ -6892,6 +7051,7 @@
             if (typeof calcVnavPapi === 'function') calcVnavPapi();
             if (typeof calcHoldArea === 'function') calcHoldArea();
             if (typeof calcRnpHold === 'function') calcRnpHold();
+            if (typeof calcRacetrack === 'function') calcRacetrack();
             if (typeof calcIfix === 'function') calcIfix();
             if (typeof calcDeparture === 'function') calcDeparture();
             if (typeof calcMsd === 'function') calcMsd();
@@ -7092,7 +7252,7 @@
             if (lim) document.getElementById('btp-ob-unit').textContent = lim.checked ? 'min' : 'DME';
             run('toggleVnpIls');
             ['calcTAS', 'calcTempCorr', 'calcTurn', 'calcPT', 'calcBaseTurn', 'calcBaseTurnPhi', 'drawTurnViz', 'calcHoldB',
-                'calcPBN', 'calcTolerance', 'calcVEB', 'calcDescent', 'calcEqObs', 'calcReaction', 'calcVnavPapi', 'calcHoldArea', 'calcIfix', 'calcPathTerm', 'calcMsd', 'calcDeparture'].forEach((f) => run(f));
+                'calcPBN', 'calcTolerance', 'calcVEB', 'calcDescent', 'calcEqObs', 'calcReaction', 'calcVnavPapi', 'calcHoldArea', 'calcRnpHold', 'calcRacetrack', 'calcIfix', 'calcPathTerm', 'calcMsd', 'calcDeparture'].forEach((f) => run(f));
             gradLegIds().forEach((id) => run('calculateGradient', id));
         }
 
@@ -7658,7 +7818,7 @@
         }
 
         function drawHoldViz(o) {
-            const canvas = document.getElementById('holdVizCanvas');
+            const canvas = document.getElementById(o.canvasId || 'holdVizCanvas');
             if (!canvas) return;
             const { ctx, w, h } = setupCanvas(canvas, 0.9, 620, 320);
             const C = bpColors();
@@ -7733,8 +7893,54 @@
             cvFix(ctx, C, V.X(0), V.Y(0), 'FIX');
             cvLabel(ctx, C, '▭ basic area', 10, 34, { align: 'left', size: 9, box: false, color: C.warning });
             if (o.entry) cvLabel(ctx, C, '▭ basic + entry area (curves ' + o.entry.curves.map((c) => c[1]).join(', ') + ')', 10, 48, { align: 'left', size: 9, box: false, color: C.violet });
-            cvLabel(ctx, C, '┄ template · ┄ 5 NM buffer · S1–S3', 10, o.entry ? 62 : 48, { align: 'left', size: 9, box: false, color: C.muted });
+            cvLabel(ctx, C, '┄ template · ┄ ' + (o.bufLabel || '5 NM buffer') + ' · S1–S3', 10, o.entry ? 62 : 48, { align: 'left', size: 9, box: false, color: C.muted });
             cvFooter(ctx, C, V, w, h, String(Math.round(o.inbound)).padStart(3, '0') + '° inbound · ' + (o.left ? 'left' : 'right') + ' turns · TAS ' + Math.round(o.V) + ' kt · w ' + Math.round(o.wind) + ' kt');
+        }
+
+        // =========================================================
+        // 02-E RACETRACK PROTECTED AREA (I-4-3 §3.4, §3.6–3.8; App C §3.3) — holding template engine
+        // =========================================================
+        function calcRacetrack() {
+            const g = (id) => parseFloat(document.getElementById(id).value);
+            const set = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+            const alt = g('race-alt');
+            if (isNaN(alt)) return;
+            const cat = document.getElementById('race-cat').value;
+            const autoIas = PANS.reversalMaxIas(cat, alt);
+            document.getElementById('race-ias').placeholder = 'Auto ' + autoIas;
+            const ias = isNaN(g('race-ias')) ? autoIas : g('race-ias');
+            const T = parseFloat(document.getElementById('race-time').value);
+            const left = document.getElementById('race-dir').value === 'left';
+            const inbound = isNaN(g('race-crs')) ? 360 : g('race-crs');
+            const V = PANS.reversalTas(ias, alt), wind = PANS.wind(alt);
+            const tp = PANS.holdingTemplate(V, wind, T);
+            const geo = holdingTemplateGeometry(tp);
+            const fixType = document.getElementById('race-fix').value;
+            document.getElementById('race-custom-grp').style.display = fixType === 'custom' ? 'flex' : 'none';
+            const fa = holdingFixArea(fixType, alt - (g('race-fac-elev') || 0), g('race-att'), g('race-xtt'));
+            const basic = circlesHull(geo.circles, fa.corners, 0);
+            const entry = document.getElementById('race-entry').value === 'omni' ? holdingEntryArea(tp, geo, fa, basic) : null;
+            const primary = entry ? entry.area : basic;
+            const secondary = circlesHull(primary.map(([x, y]) => [x, y, 0]), [[0, 0]], PANS.racetrackSecondary);
+            const f2 = (n) => n.toFixed(2);
+            const dims = (poly) => { const ys = poly.map((q) => q[1]), xs = poly.map((q) => q[0]); return f2(Math.max(...ys) - Math.min(...ys)) + ' × ' + f2(Math.max(...xs) - Math.min(...xs)) + ' NM'; };
+            set('race-res-tas', Math.round(V) + ' kt · ' + tp.R.toFixed(2) + '°/s · ' + f2(tp.r) + ' NM');
+            set('race-res-leg', Math.round(wind) + ' kt · ' + f2(tp.L) + ' NM (' + T + ' min)');
+            set('race-res-area', dims(primary) + (entry ? ' (with entry)' : ''));
+            set('race-res-sec', dims(secondary));
+            const d = PANS.racetrackDescent(cat);
+            const ft = (n) => Math.round(n).toLocaleString() + ' ft';
+            set('race-res-desc', ft(d.outMax * T) + ' / ' + ft(d.inMax * T));
+            set('race-res-descmin', d.inMin === null ? 'N/A (Cat H)' : ft(d.inMin * T));
+            const obs = g('race-obs');
+            set('race-res-moca', isNaN(obs) ? 'enter obstacle' : Math.ceil((obs + 984) / 100) * 100 + ' ft');
+            {
+                const L = [];
+                if (ias > PANS.reversalMaxIas(cat, alt)) L.push(['bad', 'IAS ' + ias + ' kt exceeds the Cat ' + cat + ' maximum ' + PANS.reversalMaxIas(cat, alt) + ' kt for racetrack procedures.', 'Table I-4-1-2']);
+                if (!PANS.outboundTimeOk(T)) L.push(['warn', 'Outbound ' + T + ' min — specify 1 to 3 min in ½-min steps.', 'I-4-3 §3.4.5.1']);
+                showLimits('race-res-tas', L);
+            }
+            drawHoldViz({ canvasId: 'raceVizCanvas', bufLabel: '2.5 NM secondary', tp, geo, fa, basic, entry, buffer: secondary, inbound, left, T, V, wind });
         }
 
         // =========================================================
@@ -8600,7 +8806,7 @@
                 oldSwitch(id, el);
                 if (id === 'tab-turnviz') drawTurnViz();
                 if (id === 'tab-gradient') redrawGradients();
-                if (id === 'tab-reversal') { calcPT(); calcBaseTurn(); }
+                if (id === 'tab-reversal') { calcPT(); calcBaseTurn(); calcRacetrack(); }
                 if (id === 'tab-vnav-papi') calcVnavPapi();
                 if (id === 'tab-holdb') { calcHoldArea(); calcRnpHold(); }
                 if (id === 'tab-tol') calcIfix();
@@ -8637,6 +8843,7 @@
             if (typeof calcBaseTurnPhi === 'function') calcBaseTurnPhi();
             if (typeof calcHoldArea === 'function') calcHoldArea();
             if (typeof calcRnpHold === 'function') calcRnpHold();
+            if (typeof calcRacetrack === 'function') calcRacetrack();
             if (typeof calcIfix === 'function') calcIfix();
             if (typeof calcPathTerm === 'function') calcPathTerm();
             if (typeof calcMsd === 'function') calcMsd();
