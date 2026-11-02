@@ -3633,6 +3633,29 @@
                                     <input type="number" id="ta-hw2" placeholder="same" step="0.1" oninput="calcTurnArea()">
                                 </div>
                             </div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>Outer boundary</label>
+                                    <select id="ta-method" onchange="calcTurnArea()">
+                                        <option value="spiral">Wind spiral (§3.3.2)</option>
+                                        <option value="circles">Bounding circles (§3.3.3)</option>
+                                    </select>
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Track guidance after turn</label>
+                                    <select id="ta-guid" onchange="calcTurnArea()">
+                                        <option value="none">None (15° splay)</option>
+                                        <option value="vor">VOR</option>
+                                        <option value="ndb">NDB</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="vp-row" id="ta-guid-grp" style="display:none;">
+                                <div class="vp-input-group">
+                                    <label>Facility on new track (NM from turn end, − = behind)</label>
+                                    <input type="number" id="ta-fac" placeholder="e.g. 8" step="0.1" oninput="calcTurnArea()">
+                                </div>
+                            </div>
 
                             <div class="results-panel">
                                 <div class="result-row">
@@ -3667,7 +3690,11 @@
                                 (§3.3.2.2); after P (tangent parallel to the new track) the outer boundary splays 15° without track guidance (§3.3.1 c).
                                 Inner boundary: TP turns from the K-line — converge at A/2 if outside the next area, else diverge 15° (§3.2.2); turns at altitude from the
                                 start of the turn initiation area, inner edge if turn &lt; 75°, outer edge if ≥ 75°, splay 15° (§3.2.1). Parameters by phase from Table I-2-3-1
-                                (departure / missed approach 15°, 30 kt, c 6 s). Secondary areas and additional track guidance (§3.3.4–3.3.5) are not drawn.
+                                (departure / missed approach 15°, 30 kt, c 6 s). Bounding circles (§3.3.3): arcs √(r² + E²) about X and X′, r + E about Y, r + 2E about Z.
+                                Track guidance after the turn (§3.3.4): VOR ±1.0 NM / 7.8°, NDB ±1.25 NM / 10.3° about the new track; P outside the band → towards the
+                                facility to the band edge at the facility, away → parallel to the track; P inside → 15° splay to the band edge. Secondary areas (§3.3.5,
+                                Figure I-2-3-6): from P and from the inner start, 30° lines to the primary edge (central half of the band). Without track guidance there
+                                is no secondary area after the turn.
                             </div>
                         </div>
 
@@ -4554,6 +4581,14 @@
                 const t = (phi - d) * D;
                 return [a[0] + E * Math.sin(t), a[1] + E * Math.cos(t)];
             },
+            // Track guidance after the turn: navaid tolerance area ±1.0 NM at a VOR splaying 7.8°, ±1.25 NM at an NDB splaying 10.3° (I-4-6, Fig. I-4-6-7)
+            navaidBand(aid) { return aid === 'ndb' ? { hw0: 1.25, splay: 10.3 } : { hw0: 1.0, splay: 7.8 }; },
+            // §3.3.3 bounding circles (right turn from the origin heading +y, outer edge at the origin, inner edge at x = width):
+            // arcs √(r² + E²) about X and X′ (turns 0–90°), r + E about Y (90–180°), r + 2E about Z (180–270°); E = E(90°)
+            boundingCircles(r, E, width) {
+                const X = [r, 0], Xp = [width + r, 0], Y = [Xp[0] + E, Xp[1]], Z = [Xp[0], Xp[1] - E], rho = Math.sqrt(r * r + E * E);
+                return [{ c: X, R: rho, b0: 270, b1: 360 }, { c: Xp, R: rho, b0: 270, b1: 360 }, { c: Y, R: r + E, b0: 0, b1: 90 }, { c: Z, R: r + 2 * E, b0: 90, b1: 180 }];
+            },
             // ---- Racetrack (I-4-3 §3.4, §3.6–3.8) ----
             // Table I-4-3-1: maximum / minimum descent per minute of nominal outbound time (ft); null = N/A
             racetrackDescent(cat) {
@@ -4772,6 +4807,8 @@
             { g: 'Turn area', n: 'E for 90° at 30 kt, TAS 254 kt (0.75/R)', ref: 'Table I-2-3-3 (0.65 NM)', exp: 0.65, tol: 0.006, f: () => PANS.windEffect(90, PANS.rate(254, 15), 30) },
             { g: 'Turn area', n: 'c = (TAS + 30)·6/3600, TAS 159 kt', ref: 'Table I-2-3-3 (0.32 NM)', exp: 0.32, tol: 0.006, f: () => PANS.turnCDist(159, 30, 6) },
             { g: 'Turn area', n: 'Wind spiral: wind effect at 90° equals E', ref: 'I-2-3 §3.3.2.2', exp: 0, tol: 1e-9, f: () => { const V = 211, R = PANS.rate(V, 15), r = PANS.radius(V, R), q = PANS.windSpiralPoint(90, r, R, 30, V); return Math.abs(Math.hypot(q[0] - r, q[1] - r) - PANS.windEffect(90, R, 30)); } },
+            { g: 'Turn area', n: 'Bounding circles: extent at 180° of turn = r + 2E beyond X′', ref: 'I-2-3 §3.3.3 (arc r + E about Y)', exp: 0, tol: 1e-9, f: () => { const r = 2, E = 0.5, a = PANS.boundingCircles(r, E, 3)[2]; return Math.abs((a.c[0] + a.R) - (3 + r) - (r + 2 * E)); } },
+            { g: 'Turn area', n: 'Navaid band VOR ±1.0 NM / 7.8°, NDB ±1.25 NM / 10.3°', ref: 'I-4-6, Figure I-4-6-7', exp: 1, tol: 0, f: () => { const v = PANS.navaidBand('vor'), n = PANS.navaidBand('ndb'); return v.hw0 === 1 && v.splay === 7.8 && n.hw0 === 1.25 && n.splay === 10.3 ? 1 : 0; } },
             { g: 'Racetrack', n: 'Doc example: reversal 2.5 min Cat A/B, max descent outbound', ref: 'I-4-3 §3.7.1 (2 010 ft)', exp: 2010, tol: 0, f: () => PANS.racetrackDescent('A').outMax * 2.5 },
             { g: 'Racetrack', n: 'Doc example: max descent inbound 2.5 min Cat A/B', ref: 'I-4-3 §3.7.1 (1 638 ft; 656 ft/min table value)', exp: 1638, tol: 3, f: () => PANS.racetrackDescent('B').inMax * 2.5 },
             { g: 'Racetrack', n: 'Inbound max Cat H / min Cat C (ft per min)', ref: 'Table I-4-3-1', exp: 1, tol: 0, f: () => (PANS.racetrackDescent('H').inMax === 755 && PANS.racetrackDescent('H').inMin === null && PANS.racetrackDescent('C').inMin === 591) ? 1 : 0 },
@@ -4918,7 +4955,7 @@
             'race-res-moca': ['highest obstacle in the primary area + 984 ft, rounded up to 100 ft', 'I-4-3 §3.8'],
             'ta-res-e': ['E = (θ / R)·(w / 3600)  (NM)', 'Vol II I-2-3 §3.3.2.1'],
             'ta-res-c': ['c distance = (TAS + w)·c / 3600, c = bank establishment + pilot reaction time', 'Table I-2-3-1'],
-            'ta-res-p': ['spiral point = still-air circle point + E, arcsin(w/V) before the tangent; P where the tangent is parallel to the new track', 'Vol II I-2-3 §3.3.2.2, §3.3.1 c)'],
+            'ta-res-p': ['spiral: still-air circle point + E, arcsin(w/V) before the tangent (or bounding circles); P where the tangent is parallel to the new track; then 15° splay or the track-guidance connection', 'Vol II I-2-3 §3.3.1–3.3.4'],
             'ta-res-inner': ['TP: K-line, converge at A/2 or diverge 15°; altitude: TIA start, splay 15°', 'Vol II I-2-3 §3.2'],
             'msd-res-tas': ['TAS at ISA + ΔISA;  r at the phase bank or 3°/s, whichever is less', 'Vol II III-2-1 §1.4']
         };
@@ -8085,58 +8122,145 @@
         // =========================================================
         function turnAreaGeometry(o) {
             const D = Math.PI / 180, th = o.angle;
-            const out = -1;                                        // outer side of a right turn = −x
-            const yA = o.after + o.cDist;
-            const A = [out * o.hw, yA];
-            // wind spiral from A (spiral helper starts at the origin heading +y, centre on +x)
-            const spiral = [];
-            let P = null, phiP = null;
-            for (let phi = 0; phi <= Math.min(360, th + 90); phi += 1) {
-                const q = PANS.windSpiralPoint(phi, o.r, o.R, o.w, o.V);
-                spiral.push([A[0] + q[0], A[1] + q[1]]);
-                if (spiral.length > 1 && phiP === null) {
-                    const p0 = spiral[spiral.length - 2], p1 = spiral[spiral.length - 1];
-                    const hdg = ((Math.atan2(p1[0] - p0[0], p1[1] - p0[1]) / D) + 360) % 360;
-                    if (hdg >= th - 0.5 && phi > 2) { P = p1; phiP = phi; }
-                }
-                if (phiP !== null && phi >= phiP) break;
-            }
-            if (!P) { P = spiral[spiral.length - 1]; phiP = th; }
-            const Lafter = Math.max(4, 2 * (o.r + PANS.windEffect(90, o.R, o.w)) + 3);
             const dirOf = (h) => [Math.sin(h * D), Math.cos(h * D)];
-            const outerEnd = (() => { const d = dirOf(th - 15); return [P[0] + d[0] * Lafter, P[1] + d[1] * Lafter]; })();
-            // nominal track: straight to the TP, turn of radius r, then the new track
-            const T = makeTurtle(0, -o.before - 2, 0).fwd(o.before + 2).turn(th, o.r, true).fwd(Lafter);
-            const nomEnd = T.pts[T.pts.length - 1];
-            const u2 = dirOf(th), n2 = [u2[1], -u2[0]];            // new track direction and its right-hand (inner) normal
-            const offNew = (pt) => (pt[0] - nomEnd[0]) * n2[0] + (pt[1] - nomEnd[1]) * n2[1];
+            const hdgOf = (p0, p1) => ((Math.atan2(p1[0] - p0[0], p1[1] - p0[1]) / D) + 360) % 360;
+            const yA = o.after + o.cDist;
+            const A = [-o.hw, yA];                                   // outer edge (right turn: outer side −x)
+            const E90 = PANS.windEffect(90, o.R, o.w);
+            // ---- outer curve from A ----
+            let curve = [];
+            if (o.method === 'circles') {
+                const arcs = PANS.boundingCircles(o.r, E90, 2 * o.hw);
+                const pts = [[0, 0]];
+                arcs.forEach((ar) => { for (let b2 = ar.b0; b2 <= ar.b1 + 1e-9; b2 += 2) { const d = dirOf(b2); pts.push([ar.c[0] + ar.R * d[0], ar.c[1] + ar.R * d[1]]); } });
+                const hull = convexHull(pts);
+                // walk the hull clockwise from A (the origin) — the turn is to the right
+                let i0 = hull.findIndex((q) => Math.abs(q[0]) < 1e-9 && Math.abs(q[1]) < 1e-9);
+                if (i0 < 0) i0 = 0;
+                const n = hull.length, cw = [];
+                for (let k = 0; k <= n; k++) cw.push(hull[(i0 - k + n * 2) % n]);
+                const fwd = hdgOf(cw[0], cw[1]) < 90 || hdgOf(cw[0], cw[1]) > 300 ? cw : cw.map((q, k) => hull[(i0 + k) % n]);
+                curve = fwd.map(([x, y]) => [A[0] + x, A[1] + y]);
+            } else {
+                for (let phi = 0; phi <= Math.min(360, th + 90); phi += 1) { const q = PANS.windSpiralPoint(phi, o.r, o.R, o.w, o.V); curve.push([A[0] + q[0], A[1] + q[1]]); }
+            }
+            // P: first point where the boundary runs parallel to the new track
+            let iP = curve.length - 1;
+            for (let i = 2; i < curve.length; i++) { const hd = hdgOf(curve[i - 1], curve[i]); if (hd >= th - 0.5 && hd < th + 90) { iP = i; break; } }
+            const P = curve[iP], spiral = curve.slice(0, iP + 1);
+            const phiP = o.method === 'circles' ? Math.round(hdgOf(curve[iP - 1], curve[iP])) : iP;
+            // ---- nominal track ----
+            const Lafter = Math.max(6, 2 * (o.r + E90) + 4, o.guid ? Math.abs(o.fac) + 4 : 0);
+            const T = makeTurtle(0, -o.before - 2, 0).fwd(o.before + 2).turn(th, o.r, true);
+            const TE = [T.x, T.y];                                    // end of the nominal turn
+            T.fwd(Lafter);
+            const nom = T.pts, u2 = dirOf(th), nIn = [u2[1], -u2[0]];  // new track direction; inner (right-hand) normal
+            const along = (pt) => (pt[0] - TE[0]) * u2[0] + (pt[1] - TE[1]) * u2[1];
+            const off = (pt) => (pt[0] - TE[0]) * nIn[0] + (pt[1] - TE[1]) * nIn[1];     // + inner side, − outer side
+            const at = (sA, oA) => [TE[0] + u2[0] * sA + nIn[0] * oA, TE[1] + u2[1] * sA + nIn[1] * oA];
+            const sEnd = Lafter;
+            const ray = (p0, h, len) => { const d = dirOf(h); return [p0[0] + d[0] * len, p0[1] + d[1] * len]; };
+            // ---- guidance band ----
+            const band = o.guid ? PANS.navaidBand(o.guid) : null;
+            const bandHW = (sA) => band.hw0 + Math.abs(sA - o.fac) * Math.tan(band.splay * D);
+            // march a ray from p0 heading h until |offset| reaches the band edge (k = 1 full width, 0.5 primary edge); returns the hit point
+            const toBand = (p0, h, side, k) => {
+                for (let t = 0; t <= Lafter * 3; t += 0.02) {
+                    const q = ray(p0, h, t);
+                    if (side * off(q) >= k * bandHW(along(q)) - 1e-6 && side * off(q) <= k * bandHW(along(q)) + 0.05) return q;
+                    if (along(q) > sEnd) return null;
+                }
+                return null;
+            };
+            const edgeFrom = (q, side, k) => { const pts = []; for (let sA = along(q); sA <= sEnd + 1e-9; sA += 0.25) pts.push(at(sA, side * k * bandHW(sA))); return pts; };
+            // ---- outer boundary after P ----
+            let outerAfter, outerNote;
+            if (!band) { outerAfter = [P, ray(P, th - 15, Lafter)]; outerNote = '15° splay (no track guidance)'; }
+            else {
+                const sP = along(P), oP = -off(P), wP = bandHW(sP);
+                if (oP > wP + 1e-6) {
+                    if (o.fac > sP) {                                    // towards the facility: straight to the band edge at the facility
+                        const F = at(o.fac, -band.hw0);
+                        outerAfter = [P, F].concat(edgeFrom(F, -1, 1).slice(1)); outerNote = 'P outside band → to the facility edge (towards)';
+                    } else {                                             // away: parallel to the nominal track until the band edge
+                        const q = toBand(P, th, -1, 1) || ray(P, th, Lafter);
+                        outerAfter = [P, q].concat(edgeFrom(q, -1, 1).slice(1)); outerNote = 'P outside band → parallel to track (away)';
+                    }
+                } else {
+                    const q = toBand(P, th - 15, -1, 1) || ray(P, th - 15, Lafter);
+                    outerAfter = [P, q].concat(edgeFrom(q, -1, 1).slice(1)); outerNote = 'P inside band → 15° splay to the band edge';
+                }
+            }
+            // ---- inner boundary ----
             const hw2 = o.hw2;
-            let inner = [], innerNote = '';
+            let inner = [], innerNote = '', innerStart;
             if (o.type === 'tp') {
-                const K = [o.hw, -o.before];
-                const d = offNew(K);
-                if (d > hw2) {                                    // outside the next area: converge at A/2 until the inner edge of the next area
-                    const h = th - th / 2, v = dirOf(h);
-                    const den = v[0] * n2[0] + v[1] * n2[1];
+                const K = [o.hw, -o.before]; innerStart = K;
+                const d = off(K);
+                if (d > hw2) {
+                    const v = dirOf(th / 2), den = v[0] * nIn[0] + v[1] * nIn[1];
                     const t = den < -1e-9 ? (hw2 - d) / den : Lafter;
                     const M = [K[0] + v[0] * t, K[1] + v[1] * t];
-                    inner = [K, M, [M[0] + u2[0] * Lafter, M[1] + u2[1] * Lafter]];
+                    inner = [K, M, at(sEnd, hw2)];
                     innerNote = 'K-line, converges at A/2 = ' + (th / 2).toFixed(0) + '°';
-                } else {
-                    const v = dirOf(th + 15);
-                    inner = [K, [K[0] + v[0] * Lafter, K[1] + v[1] * Lafter]];
-                    innerNote = 'K-line, diverges 15°';
-                }
+                } else { inner = [K, ray(K, th + 15, Lafter)]; innerNote = 'K-line, diverges 15°'; }
             } else {
-                const start = th < 75 ? [o.hw, -o.before] : [out * o.hw, -o.before];
-                const v = dirOf(th + 15);
-                inner = [start, [start[0] + v[0] * Lafter, start[1] + v[1] * Lafter]];
+                innerStart = th < 75 ? [o.hw, -o.before] : [-o.hw, -o.before];
+                inner = [innerStart, ray(innerStart, th + 15, Lafter)];
                 innerNote = (th < 75 ? 'inner' : 'outer') + ' edge of TIA start, splay 15°';
             }
-            const preOuter = [[out * o.hw, -o.before - 2], A];
-            const preInner = [[o.hw, -o.before - 2], inner[0]];
-            return { A, spiral, P, phiP, outerEnd, inner, innerNote, preOuter, preInner, nom: T.pts, Kline: [[-o.hw, -o.before], [o.hw, -o.before]],
-                latest: [[-o.hw, o.after], [o.hw, o.after]], Lafter };
+            if (band) {                                                 // the inner boundary also ends on the band edge
+                const q = toBand(innerStart, th + 15, 1, 1);
+                if (q && along(q) < sEnd) { inner = [innerStart, q].concat(edgeFrom(q, 1, 1).slice(1)); innerNote += ' → band edge'; }
+            }
+            // ---- secondary areas with track guidance (§3.3.5, Figure I-2-3-6): 30° lines to the primary edge (central half of the band) ----
+            const secondary = [];
+            if (band) {
+                const q1 = toBand(P, th + 30, -1, 0.5);
+                if (q1) secondary.push(outerAfter.concat(edgeFrom(q1, -1, 0.5).reverse(), [q1]));
+                const q2 = toBand(innerStart, th - 30, 1, 0.5);
+                if (q2) secondary.push(inner.concat(edgeFrom(q2, 1, 0.5).reverse(), [q2]));
+            }
+            const preOuter = [[-o.hw, -o.before - 2], A], preInner = [[o.hw, -o.before - 2], innerStart];
+            const primary = preOuter.concat(spiral.slice(1), outerAfter.slice(1), inner.slice().reverse(), preInner.slice().reverse());
+            return { A, spiral, P, phiP, outerAfter, outerNote, inner, innerNote, preOuter, preInner, nom, primary, secondary, band, o,
+                Kline: [[-o.hw, -o.before], [o.hw, -o.before]], latest: [[-o.hw, o.after], [o.hw, o.after]], F: band ? at(o.fac, 0) : null, Lafter };
+        }
+
+        function drawTurnAreaViz(geo, o, left) {
+            const canvas = document.getElementById('taVizCanvas');
+            if (!canvas) return;
+            const { ctx, w, h } = setupCanvas(canvas, 0.85, 560, 300);
+            const C = bpColors();
+            const M = ([x, y]) => [left ? -x : x, y];
+            const all = geo.primary.concat(geo.nom, ...geo.secondary).map(M);
+            const B = boundsOf(all, 0.05);
+            const V = vizView(B, w, h, { t: 44, b: 44, l: 18, r: 18 });
+            const fillPoly = (pts, color, alpha) => { ctx.save(); cvPath(ctx, V, pts.map(M)); ctx.closePath(); ctx.globalAlpha = alpha; ctx.fillStyle = color; ctx.fill(); ctx.restore(); };
+            fillPoly(geo.primary, C.fill, 1);
+            geo.secondary.forEach((sp) => fillPoly(sp, C.muted, 0.22));
+            const line = (pts, color, width, dash) => cvStroke(ctx, C, V, pts.map(M), color, width, dash);
+            line(geo.Kline, C.muted, 1, [4, 4]);
+            line(geo.latest, C.muted, 1, [4, 4]);
+            line(geo.preOuter, C.warning, 1.6);
+            line(geo.preInner, C.warning, 1.6);
+            line(geo.spiral, C.warning, 2);
+            line(geo.outerAfter, C.warning, 1.6);
+            line(geo.inner, C.warning, 1.6);
+            geo.secondary.forEach((sp) => line(sp, C.muted, 0.8, [3, 3]));
+            line(geo.nom, C.primary, 2.2);
+            cvArrowsAlong(ctx, V, geo.nom.map(M), [0.2, 0.55, 0.9], C.primary, 10);
+            cvFooter(ctx, C, V, w, h, (left ? 'left' : 'right') + ' turn ' + o.angle + '° · TAS ' + Math.round(o.V) + ' kt · w ' + Math.round(o.w) + ' kt');   // first, so point labels keep clear of it
+            const pt = (q, txt, col) => { const m = M(q); cvDot(ctx, C, V.X(m[0]), V.Y(m[1]), col, 3); cvLabel(ctx, C, txt, V.X(m[0]) + (left ? -14 : 14), V.Y(m[1]), { size: 9, color: col, align: left ? 'right' : 'left' }); };
+            pt(geo.A, 'A', C.warning);
+            pt(geo.P, 'P', C.warning);
+            if (geo.F) { const m = M(geo.F); cvFix(ctx, C, V.X(m[0]), V.Y(m[1]), (geo.o.guid || '').toUpperCase()); }
+            const k = M(geo.Kline[1]);
+            cvLabel(ctx, C, o.type === 'tp' ? 'K-line' : 'TIA start', V.X(k[0]), V.Y(k[1]) + 12, { size: 9, color: C.muted });
+            const tp = M([0, 0]);
+            cvFix(ctx, C, V.X(tp[0]), V.Y(tp[1]), o.type === 'tp' ? 'TP' : 'nominal');
+            cvLabel(ctx, C, '▭ primary' + (geo.secondary.length ? ' · ▭ secondary' : '') + ' · ━ nominal', 10, 34, { align: 'left', size: 9, box: false, color: C.warning });
+            cvLabel(ctx, C, (o.method === 'circles' ? 'circles' : 'spiral') + ' · r ' + o.r.toFixed(2) + ' · E90 ' + PANS.windEffect(90, o.R, o.w).toFixed(2) + ' · c ' + o.cDist.toFixed(2), 10, 48, { align: 'left', size: 9, box: false, color: C.muted });
         }
 
         function calcTurnArea() {
@@ -8156,15 +8280,18 @@
             const cSec = isNaN(g('ta-c')) ? ph.c : g('ta-c');
             const V = PANS.tas(ias, alt, 15), R = PANS.rate(V, bank), r = PANS.radius(V, R);
             const cDist = PANS.turnCDist(V, w, cSec);
+            const guid = document.getElementById('ta-guid').value;
+            document.getElementById('ta-guid-grp').style.display = guid === 'none' ? 'none' : 'flex';
+            const fac = g('ta-fac');
             const o = { type, angle, hw, hw2: g('ta-hw2') > 0 ? g('ta-hw2') : hw, before: Math.max(0, g('ta-before') || 0), after: Math.max(0, g('ta-after') || 0),
-                V, R, r, w, cDist };
+                V, R, r, w, cDist, method: document.getElementById('ta-method').value, guid: guid !== 'none' && !isNaN(fac) ? guid : null, fac: isNaN(fac) ? 0 : fac };
             const geo = turnAreaGeometry(o);
             const f2 = (n) => n.toFixed(2);
             set('ta-res-tas', Math.round(V) + ' kt · ' + R.toFixed(2) + '°/s · ' + f2(r) + ' NM');
             set('ta-res-par', Math.round(w) + ' kt · ' + bank + '° · ' + cSec + ' s');
             set('ta-res-e', f2(PANS.windEffect(90, R, w)) + ' / ' + f2(PANS.windEffect(angle, R, w)) + ' NM');
             set('ta-res-c', f2(cDist) + ' NM');
-            set('ta-res-p', 'P after ' + geo.phiP + '° of turn, then 15° splay');
+            set('ta-res-p', 'P after ' + geo.phiP + '° · ' + geo.outerNote);
             set('ta-res-inner', geo.innerNote);
             {
                 const L = [];
@@ -8175,36 +8302,6 @@
             drawTurnAreaViz(geo, o, document.getElementById('ta-dir').value === 'left');
         }
 
-        function drawTurnAreaViz(geo, o, left) {
-            const canvas = document.getElementById('taVizCanvas');
-            if (!canvas) return;
-            const { ctx, w, h } = setupCanvas(canvas, 0.85, 560, 300);
-            const C = bpColors();
-            const M = ([x, y]) => [left ? -x : x, y];
-            const all = geo.spiral.concat([geo.outerEnd], geo.inner, geo.preOuter, geo.preInner, geo.nom).map(M);
-            const B = boundsOf(all, 0.05);
-            const V = vizView(B, w, h, { t: 44, b: 44, l: 18, r: 18 });
-            const line = (pts, color, width, dash) => cvStroke(ctx, C, V, pts.map(M), color, width, dash);
-            line(geo.Kline, C.muted, 1, [4, 4]);
-            line(geo.latest, C.muted, 1, [4, 4]);
-            line(geo.preOuter, C.warning, 1.6);
-            line(geo.preInner, C.warning, 1.6);
-            line(geo.spiral, C.warning, 2);
-            line([geo.P, geo.outerEnd], C.warning, 1.6);
-            line(geo.inner, C.warning, 1.6);
-            line(geo.nom, C.primary, 2.2);
-            cvArrowsAlong(ctx, V, geo.nom.map(M), [0.2, 0.55, 0.9], C.primary, 10);
-            const pt = (q, txt, col) => { const m = M(q); cvDot(ctx, C, V.X(m[0]), V.Y(m[1]), col, 3); cvLabel(ctx, C, txt, V.X(m[0]) + (left ? -14 : 14), V.Y(m[1]), { size: 9, color: col, align: left ? 'right' : 'left' }); };
-            pt(geo.A, 'A', C.warning);
-            pt(geo.P, 'P', C.warning);
-            const k = M(geo.Kline[1]);
-            cvLabel(ctx, C, o.type === 'tp' ? 'K-line' : 'TIA start', V.X(k[0]), V.Y(k[1]) + 12, { size: 9, color: C.muted });
-            const tp = M([0, 0]);
-            cvFix(ctx, C, V.X(tp[0]), V.Y(tp[1]), o.type === 'tp' ? 'TP' : 'nominal');
-            cvLabel(ctx, C, '─ turn area (primary) · ━ nominal track', 10, 34, { align: 'left', size: 9, box: false, color: C.warning });
-            cvLabel(ctx, C, 'r ' + o.r.toFixed(2) + ' · E90 ' + PANS.windEffect(90, o.R, o.w).toFixed(2) + ' NM · c ' + o.cDist.toFixed(2) + ' NM', 10, 48, { align: 'left', size: 9, box: false, color: C.muted });
-            cvFooter(ctx, C, V, w, h, (left ? 'left' : 'right') + ' turn ' + o.angle + '° · TAS ' + Math.round(o.V) + ' kt · w ' + Math.round(o.w) + ' kt');
-        }
 
         // =========================================================
         // 02-E RACETRACK PROTECTED AREA (I-4-3 §3.4, §3.6–3.8; App C §3.3) — holding template engine

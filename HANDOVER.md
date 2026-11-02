@@ -381,6 +381,7 @@ Key development milestones from previous sessions:
 | 2026-05-01 | Coordinate Converter mobile UI redesigned (within FISB Tools project, separate app). Nested card-in-card layout replaced with fluid full-page scroll. |
 | 2026-05-02 | Context imported from Claude session. Session context continuity maintained. |
 | 2026-05-08 | Folder rename from `FVP Tools` → `8168 Tools` initiated. Handover document created. |
+| 2026-11-02 | 07-E follow-ups: bounding-circle method (§3.3.3), track guidance after the turn (VOR ±1.0 NM/7.8°, NDB ±1.25 NM/10.3°; §3.3.4.2 connections), secondary areas with guidance (§3.3.5, Fig. I-2-3-6: 30° lines to the primary edge), filled primary area; 2 checks → 138. |
 | 2026-11-02 | 07-E turn area: wind spiral from A (I-2-3 §3.3.2.2), P + 15° splay, inner boundary §3.2.1/3.2.2, Table I-2-3-1 phase defaults (bank, wind, c); 6 checks vs Table I-2-3-3 → 136. |
 | 2026-11-02 | 02-E racetrack protected area: §3.6.2 parameters (category IAS Table I-4-1-2, ISA+15, 2h+47, 25°/3°/s, 1–3 min), 05-A template engine + omni entry, 2.5 NM secondary, Table I-4-3-1 max/min descents, MOC 984 ft; `drawHoldViz` takes `canvasId` / `bufLabel`; 3 checks (Doc example §3.7.1) → 130. |
 | 2026-11-02 | 05-A VOR/DME reciprocal direct entry (§3.3.4.1.3 / §3.3.4.2.3): entry radial RE (RE vs RP 8° for Doc example C-14 — self-test), curve RE towards the station; 1 check → 127. |
