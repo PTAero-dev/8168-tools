@@ -3542,6 +3542,142 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- 07-E TURN AREA (WIND SPIRAL) -->
+                <div class="card span-all" id="card-turnarea">
+                    <div class="card-header minimizable" onclick="toggleCard(this)">
+                        <div class="card-heading"><span class="card-tag">07-E</span>
+                            <div class="card-title">Turn Area · Wind Spiral</div>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-reset"
+                                onclick="event.stopPropagation(); resetCard('card-turnarea', ['ta-ias', 'ta-alt', 'ta-wind', 'ta-bank', 'ta-c', 'ta-before', 'ta-after', 'ta-hw', 'ta-hw2'], 'calcTurnArea');">↺ Reset</button>
+                        </div>
+                    </div>
+                    <div class="card-body split">
+                        <div class="form-grid">
+                            <div class="section-label">Turn parameters · Table I-2-3-1</div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>Phase</label>
+                                    <select id="ta-phase" onchange="calcTurnArea()">
+                                        <option value="departure">Departure</option>
+                                        <option value="missed">Missed approach</option>
+                                        <option value="enroute">En-route</option>
+                                        <option value="iaf">IAF / IF / FAF</option>
+                                    </select>
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Turn type</label>
+                                    <select id="ta-type" onchange="calcTurnArea()">
+                                        <option value="tp">At a turning point (TP)</option>
+                                        <option value="alt">At an altitude / height</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>IAS (kt)</label>
+                                    <input type="number" id="ta-ias" placeholder="e.g. 265" oninput="calcTurnArea()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Altitude (ft)</label>
+                                    <input type="number" id="ta-alt" placeholder="e.g. 3000" oninput="calcTurnArea()">
+                                </div>
+                            </div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>Turn angle (°)</label>
+                                    <input type="number" id="ta-angle" value="90" oninput="calcTurnArea()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Direction</label>
+                                    <select id="ta-dir" onchange="calcTurnArea()">
+                                        <option value="right">Right</option>
+                                        <option value="left">Left</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>Wind (kt)<span class="opt">OPT</span></label>
+                                    <input type="number" id="ta-wind" placeholder="Auto" oninput="calcTurnArea()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Bank (°)<span class="opt">OPT</span></label>
+                                    <input type="number" id="ta-bank" placeholder="Auto" oninput="calcTurnArea()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>c (s)<span class="opt">OPT</span></label>
+                                    <input type="number" id="ta-c" placeholder="Auto" oninput="calcTurnArea()">
+                                </div>
+                            </div>
+                            <div class="section-label">Turn initiation · area width</div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label id="ta-before-lbl">Earliest, before TP (NM)</label>
+                                    <input type="number" id="ta-before" placeholder="ATT" step="0.1" oninput="calcTurnArea()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label id="ta-after-lbl">Latest, after TP (NM)</label>
+                                    <input type="number" id="ta-after" placeholder="ATT" step="0.1" oninput="calcTurnArea()">
+                                </div>
+                            </div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>Half-width at turn (NM)</label>
+                                    <input type="number" id="ta-hw" placeholder="e.g. 2.0" step="0.1" oninput="calcTurnArea()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Half-width after (NM)<span class="opt">OPT</span></label>
+                                    <input type="number" id="ta-hw2" placeholder="same" step="0.1" oninput="calcTurnArea()">
+                                </div>
+                            </div>
+
+                            <div class="results-panel">
+                                <div class="result-row">
+                                    <span class="result-label">TAS (ISA+15) · R · r</span>
+                                    <span id="ta-res-tas" class="result-value">---</span>
+                                </div>
+                                <div class="result-row">
+                                    <span class="result-label">Wind · bank · c</span>
+                                    <span id="ta-res-par" class="result-value">---</span>
+                                </div>
+                                <div class="result-row key">
+                                    <span class="result-label">E at 90° / at turn angle</span>
+                                    <span id="ta-res-e" class="result-value c-cyan">---</span>
+                                </div>
+                                <div class="result-row">
+                                    <span class="result-label">c distance (TAS + w)</span>
+                                    <span id="ta-res-c" class="result-value">---</span>
+                                </div>
+                                <div class="result-row key">
+                                    <span class="result-label">Outer boundary: A → P</span>
+                                    <span id="ta-res-p" class="result-value c-warning">---</span>
+                                </div>
+                                <div class="result-row">
+                                    <span class="result-label">Inner boundary</span>
+                                    <span id="ta-res-inner" class="result-value">---</span>
+                                </div>
+                            </div>
+                            <div class="note">
+                                <div class="note-title">Reference</div>
+                                Doc 8168 Vol II I-2-3: R = 3431·tanα/(πV) ≤ 3°/s, r = V/(20πR), E = (θ/R)(w/3600) (§3.1.2.2, §3.3.2); wind spiral from point A
+                                (latest turn point + c at TAS + w on the outer edge) with each point placed E from the still-air circle, arcsin(w/V) before the tangent
+                                (§3.3.2.2); after P (tangent parallel to the new track) the outer boundary splays 15° without track guidance (§3.3.1 c).
+                                Inner boundary: TP turns from the K-line — converge at A/2 if outside the next area, else diverge 15° (§3.2.2); turns at altitude from the
+                                start of the turn initiation area, inner edge if turn &lt; 75°, outer edge if ≥ 75°, splay 15° (§3.2.1). Parameters by phase from Table I-2-3-1
+                                (departure / missed approach 15°, 30 kt, c 6 s). Secondary areas and additional track guidance (§3.3.4–3.3.5) are not drawn.
+                            </div>
+                        </div>
+
+                        <div class="viz">
+                            <span class="viz-label">Plan view · to scale</span>
+                            <button class="viz-dl" onclick="exportViz(this)" data-name="turn-area" title="Download high-resolution PNG">⤓ PNG</button>
+                            <canvas id="taVizCanvas" width="600" height="520"></canvas>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -3836,6 +3972,7 @@
                                 <li><b>05-A Holding</b> (new): Table II-4-1-2 speeds, ISA+15, ICAO wind, template Table I-4-3-App C-4 (all 33 lines), entry sectors, buffer MOC. Omnidirectional entry area §3.3.3.2.1 (curves 5–8, convex-envelope approximation); template extents checked against Diagram I-4-3-App C-6.</li>
                                 <li><b>05-A VOR/DME holding</b> (new, 2 Nov 2026): §3.3.4 distance parameters (Ds, DL rounding, DLs, d1/d2) and basic area towards / away from the station (convex-envelope approximation; along-radial entry areas not drawn).</li>
                                 <li><b>05-A holding entries</b> (new, 2 Nov 2026): VOR/DME sector 1 DME-arc and sector 2 entry areas (§3.3.4.1.2.6–7), radial-intersection entries (§3.3.3.2.2); VOR/DME DL checked against Diagrams C-13 (35 NM) and C-15 (26 NM). Sector-1 reduction (§3.3.3.3) not built (construction ambiguous).</li>
+                                <li><b>07-E Turn area</b> (new, 2 Nov 2026): wind spiral (I-2-3 §3.3.2), inner boundary rules (§3.2), Table I-2-3-1 phase defaults; checked against Table I-2-3-3.</li>
                                 <li><b>02-E Racetrack area</b> (new, 2 Nov 2026): §3.6.2 parameters, template engine of 05-A, 2.5 NM secondary, Table I-4-3-1 descents (Doc example §3.7.1 checked), MOC 984 ft.</li>
                                 <li><b>05-C RNP holding</b> (new, 2 Nov 2026): III-3-7-App B d2, area (d3 / 1.414·d3), buffer; d4 formula flagged (printed formula inconsistent with Figures B-1/B-2).</li>
                                 <li><b>08 Baro-VNAV effective VPA</b> (2 Nov 2026): replaced the temperature-ratio approximation by III-3-4-App A §1.3 (ESDU 770221 correction with hFAP = FAF height above THR) and §4.3.4.2.5; checked against Tables III-3-4-App A-4/A-5 and III-3-4-1. Adds the §4.7.3 c)/d) temperatures.</li>
@@ -4397,6 +4534,26 @@
                 const DL = toward ? (frac < cut ? fl : fl + 1) : (frac > cut ? fl + 1 : fl);
                 return { Ds, DLraw, DL, DLs: Math.sqrt(DL * DL - k), d1: PANS.dmeTol(D), d2: PANS.dmeTol(DL) };
             },
+            // ---- Turn area construction (I-2-3 §3.1–3.3, Table I-2-3-1) ----
+            // phase defaults: bank (deg), wind (kt; null = ICAO 2h+47), c = bank establishment + pilot reaction (s)
+            turnPhase(ph) {
+                return {
+                    departure: { bank: 15, wind: 30, c: 6, note: 'final missed approach IAS + 10 % (Table I-4-1-2)' },
+                    missed: { bank: 15, wind: 30, c: 6, note: 'final approach IAS (max), Table I-4-1-2' },
+                    enroute: { bank: 15, wind: null, c: 15, note: '315 kt (Cat H 175 kt)' },
+                    iaf: { bank: 25, wind: 30, c: 11, note: 'initial approach IAS' }
+                }[ph];
+            },
+            // c distance (NM) flown at TAS + wind during the reaction / bank establishment time
+            turnCDist(V, w, cSec) { return (V + w) * cSec / 3600; },
+            // §3.3.2: wind spiral point after a heading change phi (deg) for a right turn starting at the origin heading +y;
+            // still-air circle radius r (centre (r, 0)) plus E = (phi/R)·(w/3600) applied arcsin(w/V) before the tangent
+            windSpiralPoint(phi, r, R, w, V) {
+                const D = Math.PI / 180, E = (phi / R) * (w / 3600), d = Math.asin(Math.min(1, w / V)) / D;
+                const a = [r - r * Math.cos(phi * D), r * Math.sin(phi * D)];
+                const t = (phi - d) * D;
+                return [a[0] + E * Math.sin(t), a[1] + E * Math.cos(t)];
+            },
             // ---- Racetrack (I-4-3 §3.4, §3.6–3.8) ----
             // Table I-4-3-1: maximum / minimum descent per minute of nominal outbound time (ft); null = N/A
             racetrackDescent(cat) {
@@ -4609,6 +4766,12 @@
             { g: 'VOR/DME holding', n: 'Doc example away: D 30 NM, 14 000 ft, 220 kt, 1 min → DL 26 NM', ref: 'Diagram I-4-3-App C-15', exp: 26, tol: 0, f: () => { const tp = PANS.holdingTemplate(PANS.tas(220, 14000, 15), PANS.wind(14000), 1); return PANS.vorDmeParams(30, tp.v * tp.t, tp.r, 14000, false).DL; } },
             { g: 'VOR/DME holding', n: 'Basic area extent, holding side (Doc example towards)', ref: 'Diagram I-4-3-App C-13 (scaled ≈ 12.4 NM incl. entries)', exp: 12.4, tol: 0.6, f: () => { const tp = PANS.holdingTemplate(PANS.tas(220, 14000, 15), PANS.wind(14000), 1), geo = holdingTemplateGeometry(tp), P = PANS.vorDmeParams(30, tp.v * tp.t, tp.r, 14000, true), a = holdingVorDmeArea(tp, geo, P, true, 5.2); return Math.max(...a.area.map((q) => q[0])); } },
             { g: 'VOR/DME holding', n: 'Entry radial RE: angle to RP for the Doc example towards', ref: 'Diagram I-4-3-App C-14 (8°)', exp: 8, tol: 0, f: () => { const tp = PANS.holdingTemplate(PANS.tas(220, 14000, 15), PANS.wind(14000), 1), geo = holdingTemplateGeometry(tp), P = PANS.vorDmeParams(30, tp.v * tp.t, tp.r, 14000, true); return holdingVorDmeArea(tp, geo, P, true, 5.2, true).RE; } },
+            { g: 'Turn area', n: 'TAS for IAS 110 kt at 2 000 ft, ISA+15', ref: 'Table I-2-3-3 (116 kt)', exp: 116, tol: 0.6, f: () => PANS.tas(110, 2000, 15) },
+            { g: 'Turn area', n: 'R at 15° bank, TAS 116 kt (Doc uses 293/TAS)', ref: 'Table I-2-3-3 (2.53°/s)', exp: 2.53, tol: 0.01, f: () => PANS.rate(116, 15) },
+            { g: 'Turn area', n: 'r at 15° bank, TAS 254 kt', ref: 'Table I-2-3-3 (3.51 NM)', exp: 3.51, tol: 0.01, f: () => PANS.radius(254, PANS.rate(254, 15)) },
+            { g: 'Turn area', n: 'E for 90° at 30 kt, TAS 254 kt (0.75/R)', ref: 'Table I-2-3-3 (0.65 NM)', exp: 0.65, tol: 0.006, f: () => PANS.windEffect(90, PANS.rate(254, 15), 30) },
+            { g: 'Turn area', n: 'c = (TAS + 30)·6/3600, TAS 159 kt', ref: 'Table I-2-3-3 (0.32 NM)', exp: 0.32, tol: 0.006, f: () => PANS.turnCDist(159, 30, 6) },
+            { g: 'Turn area', n: 'Wind spiral: wind effect at 90° equals E', ref: 'I-2-3 §3.3.2.2', exp: 0, tol: 1e-9, f: () => { const V = 211, R = PANS.rate(V, 15), r = PANS.radius(V, R), q = PANS.windSpiralPoint(90, r, R, 30, V); return Math.abs(Math.hypot(q[0] - r, q[1] - r) - PANS.windEffect(90, R, 30)); } },
             { g: 'Racetrack', n: 'Doc example: reversal 2.5 min Cat A/B, max descent outbound', ref: 'I-4-3 §3.7.1 (2 010 ft)', exp: 2010, tol: 0, f: () => PANS.racetrackDescent('A').outMax * 2.5 },
             { g: 'Racetrack', n: 'Doc example: max descent inbound 2.5 min Cat A/B', ref: 'I-4-3 §3.7.1 (1 638 ft; 656 ft/min table value)', exp: 1638, tol: 3, f: () => PANS.racetrackDescent('B').inMax * 2.5 },
             { g: 'Racetrack', n: 'Inbound max Cat H / min Cat C (ft per min)', ref: 'Table I-4-3-1', exp: 1, tol: 0, f: () => (PANS.racetrackDescent('H').inMax === 755 && PANS.racetrackDescent('H').inMin === null && PANS.racetrackDescent('C').inMin === 591) ? 1 : 0 },
@@ -4753,6 +4916,10 @@
             'race-res-sec': ['primary area + 2.5 NM', 'I-4-3-App C §3.3.1.3'],
             'race-res-desc': ['max descent = Table I-4-3-1 rate × nominal outbound time (no descent in turns)', 'I-4-3 §3.7, Table I-4-3-1'],
             'race-res-moca': ['highest obstacle in the primary area + 984 ft, rounded up to 100 ft', 'I-4-3 §3.8'],
+            'ta-res-e': ['E = (θ / R)·(w / 3600)  (NM)', 'Vol II I-2-3 §3.3.2.1'],
+            'ta-res-c': ['c distance = (TAS + w)·c / 3600, c = bank establishment + pilot reaction time', 'Table I-2-3-1'],
+            'ta-res-p': ['spiral point = still-air circle point + E, arcsin(w/V) before the tangent; P where the tangent is parallel to the new track', 'Vol II I-2-3 §3.3.2.2, §3.3.1 c)'],
+            'ta-res-inner': ['TP: K-line, converge at A/2 or diverge 15°; altitude: TIA start, splay 15°', 'Vol II I-2-3 §3.2'],
             'msd-res-tas': ['TAS at ISA + ΔISA;  r at the phase bank or 3°/s, whichever is less', 'Vol II III-2-1 §1.4']
         };
         RESULT_INFO['res-ta-before'] = RESULT_INFO['turn-ta-before'];
@@ -7052,6 +7219,7 @@
             if (typeof calcHoldArea === 'function') calcHoldArea();
             if (typeof calcRnpHold === 'function') calcRnpHold();
             if (typeof calcRacetrack === 'function') calcRacetrack();
+            if (typeof calcTurnArea === 'function') calcTurnArea();
             if (typeof calcIfix === 'function') calcIfix();
             if (typeof calcDeparture === 'function') calcDeparture();
             if (typeof calcMsd === 'function') calcMsd();
@@ -7252,7 +7420,7 @@
             if (lim) document.getElementById('btp-ob-unit').textContent = lim.checked ? 'min' : 'DME';
             run('toggleVnpIls');
             ['calcTAS', 'calcTempCorr', 'calcTurn', 'calcPT', 'calcBaseTurn', 'calcBaseTurnPhi', 'drawTurnViz', 'calcHoldB',
-                'calcPBN', 'calcTolerance', 'calcVEB', 'calcDescent', 'calcEqObs', 'calcReaction', 'calcVnavPapi', 'calcHoldArea', 'calcRnpHold', 'calcRacetrack', 'calcIfix', 'calcPathTerm', 'calcMsd', 'calcDeparture'].forEach((f) => run(f));
+                'calcPBN', 'calcTolerance', 'calcVEB', 'calcDescent', 'calcEqObs', 'calcReaction', 'calcVnavPapi', 'calcHoldArea', 'calcRnpHold', 'calcRacetrack', 'calcTurnArea', 'calcIfix', 'calcPathTerm', 'calcMsd', 'calcDeparture'].forEach((f) => run(f));
             gradLegIds().forEach((id) => run('calculateGradient', id));
         }
 
@@ -7895,6 +8063,133 @@
             if (o.entry) cvLabel(ctx, C, '▭ basic + entry area (curves ' + o.entry.curves.map((c) => c[1]).join(', ') + ')', 10, 48, { align: 'left', size: 9, box: false, color: C.violet });
             cvLabel(ctx, C, '┄ template · ┄ ' + (o.bufLabel || '5 NM buffer') + ' · S1–S3', 10, o.entry ? 62 : 48, { align: 'left', size: 9, box: false, color: C.muted });
             cvFooter(ctx, C, V, w, h, String(Math.round(o.inbound)).padStart(3, '0') + '° inbound · ' + (o.left ? 'left' : 'right') + ' turns · TAS ' + Math.round(o.V) + ' kt · w ' + Math.round(o.wind) + ' kt');
+        }
+
+        // =========================================================
+        // 07-E TURN AREA · WIND SPIRAL (I-2-3 §3.2–3.3)
+        // Local frame: nominal TP at origin, initial track +y, right turn (left turns mirrored), NM
+        // =========================================================
+        function turnAreaGeometry(o) {
+            const D = Math.PI / 180, th = o.angle;
+            const out = -1;                                        // outer side of a right turn = −x
+            const yA = o.after + o.cDist;
+            const A = [out * o.hw, yA];
+            // wind spiral from A (spiral helper starts at the origin heading +y, centre on +x)
+            const spiral = [];
+            let P = null, phiP = null;
+            for (let phi = 0; phi <= Math.min(360, th + 90); phi += 1) {
+                const q = PANS.windSpiralPoint(phi, o.r, o.R, o.w, o.V);
+                spiral.push([A[0] + q[0], A[1] + q[1]]);
+                if (spiral.length > 1 && phiP === null) {
+                    const p0 = spiral[spiral.length - 2], p1 = spiral[spiral.length - 1];
+                    const hdg = ((Math.atan2(p1[0] - p0[0], p1[1] - p0[1]) / D) + 360) % 360;
+                    if (hdg >= th - 0.5 && phi > 2) { P = p1; phiP = phi; }
+                }
+                if (phiP !== null && phi >= phiP) break;
+            }
+            if (!P) { P = spiral[spiral.length - 1]; phiP = th; }
+            const Lafter = Math.max(4, 2 * (o.r + PANS.windEffect(90, o.R, o.w)) + 3);
+            const dirOf = (h) => [Math.sin(h * D), Math.cos(h * D)];
+            const outerEnd = (() => { const d = dirOf(th - 15); return [P[0] + d[0] * Lafter, P[1] + d[1] * Lafter]; })();
+            // nominal track: straight to the TP, turn of radius r, then the new track
+            const T = makeTurtle(0, -o.before - 2, 0).fwd(o.before + 2).turn(th, o.r, true).fwd(Lafter);
+            const nomEnd = T.pts[T.pts.length - 1];
+            const u2 = dirOf(th), n2 = [u2[1], -u2[0]];            // new track direction and its right-hand (inner) normal
+            const offNew = (pt) => (pt[0] - nomEnd[0]) * n2[0] + (pt[1] - nomEnd[1]) * n2[1];
+            const hw2 = o.hw2;
+            let inner = [], innerNote = '';
+            if (o.type === 'tp') {
+                const K = [o.hw, -o.before];
+                const d = offNew(K);
+                if (d > hw2) {                                    // outside the next area: converge at A/2 until the inner edge of the next area
+                    const h = th - th / 2, v = dirOf(h);
+                    const den = v[0] * n2[0] + v[1] * n2[1];
+                    const t = den < -1e-9 ? (hw2 - d) / den : Lafter;
+                    const M = [K[0] + v[0] * t, K[1] + v[1] * t];
+                    inner = [K, M, [M[0] + u2[0] * Lafter, M[1] + u2[1] * Lafter]];
+                    innerNote = 'K-line, converges at A/2 = ' + (th / 2).toFixed(0) + '°';
+                } else {
+                    const v = dirOf(th + 15);
+                    inner = [K, [K[0] + v[0] * Lafter, K[1] + v[1] * Lafter]];
+                    innerNote = 'K-line, diverges 15°';
+                }
+            } else {
+                const start = th < 75 ? [o.hw, -o.before] : [out * o.hw, -o.before];
+                const v = dirOf(th + 15);
+                inner = [start, [start[0] + v[0] * Lafter, start[1] + v[1] * Lafter]];
+                innerNote = (th < 75 ? 'inner' : 'outer') + ' edge of TIA start, splay 15°';
+            }
+            const preOuter = [[out * o.hw, -o.before - 2], A];
+            const preInner = [[o.hw, -o.before - 2], inner[0]];
+            return { A, spiral, P, phiP, outerEnd, inner, innerNote, preOuter, preInner, nom: T.pts, Kline: [[-o.hw, -o.before], [o.hw, -o.before]],
+                latest: [[-o.hw, o.after], [o.hw, o.after]], Lafter };
+        }
+
+        function calcTurnArea() {
+            const g = (id) => parseFloat(document.getElementById(id).value);
+            const set = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+            const type = document.getElementById('ta-type').value;
+            document.getElementById('ta-before-lbl').textContent = type === 'tp' ? 'Earliest, before TP (NM)' : 'TIA length, earliest → latest (NM)';
+            document.getElementById('ta-after-lbl').textContent = type === 'tp' ? 'Latest, after TP (NM)' : 'Latest after nominal (NM)';
+            const ph = PANS.turnPhase(document.getElementById('ta-phase').value);
+            const ias = g('ta-ias'), alt = g('ta-alt'), angle = g('ta-angle'), hw = g('ta-hw');
+            document.getElementById('ta-bank').placeholder = 'Auto ' + ph.bank;
+            document.getElementById('ta-c').placeholder = 'Auto ' + ph.c;
+            if (isNaN(ias) || isNaN(alt) || !(angle > 0 && angle <= 180) || !(hw > 0)) return;
+            const w = isNaN(g('ta-wind')) ? (ph.wind === null ? PANS.wind(alt) : ph.wind) : g('ta-wind');
+            document.getElementById('ta-wind').placeholder = 'Auto ' + Math.round(ph.wind === null ? PANS.wind(alt) : ph.wind);
+            const bank = isNaN(g('ta-bank')) ? ph.bank : g('ta-bank');
+            const cSec = isNaN(g('ta-c')) ? ph.c : g('ta-c');
+            const V = PANS.tas(ias, alt, 15), R = PANS.rate(V, bank), r = PANS.radius(V, R);
+            const cDist = PANS.turnCDist(V, w, cSec);
+            const o = { type, angle, hw, hw2: g('ta-hw2') > 0 ? g('ta-hw2') : hw, before: Math.max(0, g('ta-before') || 0), after: Math.max(0, g('ta-after') || 0),
+                V, R, r, w, cDist };
+            const geo = turnAreaGeometry(o);
+            const f2 = (n) => n.toFixed(2);
+            set('ta-res-tas', Math.round(V) + ' kt · ' + R.toFixed(2) + '°/s · ' + f2(r) + ' NM');
+            set('ta-res-par', Math.round(w) + ' kt · ' + bank + '° · ' + cSec + ' s');
+            set('ta-res-e', f2(PANS.windEffect(90, R, w)) + ' / ' + f2(PANS.windEffect(angle, R, w)) + ' NM');
+            set('ta-res-c', f2(cDist) + ' NM');
+            set('ta-res-p', 'P after ' + geo.phiP + '° of turn, then 15° splay');
+            set('ta-res-inner', geo.innerNote);
+            {
+                const L = [];
+                if (bank > PANS.maxBank) L.push(['warn', 'Bank ' + bank + '° is above the 25° used in turn construction.', 'Table I-2-3-1']);
+                if (PANS.rateRaw(V, bank) > 3) L.push(['warn', 'Rate of turn limited to 3°/s at this TAS.', 'I-2-3 §3.1.2.2 b)']);
+                showLimits('ta-res-tas', L);
+            }
+            drawTurnAreaViz(geo, o, document.getElementById('ta-dir').value === 'left');
+        }
+
+        function drawTurnAreaViz(geo, o, left) {
+            const canvas = document.getElementById('taVizCanvas');
+            if (!canvas) return;
+            const { ctx, w, h } = setupCanvas(canvas, 0.85, 560, 300);
+            const C = bpColors();
+            const M = ([x, y]) => [left ? -x : x, y];
+            const all = geo.spiral.concat([geo.outerEnd], geo.inner, geo.preOuter, geo.preInner, geo.nom).map(M);
+            const B = boundsOf(all, 0.05);
+            const V = vizView(B, w, h, { t: 44, b: 44, l: 18, r: 18 });
+            const line = (pts, color, width, dash) => cvStroke(ctx, C, V, pts.map(M), color, width, dash);
+            line(geo.Kline, C.muted, 1, [4, 4]);
+            line(geo.latest, C.muted, 1, [4, 4]);
+            line(geo.preOuter, C.warning, 1.6);
+            line(geo.preInner, C.warning, 1.6);
+            line(geo.spiral, C.warning, 2);
+            line([geo.P, geo.outerEnd], C.warning, 1.6);
+            line(geo.inner, C.warning, 1.6);
+            line(geo.nom, C.primary, 2.2);
+            cvArrowsAlong(ctx, V, geo.nom.map(M), [0.2, 0.55, 0.9], C.primary, 10);
+            const pt = (q, txt, col) => { const m = M(q); cvDot(ctx, C, V.X(m[0]), V.Y(m[1]), col, 3); cvLabel(ctx, C, txt, V.X(m[0]) + (left ? -14 : 14), V.Y(m[1]), { size: 9, color: col, align: left ? 'right' : 'left' }); };
+            pt(geo.A, 'A', C.warning);
+            pt(geo.P, 'P', C.warning);
+            const k = M(geo.Kline[1]);
+            cvLabel(ctx, C, o.type === 'tp' ? 'K-line' : 'TIA start', V.X(k[0]), V.Y(k[1]) + 12, { size: 9, color: C.muted });
+            const tp = M([0, 0]);
+            cvFix(ctx, C, V.X(tp[0]), V.Y(tp[1]), o.type === 'tp' ? 'TP' : 'nominal');
+            cvLabel(ctx, C, '─ turn area (primary) · ━ nominal track', 10, 34, { align: 'left', size: 9, box: false, color: C.warning });
+            cvLabel(ctx, C, 'r ' + o.r.toFixed(2) + ' · E90 ' + PANS.windEffect(90, o.R, o.w).toFixed(2) + ' NM · c ' + o.cDist.toFixed(2) + ' NM', 10, 48, { align: 'left', size: 9, box: false, color: C.muted });
+            cvFooter(ctx, C, V, w, h, (left ? 'left' : 'right') + ' turn ' + o.angle + '° · TAS ' + Math.round(o.V) + ' kt · w ' + Math.round(o.w) + ' kt');
         }
 
         // =========================================================
@@ -8811,7 +9106,7 @@
                 if (id === 'tab-holdb') { calcHoldArea(); calcRnpHold(); }
                 if (id === 'tab-tol') calcIfix();
                 if (id === 'tab-pt') { ptRenderReference(); calcPathTerm(); calcMsd(); }
-                if (id === 'tab-desc') calcDeparture();
+                if (id === 'tab-desc') { calcDeparture(); calcTurnArea(); }
             }
 
             renderSelfTest();
@@ -8844,6 +9139,7 @@
             if (typeof calcHoldArea === 'function') calcHoldArea();
             if (typeof calcRnpHold === 'function') calcRnpHold();
             if (typeof calcRacetrack === 'function') calcRacetrack();
+            if (typeof calcTurnArea === 'function') calcTurnArea();
             if (typeof calcIfix === 'function') calcIfix();
             if (typeof calcPathTerm === 'function') calcPathTerm();
             if (typeof calcMsd === 'function') calcMsd();
