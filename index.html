@@ -926,6 +926,8 @@
         .oca-table input { width: 100%; min-width: 0; padding: 6px 8px; font-size: 0.8rem; }
         .oca-table td { padding: 3px 4px; }
         .oca-table th { font-size: 0.62rem; }
+        textarea { width: 100%; min-height: 120px; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-input);
+            color: var(--text-main); font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.5; resize: vertical; box-sizing: border-box; }
         /* foldable long notes */
         .note-fold > .note-title { cursor: pointer; user-select: none; display: flex; align-items: center; gap: 8px; margin-bottom: 0; }
         .note-fold > .note-title::after { content: '▾'; margin-left: auto; font-size: 0.8rem; color: var(--text-muted); transition: transform 0.15s; }
@@ -1432,6 +1434,7 @@
                 <div class="nav-item" data-tab="tab-gradient" data-short="Gradient" onclick="switchTab('tab-gradient', this)"><span class="nav-num">04</span>IFP Gradient</div>
                 <div class="nav-item" data-tab="tab-tol" data-short="Tolerance" onclick="switchTab('tab-tol', this)"><span class="nav-num">06</span>Tolerance, VEB &amp; PBN</div>
                 <div class="nav-item" data-tab="tab-pt" data-short="Path term." onclick="switchTab('tab-pt', this)"><span class="nav-num">09</span>Path Terminators</div>
+                <div class="nav-item" data-tab="tab-msa" data-short="MSA · TAA" onclick="switchTab('tab-msa', this)"><span class="nav-num">11</span>MSA &amp; TAA</div>
             </div>
             <div class="nav-group" data-group="holding" data-short="Holding">
                 <div class="nav-group-title">Holding &amp; Reversal</div>
@@ -4269,6 +4272,107 @@
             </div>
         </section>
 
+        <!-- =====================================================
+             11 · MSA & TAA
+             ===================================================== -->
+        <section id="tab-msa" class="tab-content" style="display:none;">
+            <header class="page-header">
+                <div class="ph-main">
+                    <div class="ph-crumb">Segments &amp; Fixes / Sheet 11</div>
+                    <h1 class="page-title">MSA &amp; TAA</h1>
+                    <p class="page-subtitle">Minimum sector altitudes and terminal arrival altitudes with 5 NM buffers</p>
+                </div>
+                <dl class="ph-block">
+                    <div><dt>Sheet</dt><dd>11</dd></div>
+                    <div><dt>Reference</dt><dd>Doc 8168 Vol II I-4-8, III-2-4</dd></div>
+                </dl>
+            </header>
+
+            <div class="stack">
+                <div class="card" id="card-msa">
+                    <div class="card-header minimizable" onclick="toggleCard(this)">
+                        <div class="card-heading"><span class="card-tag">11-A</span>
+                            <div class="card-title">MSA / TAA Calculator</div>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-reset" onclick="event.stopPropagation(); resetCard('card-msa', ['msa-obs', 'msa-mount', 'msa-arc'], 'calcMsa');">↺ Reset</button>
+                        </div>
+                    </div>
+                    <div class="card-body split">
+                        <div class="form-grid">
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>Mode</label>
+                                    <select id="msa-mode" onchange="calcMsa()">
+                                        <option value="msa">MSA (I-4-8) · sectors about a facility / ARP</option>
+                                        <option value="taa">TAA (III-2-4) · RNAV T / Y arrangement</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="vp-row" id="msa-msa-grp">
+                                <div class="vp-input-group">
+                                    <label>Sector boundaries (° from ref, comma separated)</label>
+                                    <input type="text" id="msa-bounds" value="0, 90, 180, 270" oninput="calcMsa()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>DME arc R (NM)<span class="opt">OPT</span></label>
+                                    <input type="number" id="msa-arc" placeholder="10 – 15" step="0.5" oninput="calcMsa()">
+                                </div>
+                            </div>
+                            <div class="vp-row" id="msa-taa-grp" style="display:none;">
+                                <div class="vp-input-group">
+                                    <label>Final inbound course (°)</label>
+                                    <input type="number" id="taa-crs" value="360" oninput="calcMsa()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>IAF – IF distance (NM)</label>
+                                    <input type="number" id="taa-d" value="5" step="0.5" oninput="calcMsa()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Central IAF</label>
+                                    <select id="taa-central" onchange="calcMsa()">
+                                        <option value="yes">Yes (T)</option>
+                                        <option value="no">No (Y · arc about IF)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>Mountainous MOC + (ft)<span class="opt">OPT</span></label>
+                                    <input type="number" id="msa-mount" placeholder="0 – 1000" oninput="calcMsa()">
+                                </div>
+                            </div>
+                            <div class="vp-input-group">
+                                <label id="msa-obs-lbl">Obstacles: bearing °, distance NM, elevation ft, name — one per line (paste from a spreadsheet)</label>
+                                <textarea id="msa-obs" rows="7" placeholder="045, 12.5, 2350, Hill A&#10;130, 22, 3100, Ridge&#10;250, 8, 1800, Mast" oninput="calcMsa()"></textarea>
+                            </div>
+                            <div class="results-panel">
+                                <div class="table-wrap"><table class="qa-table"><thead><tr><th>Area</th><th>Highest (area / buffer)</th><th>Altitude</th></tr></thead><tbody id="msa-rows"></tbody></table></div>
+                                <div class="result-row key">
+                                    <span class="result-label">Single altitude (if differences ≤ 300 ft)</span>
+                                    <span id="msa-res-single" class="result-value c-success">---</span>
+                                </div>
+                            </div>
+                            <div class="note">
+                                <div class="note-title">Reference</div>
+                                Doc 8168 Vol II I-4-8 (MSA): highest elevation in the sector within 25 NM of the reference + 1 000 ft, rounded up to 100 ft; obstacles in
+                                the 5 NM buffer around the sector count when higher (§8.2); up to + 1 000 ft over mountainous areas (§8.1.3); sectors normally the compass
+                                quadrants (§8.3); a DME arc of 10–15 NM may split a sector, buffer 5 NM between subsectors (§8.5). III-2-4 (TAA): straight-in, left and
+                                right base areas bounded by the extension of the base initial segments and 25 NM arcs about each IAF (or the IF without a central IAF),
+                                5 NM buffer, same altitude rule (§4.1.4–4.3). A single altitude may be used when the differences are about 300 ft (§8.1.2, §4.1.4).
+                                Not modelled: TAA stepdown arcs and straight-in subsectors (§4.4), combined facilities (§8.4).
+                            </div>
+                        </div>
+                        <div class="viz">
+                            <span class="viz-label">Plan view · to scale</span>
+                            <button class="viz-dl" onclick="exportViz(this)" data-name="msa-taa" title="Download high-resolution PNG">⤓ PNG</button>
+                            <canvas id="msaVizCanvas" width="600" height="560"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <section id="tab-selftest" class="tab-content" style="display:none;">
             <header class="page-header">
                 <div class="ph-main">
@@ -4333,6 +4437,7 @@
                                 <li><b>05-A Holding</b> (new): Table II-4-1-2 speeds, ISA+15, ICAO wind, template Table I-4-3-App C-4 (all 33 lines), entry sectors, buffer MOC. Omnidirectional entry area §3.3.3.2.1 (curves 5–8, convex-envelope approximation); template extents checked against Diagram I-4-3-App C-6.</li>
                                 <li><b>05-A VOR/DME holding</b> (new, 2 Nov 2026): §3.3.4 distance parameters (Ds, DL rounding, DLs, d1/d2) and basic area towards / away from the station (convex-envelope approximation; along-radial entry areas not drawn).</li>
                                 <li><b>05-A holding entries</b> (new, 2 Nov 2026): VOR/DME sector 1 DME-arc and sector 2 entry areas (§3.3.4.1.2.6–7), radial-intersection entries (§3.3.3.2.2); VOR/DME DL checked against Diagrams C-13 (35 NM) and C-15 (26 NM). Sector-1 reduction (§3.3.3.3) not built (construction ambiguous).</li>
+                                <li><b>11 MSA &amp; TAA</b> (new, 2 Nov 2026): I-4-8 sectors (+ DME arc subsectors), III-2-4 TAA areas, 5 NM buffer, + 1 000 ft rounded up to 100 ft, single-altitude check.</li>
                                 <li><b>10-C NPA OCA/H</b> (new, 2 Nov 2026): MOC with/without FAF, mountainous increase, secondary-area linear MOC, OCH reference, remote altimeter, Table I-4-5-3 offset limits with the gradient factor, circling lower limit, missed approach, 10-ft rounding.</li>
                                 <li><b>10 Circling &amp; VSS</b> (new, 2 Nov 2026): circling radius I-4-7 §7.2 (Table I-4-7-2 values checked), MOC / OCH lower limit / visibility Table I-4-7-3, VSS I-4-5 §5.4.6 (slope, width, length, obstacle check).</li>
                                 <li><b>07-E Turn area</b> (new, 2 Nov 2026): wind spiral (I-2-3 §3.3.2), inner boundary rules (§3.2), Table I-2-3-1 phase defaults; checked against Table I-2-3-3.</li>
@@ -4938,6 +5043,9 @@
                 const tas = PANS.tas(ias, adElevFt + 1000, 15), V = tas + 25, R = PANS.rate(V, 20), r = PANS.radius(V, R);
                 return { ias, tas, V, rate: R, r, seg: c.seg, Rthr: 2 * r + c.seg };
             },
+            // ---- MSA (I-4-8) / TAA (III-2-4): highest elevation + 1 000 ft (+ mountainous ≤ 1 000 ft), rounded up to 100 ft ----
+            msaAlt(elevFt, mountFt) { return Math.ceil((elevFt + 1000 + (mountFt || 0)) / 100 - 1e-9) * 100; },
+            msaRadius: 25, msaBuffer: 5,
             // ---- OCA/H for non-precision approaches, I-4-5 §5.4 ----
             npaMoc(withFaf) { return withFaf ? 246 : 295; },                                   // §5.4.3.1 (ft)
             // Table I-4-5-3: lower limit on OCH (ft) for offset final approach tracks; null = not permitted (only circling)
@@ -5182,6 +5290,9 @@
             { g: 'Circling', n: 'Cat E radius from threshold R (Doc rounds TAS and r first)', ref: 'Table I-4-7-2 (6.94 NM)', exp: 6.94, tol: 0.03, f: () => PANS.circlingRadius('E', 1000).Rthr },
             { g: 'Circling', n: 'Cat D TAS + 25 kt at 2 000 ft', ref: 'Table I-4-7-2 (242 kt)', exp: 242, tol: 1, f: () => PANS.circlingRadius('D', 1000).V },
             { g: 'Circling', n: 'Cat C MOC / OCH lower limit / visibility', ref: 'Table I-4-7-3 (394 ft, 591 ft, 2.0 NM)', exp: 1, tol: 0, f: () => { const c = PANS.circlingCat('C'); return c.moc === 394 && c.och === 591 && c.vis === 2 ? 1 : 0; } },
+            { g: 'MSA / TAA', n: 'Highest 2 345 ft → 3 400 ft; 2 400 ft → 3 400 ft', ref: 'I-4-8 §8.1.1, III-2-4 §4.1.4', exp: 1, tol: 0, f: () => PANS.msaAlt(2345) === 3400 && PANS.msaAlt(2400) === 3400 ? 1 : 0 },
+            { g: 'MSA / TAA', n: 'Mountainous + 1 000 ft: 2 345 ft → 4 400 ft', ref: 'I-4-8 §8.1.3', exp: 4400, tol: 0, f: () => PANS.msaAlt(2345, 1000) },
+            { g: 'MSA / TAA', n: 'Obstacle 3 NM outside a sector edge counts as buffer', ref: 'I-4-8 §8.2 (9 km / 5 NM)', exp: 1, tol: 0, f: () => { const poly = msaWedge(0, 90, 0, 25), q = [-3, 10]; return !pointInPoly(q, poly) && distToPoly(q, poly) <= 5 ? 1 : 0; } },
             { g: 'NPA OCA/H', n: 'MOC with / without FAF', ref: 'I-4-5 §5.4.3.1 (246 / 295 ft)', exp: 1, tol: 0, f: () => PANS.npaMoc(true) === 246 && PANS.npaMoc(false) === 295 ? 1 : 0 },
             { g: 'NPA OCA/H', n: 'Offset lower limit Cat D 5–15°, Cat B 15–30°, Cat C 20° not permitted', ref: 'Table I-4-5-3 (430 / 410 ft)', exp: 1, tol: 0, f: () => PANS.npaOffsetLimit('D', 10) === 430 && PANS.npaOffsetLimit('B', 20) === 410 && PANS.npaOffsetLimit('C', 20) === null ? 1 : 0 },
             { g: 'NPA OCA/H', n: 'Gradient 6.0 %: lower limit × 1.144', ref: 'I-4-5 §5.4.3.2 (+18 % per %)', exp: 1.144, tol: 1e-9, f: () => PANS.npaGradFactor(6.0) },
@@ -7657,6 +7768,7 @@
             if (typeof calcRacetrack === 'function') calcRacetrack();
             if (typeof calcTurnArea === 'function') calcTurnArea();
             if (typeof calcCircling === 'function') { calcCircling(); calcVss(); }
+            if (typeof calcMsa === 'function') calcMsa();
             if (typeof calcIfix === 'function') calcIfix();
             if (typeof calcDeparture === 'function') calcDeparture();
             if (typeof calcMsd === 'function') calcMsd();
@@ -7842,7 +7954,7 @@
 
         function collectState() {
             const fields = {}, radios = {};
-            document.querySelectorAll('main input[id], main select[id]').forEach((el) => {
+            document.querySelectorAll('main input[id], main select[id], main textarea[id]').forEach((el) => {
                 if (STATE_SKIP.has(el.id) || el.type === 'file') return;
                 if (el.type === 'radio') { if (el.checked) radios[el.name] = el.id; return; }
                 if (el.type === 'checkbox') { fields[el.id] = el.checked; return; }
@@ -7857,7 +7969,7 @@
             if (lim) document.getElementById('btp-ob-unit').textContent = lim.checked ? 'min' : 'DME';
             run('toggleVnpIls');
             ['calcTAS', 'calcTempCorr', 'calcTurn', 'calcPT', 'calcBaseTurn', 'calcBaseTurnPhi', 'drawTurnViz', 'calcHoldB',
-                'calcPBN', 'calcTolerance', 'calcVEB', 'calcDescent', 'calcEqObs', 'calcReaction', 'calcVnavPapi', 'calcHoldArea', 'calcRnpHold', 'calcRacetrack', 'calcTurnArea', 'calcCircling', 'calcVss', 'calcNpaOca', 'calcIfix', 'calcPathTerm', 'calcMsd', 'calcDeparture'].forEach((f) => run(f));
+                'calcPBN', 'calcTolerance', 'calcVEB', 'calcDescent', 'calcEqObs', 'calcReaction', 'calcVnavPapi', 'calcHoldArea', 'calcRnpHold', 'calcRacetrack', 'calcTurnArea', 'calcCircling', 'calcVss', 'calcNpaOca', 'calcMsa', 'calcIfix', 'calcPathTerm', 'calcMsd', 'calcDeparture'].forEach((f) => run(f));
             gradLegIds().forEach((id) => run('calculateGradient', id));
         }
 
@@ -8876,6 +8988,130 @@
         }
 
         // =========================================================
+        // 11 MSA (I-4-8) / TAA (III-2-4). Frame: reference point at origin, x = east, y = north (bearings from the reference), NM
+        // =========================================================
+        function pointInPoly(pt, poly) {
+            let c = false;
+            for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+                const [xi, yi] = poly[i], [xj, yj] = poly[j];
+                if ((yi > pt[1]) !== (yj > pt[1]) && pt[0] < (xj - xi) * (pt[1] - yi) / (yj - yi) + xi) c = !c;
+            }
+            return c;
+        }
+        function distToPoly(pt, poly) {
+            let d = Infinity;
+            for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+                const [ax, ay] = poly[j], [bx, by] = poly[i], vx = bx - ax, vy = by - ay, L2 = vx * vx + vy * vy || 1;
+                const t = Math.max(0, Math.min(1, ((pt[0] - ax) * vx + (pt[1] - ay) * vy) / L2));
+                d = Math.min(d, Math.hypot(pt[0] - ax - t * vx, pt[1] - ay - t * vy));
+            }
+            return d;
+        }
+        const polar = (brg, d, c) => [(c ? c[0] : 0) + d * Math.sin(brg * DEG), (c ? c[1] : 0) + d * Math.cos(brg * DEG)];
+        // wedge from bearing b0 clockwise to b1 between radii r0 and r1 about c
+        function msaWedge(b0, b1, r0, r1, c) {
+            let span = ((b1 - b0) % 360 + 360) % 360; if (span === 0) span = 360;
+            const n = Math.max(6, Math.ceil(span / 3)), pts = [];
+            for (let k = 0; k <= n; k++) pts.push(polar(b0 + span * k / n, r1, c));
+            if (r0 > 0) for (let k = n; k >= 0; k--) pts.push(polar(b0 + span * k / n, r0, c));
+            else pts.push(c || [0, 0]);
+            return pts;
+        }
+        function msaParseObstacles(txt) {
+            return txt.split(/\n/).map((l) => l.split(/[,;\t]/).map((x) => x.trim())).filter((a) => a.length >= 3 && a.slice(0, 3).every((x) => x !== '' && !isNaN(parseFloat(x))))
+                .map((a, i) => ({ brg: parseFloat(a[0]), d: parseFloat(a[1]), e: parseFloat(a[2]), n: a[3] || ('Obstacle ' + (i + 1)) }))
+                .map((o) => Object.assign(o, { p: polar(o.brg, o.d) }));
+        }
+        function msaAreas() {
+            const mode = document.getElementById('msa-mode').value;
+            const areas = [];
+            if (mode === 'msa') {
+                const b = document.getElementById('msa-bounds').value.split(/[,; ]+/).map(parseFloat).filter((x) => !isNaN(x)).map((x) => ((x % 360) + 360) % 360).sort((a, c) => a - c);
+                const bounds = b.length ? b : [0];
+                const R = parseFloat(document.getElementById('msa-arc').value);
+                const arc = R >= 5 && R < PANS.msaRadius ? R : 0;
+                bounds.forEach((b0, i) => {
+                    const b1 = bounds.length === 1 ? b0 + 360 : bounds[(i + 1) % bounds.length];
+                    const name = String(Math.round(b0)).padStart(3, '0') + '°–' + String(Math.round(((b1 % 360) + 360) % 360)).padStart(3, '0') + '°';
+                    if (arc) {
+                        areas.push({ n: name + ' < ' + arc + ' NM', poly: msaWedge(b0, b1, 0, arc), lbl: polar(b0 + (((b1 - b0) % 360 + 360) % 360 || 360) / 2, arc * 0.55) });
+                        areas.push({ n: name + ' ' + arc + '–25 NM', poly: msaWedge(b0, b1, arc, PANS.msaRadius), lbl: polar(b0 + (((b1 - b0) % 360 + 360) % 360 || 360) / 2, (arc + 25) / 2) });
+                    } else areas.push({ n: name, poly: msaWedge(b0, b1, 0, PANS.msaRadius), lbl: polar(b0 + (((b1 - b0) % 360 + 360) % 360 || 360) / 2, 14) });
+                });
+            } else {
+                const crs = parseFloat(document.getElementById('taa-crs').value) || 0, d = parseFloat(document.getElementById('taa-d').value) || 5;
+                const central = document.getElementById('taa-central').value === 'yes';
+                const back = crs + 180, IF = [0, 0], L = polar(crs - 90, d), Rr = polar(crs + 90, d), C = central ? polar(back, d) : IF;
+                const big = 60;
+                // half-planes: straight-in = behind the base-segment line (through the IF, perpendicular to the final course); left / right = ahead of it
+                const clip = (circleC, keep) => { const pts = []; for (let k = 0; k < 180; k++) { const q = polar(k * 2, PANS.msaRadius, circleC); if (keep(q)) pts.push(q); } return pts; };
+                const fwd = (q) => q[0] * Math.sin(crs * DEG) + q[1] * Math.cos(crs * DEG);          // + towards the runway
+                const lat = (q) => q[0] * Math.cos(crs * DEG) - q[1] * Math.sin(crs * DEG);          // + right of the final course
+                const area = (cC, keep) => convexHull(clip(cC, keep).concat(edgePts(keep)));
+                const edgePts = (keep) => { const pts = []; for (let t = -big; t <= big; t += 0.5) { [polar(crs + 90, t), polar(crs, t)].forEach((q) => { if (keep(q)) pts.push(q); }); } return pts; };
+                const inCirc = (cC) => (q) => Math.hypot(q[0] - cC[0], q[1] - cC[1]) <= PANS.msaRadius + 1e-9;
+                const sKeep = (q) => fwd(q) <= 1e-9 && inCirc(C)(q), lKeep = (q) => fwd(q) >= -1e-9 && lat(q) <= 1e-9 && inCirc(L)(q), rKeep = (q) => fwd(q) >= -1e-9 && lat(q) >= -1e-9 && inCirc(Rr)(q);
+                areas.push({ n: 'Straight-in', poly: area(C, sKeep), lbl: polar(back, 13), ref: C });
+                areas.push({ n: 'Left base', poly: area(L, lKeep), lbl: polar(crs - 45, 14), ref: L });
+                areas.push({ n: 'Right base', poly: area(Rr, rKeep), lbl: polar(crs + 45, 14), ref: Rr });
+                areas.taa = { IF, L, R: Rr, C, central, crs };
+            }
+            return areas;
+        }
+
+        function calcMsa() {
+            const mode = document.getElementById('msa-mode').value;
+            document.getElementById('msa-msa-grp').style.display = mode === 'msa' ? 'flex' : 'none';
+            document.getElementById('msa-taa-grp').style.display = mode === 'taa' ? 'flex' : 'none';
+            document.getElementById('msa-obs-lbl').textContent = 'Obstacles: bearing °, distance NM (from the ' + (mode === 'msa' ? 'reference point' : 'IF') + '), elevation ft, name — one per line';
+            const obs = msaParseObstacles(document.getElementById('msa-obs').value);
+            const mount = Math.max(0, Math.min(1000, parseFloat(document.getElementById('msa-mount').value) || 0));
+            const areas = msaAreas();
+            const res = areas.map((a) => {
+                let hiA = null, hiB = null;
+                obs.forEach((o) => {
+                    const inA = pointInPoly(o.p, a.poly);
+                    if (inA) { if (!hiA || o.e > hiA.e) hiA = o; }
+                    else if (distToPoly(o.p, a.poly) <= PANS.msaBuffer) { if (!hiB || o.e > hiB.e) hiB = o; }
+                });
+                const gov = hiB && (!hiA || hiB.e > hiA.e) ? hiB : hiA;
+                return Object.assign(a, { hiA, hiB, gov, alt: gov ? PANS.msaAlt(gov.e, mount) : null });
+            });
+            const fmt = (o) => o ? o.n.replace(/[<>&]/g, '') + ' ' + Math.round(o.e) : '—';
+            document.getElementById('msa-rows').innerHTML = res.map((a) => '<tr><td>' + a.n + '</td><td>' + fmt(a.hiA) + ' / ' + fmt(a.hiB) + (a.gov && a.gov === a.hiB ? ' (buffer)' : '') +
+                '</td><td class="num">' + (a.alt ? a.alt.toLocaleString() + ' ft' : '—') + '</td></tr>').join('');
+            const alts = res.map((a) => a.alt).filter((x) => x);
+            const single = alts.length && Math.max(...alts) - Math.min(...alts) <= 300;
+            document.getElementById('msa-res-single').textContent = alts.length ? (single ? Math.max(...alts).toLocaleString() + ' ft (all ' + (mode === 'msa' ? 'sectors' : 'TAAs') + ')' : 'differences > 300 ft — keep separate') : '---';
+            drawMsaViz(res, obs, areas.taa, mode);
+        }
+
+        function drawMsaViz(areas, obs, taa, mode) {
+            const canvas = document.getElementById('msaVizCanvas');
+            if (!canvas) return;
+            const { ctx, w, h } = setupCanvas(canvas, 0.95, 600, 320);
+            const C = bpColors();
+            const all = [].concat(...areas.map((a) => a.poly), obs.map((o) => o.p));
+            const B = boundsOf(all.length ? all : [[-25, -25], [25, 25]], 0.08);
+            const V = vizView(B, w, h, { t: 44, b: 44, l: 18, r: 18 });
+            areas.forEach((a) => {
+                ctx.save(); cvPath(ctx, V, a.poly); ctx.closePath(); ctx.fillStyle = C.fill; ctx.fill(); ctx.strokeStyle = C.warning; ctx.lineWidth = 1.4; ctx.stroke(); ctx.restore();
+                ctx.save(); cvPath(ctx, V, circlesHull(a.poly.map(([x, y]) => [x, y, 0]), [[0, 0]], PANS.msaBuffer)); ctx.closePath(); ctx.setLineDash([3, 5]); ctx.strokeStyle = C.muted; ctx.lineWidth = 0.7; ctx.stroke(); ctx.restore();
+            });
+            cvFooter(ctx, C, V, w, h, mode === 'msa' ? 'MSA · 25 NM + 5 NM buffer' : 'TAA · 25 NM arcs + 5 NM buffer');
+            obs.forEach((o) => { cvDot(ctx, C, V.X(o.p[0]), V.Y(o.p[1]), C.danger, 2.6); });
+            if (taa) {
+                [['IF', taa.IF], ['IAF L', taa.L], ['IAF R', taa.R]].concat(taa.central ? [['IAF C', taa.C]] : []).forEach(([n, q]) => cvFix(ctx, C, V.X(q[0]), V.Y(q[1]), n));
+                const rw = polar(taa.crs, 6);
+                cvStroke(ctx, C, V, [polar(taa.crs + 180, taa.central ? 5 : 0.01), [0, 0], rw], C.primary, 2);
+                cvArrowsAlong(ctx, V, [[0, 0], rw], [0.8], C.primary, 10);
+            } else cvFix(ctx, C, V.X(0), V.Y(0), 'REF');
+            areas.forEach((a) => { if (a.alt) cvLabel(ctx, C, a.alt.toLocaleString(), V.X(a.lbl[0]), V.Y(a.lbl[1]), { size: 12, bold: true, color: C.ink, border: C.warning }); });
+            obs.forEach((o) => cvLabel(ctx, C, String(Math.round(o.e)), V.X(o.p[0]), V.Y(o.p[1]) - 9, { size: 8, color: C.danger, box: false }));
+            cvLabel(ctx, C, '▭ ' + (mode === 'msa' ? 'sector' : 'TAA area') + ' · ┄ 5 NM buffer · ● obstacle', 10, 34, { align: 'left', size: 9, box: false, color: C.warning });
+        }
+
+        // =========================================================
         // 02-E RACETRACK PROTECTED AREA (I-4-3 §3.4, §3.6–3.8; App C §3.3) — holding template engine
         // =========================================================
         function calcRacetrack() {
@@ -9809,6 +10045,7 @@
                 if (id === 'tab-reversal') { calcPT(); calcBaseTurn(); calcRacetrack(); }
                 if (id === 'tab-vnav-papi') calcVnavPapi();
                 if (id === 'tab-circ') { calcCircling(); calcVss(); calcNpaOca(); }
+                if (id === 'tab-msa') calcMsa();
                 if (id === 'tab-holdb') { calcHoldArea(); calcRnpHold(); }
                 if (id === 'tab-tol') calcIfix();
                 if (id === 'tab-pt') { ptRenderReference(); calcPathTerm(); calcMsd(); }
@@ -9847,6 +10084,7 @@
             if (typeof calcRacetrack === 'function') calcRacetrack();
             if (typeof calcTurnArea === 'function') calcTurnArea();
             if (typeof calcCircling === 'function') { calcCircling(); calcVss(); }
+            if (typeof calcMsa === 'function') calcMsa();
             if (typeof calcIfix === 'function') calcIfix();
             if (typeof calcPathTerm === 'function') calcPathTerm();
             if (typeof calcMsd === 'function') calcMsd();
