@@ -113,7 +113,8 @@ Card in `tab-desc` (sheet 07 renamed "Departure & Missed Approach"): `PANS.depSt
 - Turn height 120 m (394 ft) (Cat H 90 m); at 3.3 % reached at ≈ 1.9 NM (Doc: nominal 3.5 km / 1.9 NM).
 
 ### Backlog (agreed with the user, in rough priority)
-- Holding leftovers: VOR/DME reciprocal direct entry to a secondary point (§3.3.4.1.3); sector-1 area reduction (§3.3.3.3) — Doc text / Diagram C-11 ambiguous, needs the user's reading before building.
+- Holding leftover: VOR/DME reciprocal direct entry to a secondary point (§3.3.4.1.3).
+  (Sector-1 area reduction §3.3.3.3 deliberately left out — user decision 2 Nov 2026: the Doc construction is ambiguous; the card says so.)
 - Racetrack protected area on sheet 02R from the same template (primary + 2.5 NM secondary, §3.3.1.3).
 - Turn area construction for departure / missed approach turns (wind spiral, turn at altitude / at a TP).
 - Circling area (radii by category, Table I-4-7-1) and visual segment surface check.
