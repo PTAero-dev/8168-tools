@@ -6339,7 +6339,7 @@
         }
 
         function cvArrowHead(ctx, x, y, ang, color, size) {
-            size = size || 10;
+            size = (size || 10) * 0.75;                            // heads kept small relative to the 2–2.5 px track lines
             ctx.save();
             ctx.translate(x, y); ctx.rotate(ang);
             ctx.beginPath();
@@ -6864,7 +6864,21 @@
             const dist = Math.hypot(inn.x - out.x, inn.y - out.y);
             const arcR = dist * 0.7;
             const sw = turnDirection === 'Right' ? 1 : 0;
-            s += `<path d="M ${out.x} ${out.y} A ${arcR} ${arcR} 0 1 ${sw} ${inn.x} ${inn.y}" stroke="${C.primary}" stroke-width="2" fill="none" stroke-dasharray="6 4" marker-end="url(#btpArrIn)"/>`;
+            s += `<path d="M ${out.x} ${out.y} A ${arcR} ${arcR} 0 1 ${sw} ${inn.x} ${inn.y}" stroke="${C.primary}" stroke-width="1.6" fill="none" stroke-dasharray="5 4"/>`;
+            {   // small arrowhead half-way round the turn, pointing along the arc (SVG arc centre from the endpoint form)
+                const mx = (out.x - inn.x) / 2, my = (out.y - inn.y) / 2, d2 = mx * mx + my * my;
+                const k = Math.sqrt(Math.max(0, arcR * arcR - d2) / d2) * (sw === 1 ? -1 : 1);    // large-arc = 1
+                const cx = (out.x + inn.x) / 2 + k * my, cy = (out.y + inn.y) / 2 - k * mx;
+                const a0 = Math.atan2(out.y - cy, out.x - cx);
+                let a1 = Math.atan2(inn.y - cy, inn.x - cx);
+                if (sw === 1 && a1 < a0) a1 += 2 * Math.PI;
+                if (sw === 0 && a1 > a0) a1 -= 2 * Math.PI;
+                const am = a0 + (a1 - a0) * 0.55, dir = sw === 1 ? 1 : -1;
+                const hx = cx + arcR * Math.cos(am), hy = cy + arcR * Math.sin(am);
+                const ang = am + dir * Math.PI / 2;                   // tangent in the direction of travel
+                const L = 7, Wd = 3.6, bx = hx - L * Math.cos(ang), by = hy - L * Math.sin(ang);
+                s += `<polygon points="${hx},${hy} ${bx + Wd * Math.sin(ang)},${by - Wd * Math.cos(ang)} ${bx - Wd * Math.sin(ang)},${by + Wd * Math.cos(ang)}" fill="${C.primary}"/>`;
+            }
 
             // required outbound + inbound
             s += `<line x1="${c}" y1="${c}" x2="${out.x}" y2="${out.y}" stroke="${C.fill}" stroke-width="9"/>`;
@@ -6901,8 +6915,8 @@
             leg += `</g>`;
 
             const defs = `<defs>
-                <marker id="btpArrOut" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 L3,5 Z" fill="${C.success}"/></marker>
-                <marker id="btpArrIn" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 L3,5 Z" fill="${C.primary}"/></marker>
+                <marker id="btpArrOut" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="10" orient="auto"><path d="M0,1 L10,5 L0,9 L2.5,5 Z" fill="${C.success}"/></marker>
+                <marker id="btpArrIn" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="10" orient="auto"><path d="M0,1 L10,5 L0,9 L2.5,5 Z" fill="${C.primary}"/></marker>
             </defs>`;
 
             document.getElementById('btp-svg-container').innerHTML =
