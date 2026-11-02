@@ -4269,6 +4269,91 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- 10-D CDFA TABLE -->
+                <div class="card" id="card-cdfa">
+                    <div class="card-header minimizable" onclick="toggleCard(this)">
+                        <div class="card-heading"><span class="card-tag">10-D</span>
+                            <div class="card-title">CDFA Altitude / Distance Table</div>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-reset" onclick="event.stopPropagation(); resetCard('card-cdfa', ['cdfa-thr', 'cdfa-faf', 'cdfa-dme', 'cdfa-oca'], 'calcCdfa');">↺ Reset</button>
+                        </div>
+                    </div>
+                    <div class="card-body split">
+                        <div class="form-grid">
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>Threshold Elev (ft)</label>
+                                    <input type="number" id="cdfa-thr" placeholder="e.g. 985" oninput="calcCdfa()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Descent angle (°)</label>
+                                    <input type="number" id="cdfa-angle" value="3.00" step="0.01" oninput="calcCdfa()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>RDH / TCH (ft)</label>
+                                    <input type="number" id="cdfa-rdh" value="50" oninput="calcCdfa()">
+                                </div>
+                            </div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>FAF distance from THR (NM)</label>
+                                    <input type="number" id="cdfa-faf" placeholder="e.g. 5.0" step="0.1" oninput="calcCdfa()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>DME beyond THR (NM)<span class="opt">OPT</span></label>
+                                    <input type="number" id="cdfa-dme" placeholder="0 = THR distance" step="0.1" oninput="calcCdfa()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>OCA / MDA (ft)<span class="opt">OPT</span></label>
+                                    <input type="number" id="cdfa-oca" placeholder="stop at" oninput="calcCdfa()">
+                                </div>
+                            </div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>Earth curvature</label>
+                                    <select id="cdfa-curv" onchange="calcCdfa()">
+                                        <option value="yes">Included (+0.8833 D²)</option>
+                                        <option value="no">Right-angle triangle only</option>
+                                    </select>
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Rounding</label>
+                                    <select id="cdfa-round" onchange="calcCdfa()">
+                                        <option value="up10">Up to 10 ft</option>
+                                        <option value="near10">Nearest 10 ft</option>
+                                        <option value="none">None</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="results-panel">
+                                <div class="result-row">
+                                    <span class="result-label">Gradient · ft/NM</span>
+                                    <span id="cdfa-res-grad" class="result-value c-cyan">---</span>
+                                </div>
+                                <div class="result-row key">
+                                    <span class="result-label">FAF altitude on the profile</span>
+                                    <span id="cdfa-res-faf" class="result-value c-warning">---</span>
+                                </div>
+                                <div class="table-wrap"><table class="qa-table"><thead><tr><th id="cdfa-col-d">DME</th><th>Altitude</th><th>Height</th></tr></thead><tbody id="cdfa-rows"></tbody></table></div>
+                                <div class="table-wrap"><table class="qa-table"><thead><tr><th>GS (kt)</th><th>ROD (ft/min)</th><th>FAF → THR</th></tr></thead><tbody id="cdfa-rod"></tbody></table></div>
+                            </div>
+                            <div class="note">
+                                <div class="note-title">Reference</div>
+                                Doc 8168 Vol II I-4-9 §9.4.3.5: for CDFA, a table of the altitudes/heights the aircraft should pass at each 1 NM (2 km); II-2-4 §4.4.3.2: DME
+                                distance/height relationship, preferably every 1 NM. Profile H = RDH + 6 076·D·tanθ (+ 0.8833·D² for earth curvature) with heights rounded up to
+                                10 ft (II-1-1-App C §1–3). Descent angle published to 0.01° (I-4-9 §9.4.1.3). ROD = GS × 6 076.12 / 60 × tanθ. The DME reading is the distance from
+                                the threshold plus the DME position beyond the threshold (slant range not applied).
+                            </div>
+                        </div>
+                        <div class="viz">
+                            <span class="viz-label">Profile · ft</span>
+                            <button class="viz-dl" onclick="exportViz(this)" data-name="cdfa-profile" title="Download high-resolution PNG">⤓ PNG</button>
+                            <canvas id="cdfaVizCanvas" width="600" height="320"></canvas>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -4437,6 +4522,7 @@
                                 <li><b>05-A Holding</b> (new): Table II-4-1-2 speeds, ISA+15, ICAO wind, template Table I-4-3-App C-4 (all 33 lines), entry sectors, buffer MOC. Omnidirectional entry area §3.3.3.2.1 (curves 5–8, convex-envelope approximation); template extents checked against Diagram I-4-3-App C-6.</li>
                                 <li><b>05-A VOR/DME holding</b> (new, 2 Nov 2026): §3.3.4 distance parameters (Ds, DL rounding, DLs, d1/d2) and basic area towards / away from the station (convex-envelope approximation; along-radial entry areas not drawn).</li>
                                 <li><b>05-A holding entries</b> (new, 2 Nov 2026): VOR/DME sector 1 DME-arc and sector 2 entry areas (§3.3.4.1.2.6–7), radial-intersection entries (§3.3.3.2.2); VOR/DME DL checked against Diagrams C-13 (35 NM) and C-15 (26 NM). Sector-1 reduction (§3.3.3.3) not built (construction ambiguous).</li>
+                                <li><b>10-D CDFA table</b> (new, 2 Nov 2026): profile heights per II-1-1-App C (checked against Table II-1-1-App C-1b), 1 NM table, DME offset, ROD table.</li>
                                 <li><b>11 MSA &amp; TAA</b> (new, 2 Nov 2026): I-4-8 sectors (+ DME arc subsectors), III-2-4 TAA areas, 5 NM buffer, + 1 000 ft rounded up to 100 ft, single-altitude check.</li>
                                 <li><b>10-C NPA OCA/H</b> (new, 2 Nov 2026): MOC with/without FAF, mountainous increase, secondary-area linear MOC, OCH reference, remote altimeter, Table I-4-5-3 offset limits with the gradient factor, circling lower limit, missed approach, 10-ft rounding.</li>
                                 <li><b>10 Circling &amp; VSS</b> (new, 2 Nov 2026): circling radius I-4-7 §7.2 (Table I-4-7-2 values checked), MOC / OCH lower limit / visibility Table I-4-7-3, VSS I-4-5 §5.4.6 (slope, width, length, obstacle check).</li>
@@ -5043,6 +5129,8 @@
                 const tas = PANS.tas(ias, adElevFt + 1000, 15), V = tas + 25, R = PANS.rate(V, 20), r = PANS.radius(V, R);
                 return { ias, tas, V, rate: R, r, seg: c.seg, Rthr: 2 * r + c.seg };
             },
+            // ---- CDFA profile (I-4-9 §9.4.3.5; II-1-1-App C): H = h + 6 076·D·tanθ + 0.8833·D² (ft, NM; curvature term optional) ----
+            profileHeight(Dnm, angleDeg, rdhFt, curvature) { return rdhFt + 6076 * Dnm * Math.tan(angleDeg * Math.PI / 180) + (curvature ? 0.8833 * Dnm * Dnm : 0); },
             // ---- MSA (I-4-8) / TAA (III-2-4): highest elevation + 1 000 ft (+ mountainous ≤ 1 000 ft), rounded up to 100 ft ----
             msaAlt(elevFt, mountFt) { return Math.ceil((elevFt + 1000 + (mountFt || 0)) / 100 - 1e-9) * 100; },
             msaRadius: 25, msaBuffer: 5,
@@ -5290,6 +5378,8 @@
             { g: 'Circling', n: 'Cat E radius from threshold R (Doc rounds TAS and r first)', ref: 'Table I-4-7-2 (6.94 NM)', exp: 6.94, tol: 0.03, f: () => PANS.circlingRadius('E', 1000).Rthr },
             { g: 'Circling', n: 'Cat D TAS + 25 kt at 2 000 ft', ref: 'Table I-4-7-2 (242 kt)', exp: 242, tol: 1, f: () => PANS.circlingRadius('D', 1000).V },
             { g: 'Circling', n: 'Cat C MOC / OCH lower limit / visibility', ref: 'Table I-4-7-3 (394 ft, 591 ft, 2.0 NM)', exp: 1, tol: 0, f: () => { const c = PANS.circlingCat('C'); return c.moc === 394 && c.och === 591 && c.vis === 2 ? 1 : 0; } },
+            { g: 'CDFA', n: 'Profile height 2.5°, 1 NM, RDH 49 ft, with curvature', ref: 'Table II-1-1-App C-1b (315 ft)', exp: 315, tol: 0.5, f: () => PANS.profileHeight(1, 2.5, 49, true) },
+            { g: 'CDFA', n: 'Profile height 2.5°, 10 NM, RDH 49 ft, with curvature', ref: 'Table II-1-1-App C-1b (2 790 ft)', exp: 2790, tol: 1, f: () => PANS.profileHeight(10, 2.5, 49, true) },
             { g: 'MSA / TAA', n: 'Highest 2 345 ft → 3 400 ft; 2 400 ft → 3 400 ft', ref: 'I-4-8 §8.1.1, III-2-4 §4.1.4', exp: 1, tol: 0, f: () => PANS.msaAlt(2345) === 3400 && PANS.msaAlt(2400) === 3400 ? 1 : 0 },
             { g: 'MSA / TAA', n: 'Mountainous + 1 000 ft: 2 345 ft → 4 400 ft', ref: 'I-4-8 §8.1.3', exp: 4400, tol: 0, f: () => PANS.msaAlt(2345, 1000) },
             { g: 'MSA / TAA', n: 'Obstacle 3 NM outside a sector edge counts as buffer', ref: 'I-4-8 §8.2 (9 km / 5 NM)', exp: 1, tol: 0, f: () => { const poly = msaWedge(0, 90, 0, 25), q = [-3, 10]; return !pointInPoly(q, poly) && distToPoly(q, poly) <= 5 ? 1 : 0; } },
@@ -5453,6 +5543,7 @@
             'vss-res-len': ['length = OCH / tan(VSS slope) from the threshold', 'I-4-5 §5.4.6.1'],
             'oca-res-obs': ['OCA = max(obstacle elevation + MOC × (1 − secondary position)); OCH = OCA − reference elevation', 'I-4-5 §5.4.3.1, I-2-1 §1.3'],
             'oca-res-pub': ['max(obstacle OCH + remote altimeter, offset lower limit × gradient factor, circling (θ > 30° / G > 6.5 %), missed approach), rounded up to 10 ft', 'I-4-5 §5.4.3–5.4.5, §5.5.5'],
+            'cdfa-res-faf': ['H = RDH + 6 076·D·tanθ (+ 0.8833·D²), rounded', 'II-1-1-App C; I-4-9 §9.4.3.5'],
             'msd-res-tas': ['TAS at ISA + ΔISA;  r at the phase bank or 3°/s, whichever is less', 'Vol II III-2-1 §1.4']
         };
         RESULT_INFO['res-ta-before'] = RESULT_INFO['turn-ta-before'];
@@ -7769,6 +7860,7 @@
             if (typeof calcTurnArea === 'function') calcTurnArea();
             if (typeof calcCircling === 'function') { calcCircling(); calcVss(); }
             if (typeof calcMsa === 'function') calcMsa();
+            if (typeof calcCdfa === 'function') calcCdfa();
             if (typeof calcIfix === 'function') calcIfix();
             if (typeof calcDeparture === 'function') calcDeparture();
             if (typeof calcMsd === 'function') calcMsd();
@@ -7969,7 +8061,7 @@
             if (lim) document.getElementById('btp-ob-unit').textContent = lim.checked ? 'min' : 'DME';
             run('toggleVnpIls');
             ['calcTAS', 'calcTempCorr', 'calcTurn', 'calcPT', 'calcBaseTurn', 'calcBaseTurnPhi', 'drawTurnViz', 'calcHoldB',
-                'calcPBN', 'calcTolerance', 'calcVEB', 'calcDescent', 'calcEqObs', 'calcReaction', 'calcVnavPapi', 'calcHoldArea', 'calcRnpHold', 'calcRacetrack', 'calcTurnArea', 'calcCircling', 'calcVss', 'calcNpaOca', 'calcMsa', 'calcIfix', 'calcPathTerm', 'calcMsd', 'calcDeparture'].forEach((f) => run(f));
+                'calcPBN', 'calcTolerance', 'calcVEB', 'calcDescent', 'calcEqObs', 'calcReaction', 'calcVnavPapi', 'calcHoldArea', 'calcRnpHold', 'calcRacetrack', 'calcTurnArea', 'calcCircling', 'calcVss', 'calcNpaOca', 'calcCdfa', 'calcMsa', 'calcIfix', 'calcPathTerm', 'calcMsd', 'calcDeparture'].forEach((f) => run(f));
             gradLegIds().forEach((id) => run('calculateGradient', id));
         }
 
@@ -9112,6 +9204,74 @@
         }
 
         // =========================================================
+        // 10-D CDFA ALTITUDE / DISTANCE TABLE (I-4-9 §9.4.3.5, II-1-1-App C)
+        // =========================================================
+        function calcCdfa() {
+            const g = (id) => parseFloat(document.getElementById(id).value);
+            const set = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+            const thr = g('cdfa-thr'), ang = g('cdfa-angle'), rdh = isNaN(g('cdfa-rdh')) ? 50 : g('cdfa-rdh'), faf = g('cdfa-faf');
+            if (isNaN(thr) || !(ang > 0) || !(faf > 0)) return;
+            const curv = document.getElementById('cdfa-curv').value === 'yes', rnd = document.getElementById('cdfa-round').value;
+            const dme = isNaN(g('cdfa-dme')) ? null : g('cdfa-dme'), oca = g('cdfa-oca');
+            const R = (ft) => rnd === 'up10' ? Math.ceil(ft / 10 - 1e-9) * 10 : rnd === 'near10' ? Math.round(ft / 10) * 10 : Math.round(ft);
+            const H = (d) => PANS.profileHeight(d, ang, rdh, curv);
+            const tanA = Math.tan(ang * DEG);
+            set('cdfa-res-grad', (tanA * 100).toFixed(2) + ' % · ' + Math.round(6076.12 * tanA) + ' ft/NM');
+            set('cdfa-res-faf', R(thr + H(faf)).toLocaleString() + ' ft (' + R(H(faf)) + ' ft above THR)');
+            document.getElementById('cdfa-col-d').textContent = dme !== null ? 'DME (NM)' : 'THR (NM)';
+            const rows = [];
+            // rows at each whole NM of the reading the pilot uses: DME (THR distance + DME offset) or distance to the threshold
+            const off = dme !== null ? dme : 0, dists = [faf];
+            for (let r = Math.floor(faf + off - 1e-9); r - off >= 0.5; r--) dists.push(r - off);
+            dists.forEach((d) => {
+                const hgt = H(d), alt = thr + hgt;
+                if (!isNaN(oca) && alt < oca - 1e-9 && d !== faf) return;
+                rows.push('<tr><td class="num">' + (dme !== null ? (d + dme).toFixed(1) : d.toFixed(1)) + (d === faf ? ' (FAF)' : '') + '</td><td class="num">' + R(alt).toLocaleString() + '</td><td class="num">' + R(hgt) + '</td></tr>');
+            });
+            if (!isNaN(oca)) {
+                const dOca = (oca - thr - rdh) / (6076 * tanA);
+                if (dOca > 0 && dOca < faf) rows.push('<tr><td class="num">' + (dme !== null ? (dOca + dme).toFixed(1) : dOca.toFixed(1)) + ' (OCA)</td><td class="num">' + Math.round(oca).toLocaleString() + '</td><td class="num">' + Math.round(oca - thr) + '</td></tr>');
+            }
+            document.getElementById('cdfa-rows').innerHTML = rows.join('');
+            document.getElementById('cdfa-rod').innerHTML = [80, 100, 120, 140, 160, 180].map((gs) => {
+                const rod = gs * 6076.12 / 60 * tanA, t = faf / gs * 60;
+                return '<tr><td class="num">' + gs + '</td><td class="num">' + Math.round(rod / 10) * 10 + '</td><td class="num">' + Math.floor(t) + ':' + String(Math.round((t % 1) * 60)).padStart(2, '0') + '</td></tr>';
+            }).join('');
+            drawCdfaViz({ thr, ang, rdh, faf, curv, H, oca, dme, R });
+        }
+
+        function drawCdfaViz(o) {
+            const canvas = document.getElementById('cdfaVizCanvas');
+            if (!canvas) return;
+            const { ctx, w, h } = setupCanvas(canvas, 0.55, 360, 240);
+            const C = bpColors();
+            const pad = { l: 46, r: 16, t: 40, b: 30 };
+            const dMax = o.faf + 0.5, hMax = o.H(dMax) * 1.12;
+            const X = (d) => w - pad.r - d / dMax * (w - pad.l - pad.r);      // threshold on the right, approach from the left
+            const Y = (hf) => h - pad.b - hf / hMax * (h - pad.t - pad.b);
+            ctx.save(); ctx.strokeStyle = C.line; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(X(dMax), Y(0)); ctx.lineTo(X(0), Y(0)); ctx.stroke(); ctx.restore();
+            const pts = []; for (let d = 0; d <= dMax + 1e-9; d += 0.1) pts.push([d, o.H(d)]);
+            ctx.save(); ctx.beginPath(); pts.forEach(([d, hf], i) => (i ? ctx.lineTo(X(d), Y(hf)) : ctx.moveTo(X(d), Y(hf)))); ctx.strokeStyle = C.primary; ctx.lineWidth = 2.2; ctx.stroke(); ctx.restore();
+            const off = o.dme !== null ? o.dme : 0;
+            for (let rd = Math.ceil(off + 0.5); rd - off <= o.faf - 0.2; rd++) {
+                const d = rd - off;
+                ctx.save(); ctx.setLineDash([2, 3]); ctx.strokeStyle = C.soft; ctx.beginPath(); ctx.moveTo(X(d), Y(0)); ctx.lineTo(X(d), Y(o.H(d))); ctx.stroke(); ctx.restore();
+                cvDot(ctx, C, X(d), Y(o.H(d)), C.cyan, 2.4);
+                cvLabel(ctx, C, String(o.R(o.thr + o.H(d))), X(d), Y(o.H(d)) - 11, { size: 8, color: C.cyan });
+                cvLabel(ctx, C, String(rd), X(d), h - pad.b + 12, { size: 8, color: C.muted, box: false, keep: true });
+            }
+            cvDot(ctx, C, X(o.faf), Y(o.H(o.faf)), C.warning, 3.5);
+            cvLabel(ctx, C, 'FAF ' + o.R(o.thr + o.H(o.faf)), X(o.faf), Y(o.H(o.faf)) - 12, { size: 9, bold: true, color: C.warning });
+            if (!isNaN(o.oca)) {
+                const yo = Y(o.oca - o.thr);
+                ctx.save(); ctx.setLineDash([5, 4]); ctx.strokeStyle = C.danger; ctx.beginPath(); ctx.moveTo(X(dMax), yo); ctx.lineTo(X(0), yo); ctx.stroke(); ctx.restore();
+                cvLabel(ctx, C, 'OCA ' + Math.round(o.oca), X(0) - 4, yo - 9, { size: 9, color: C.danger, align: 'right' });
+            }
+            cvLabel(ctx, C, 'THR', X(0), Y(0) + 12, { size: 9, bold: true, keep: true });
+            cvLabel(ctx, C, o.ang.toFixed(2) + '° · RDH ' + o.rdh + ' ft' + (o.curv ? ' · curvature' : ''), 10, 30, { align: 'left', size: 9, box: false, color: C.primary });
+        }
+
+        // =========================================================
         // 02-E RACETRACK PROTECTED AREA (I-4-3 §3.4, §3.6–3.8; App C §3.3) — holding template engine
         // =========================================================
         function calcRacetrack() {
@@ -10044,7 +10204,7 @@
                 if (id === 'tab-gradient') redrawGradients();
                 if (id === 'tab-reversal') { calcPT(); calcBaseTurn(); calcRacetrack(); }
                 if (id === 'tab-vnav-papi') calcVnavPapi();
-                if (id === 'tab-circ') { calcCircling(); calcVss(); calcNpaOca(); }
+                if (id === 'tab-circ') { calcCircling(); calcVss(); calcNpaOca(); calcCdfa(); }
                 if (id === 'tab-msa') calcMsa();
                 if (id === 'tab-holdb') { calcHoldArea(); calcRnpHold(); }
                 if (id === 'tab-tol') calcIfix();
@@ -10085,6 +10245,7 @@
             if (typeof calcTurnArea === 'function') calcTurnArea();
             if (typeof calcCircling === 'function') { calcCircling(); calcVss(); }
             if (typeof calcMsa === 'function') calcMsa();
+            if (typeof calcCdfa === 'function') calcCdfa();
             if (typeof calcIfix === 'function') calcIfix();
             if (typeof calcPathTerm === 'function') calcPathTerm();
             if (typeof calcMsd === 'function') calcMsd();
