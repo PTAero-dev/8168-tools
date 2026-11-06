@@ -118,12 +118,12 @@ Card in `tab-desc` (sheet 07 renamed "Departure & Missed Approach"): `PANS.depSt
 
 ### Backlog (agreed with the user, in rough priority)
 - (Holding done. Sector-1 area reduction §3.3.3.3 deliberately left out — user decision 2 Nov 2026: the Doc construction is ambiguous; the card says so.)
-- RNAV turn follow-ups (optional): fly-by maximum-speed extension (III-2-2 §2.3.1.2), constant-width secondary in the turn (§2.3.1.3), circular arc method for small turns (§2.2).
 - En-route obstacle clearance: MOCA, primary/buffer widths, en-route turn areas.
 - DME arc segment: area widths and lead radial.
 - Coordinate tool: WGS-84 distance/bearing, point from bearing/distance, magnetic ↔ true.
 - Obstacle list import (CSV) checked in one go against PDG, holding and departure surfaces.
 - Real-device testing by the user (install, offline, print to PDF on phone) — the user's own step; not picked by "continue".
+- RNAV turn follow-ups (optional): fly-by maximum-speed extension (III-2-2 §2.3.1.2), constant-width secondary in the turn (§2.3.1.3), circular arc method for small turns (§2.2).
 - Optional: renumber sheets/cards to the new section order (currently original numbers kept; 02R added).
 
 
