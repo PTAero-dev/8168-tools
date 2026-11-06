@@ -381,6 +381,7 @@ Key development milestones from previous sessions:
 | 2026-05-01 | Coordinate Converter mobile UI redesigned (within FISB Tools project, separate app). Nested card-in-card layout replaced with fluid full-page scroll. |
 | 2026-05-02 | Context imported from Claude session. Session context continuity maintained. |
 | 2026-05-08 | Folder rename from `FVP Tools` → `8168 Tools` initiated. Handover document created. |
+| 2026-11-06 | All cards start folded (sheets with 2+ cards) so each sheet reads as a list of topics; opening a card restores its split layout (was forced to block) and redraws its drawing; even gap for cards placed straight in a sheet. |
 | 2026-11-06 | 13-C obstacle import: name / lat / lon / elev (paste or .csv) → 07-D (inside the I-3-3 §3.2.4.1 departure area, distance from DER), 05-A (highest in the drawn holding area and governing buffer obstacle; `window._holdGeom`), 11 (bearing / distance, magnetic with 13-A variation), 12-A (along / offset to P→Q); 1 check → 178. |
 | 2026-11-06 | New sheet 13 Coordinates (`tab-geo`, group renamed Quality & Tools): WGS-84 Vincenty inverse / direct, DMS / packed / decimal input, DMS to 0.01″, true ↔ magnetic with variation; 4 checks incl. Vincenty's Flinders Peak – Buninyong example → 177. |
 | 2026-11-06 | 12-B DME arc: minimum radius (initial 7 NM / H 5 NM, arrival 10 NM), initial approach area ±2.5 / ±5 NM with splay beyond 37 NM VOR / 28 NM NDB, lead ≥ 2 NM (H 1 NM) above 70° or r·tan(θ/2), lead radial rounded to whole degrees, 120° check, drawing; 3 checks → 173. |

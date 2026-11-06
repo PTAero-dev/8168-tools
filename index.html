@@ -929,6 +929,7 @@
         textarea { width: 100%; min-height: 120px; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-input);
             color: var(--text-main); font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.5; resize: vertical; box-sizing: border-box; }
         .imp-actions { flex-wrap: wrap; gap: 6px; }
+        .tab-content > .card { margin-bottom: 22px; }           /* cards placed straight in a sheet keep the same gap as in a stack */
         /* foldable long notes */
         .note-fold > .note-title { cursor: pointer; user-select: none; display: flex; align-items: center; gap: 8px; margin-bottom: 0; }
         .note-fold > .note-title::after { content: '▾'; margin-left: auto; font-size: 0.8rem; color: var(--text-muted); transition: transform 0.15s; }
@@ -6844,8 +6845,10 @@
             const cardBody = headerElement.parentElement.querySelector('.card-body');
             if (cardBody) {
                 if (cardBody.style.display === 'none') {
-                    cardBody.style.display = 'block';
+                    cardBody.style.display = '';                         // back to the card's own layout (block / split grid)
                     headerElement.classList.remove('minimized-header');
+                    // drawings cannot size themselves while hidden: redraw once the card is open
+                    setTimeout(() => { if (typeof redrawDiagrams === 'function') redrawDiagrams(); }, 0);
                 } else {
                     cardBody.style.display = 'none';
                     headerElement.classList.add('minimized-header');
@@ -11332,6 +11335,20 @@
                 title.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
             });
         }
+
+        // Every sheet opens with its cards folded to their title bars, so the topics read as a list; tap a title (or a chip) to open.
+        // A sheet with a single card keeps it open.
+        function foldAllCards() {
+            document.querySelectorAll('main .tab-content').forEach((sec) => {
+                const heads = [...sec.querySelectorAll('.card > .card-header.minimizable')];
+                if (heads.length < 2) return;
+                heads.forEach((hd) => {
+                    const body = hd.parentElement.querySelector('.card-body');
+                    if (body && body.style.display !== 'none') { body.style.display = 'none'; hd.classList.add('minimized-header'); }
+                });
+            });
+        }
+        document.addEventListener('DOMContentLoaded', () => foldAllCards());
 
         function decorateCards(root) {
             decorateViz(root);
