@@ -381,6 +381,7 @@ Key development milestones from previous sessions:
 | 2026-05-01 | Coordinate Converter mobile UI redesigned (within FISB Tools project, separate app). Nested card-in-card layout replaced with fluid full-page scroll. |
 | 2026-05-02 | Context imported from Claude session. Session context continuity maintained. |
 | 2026-05-08 | Folder rename from `FVP Tools` → `8168 Tools` initiated. Handover document created. |
+| 2026-11-06 | 06-E RF leg: Doc 9905 Table 3-1 b) speeds, tailwind (ICAO 2h+47 or MA 10/20/30/40 kt), minimum radius at 25° (15° above FL190), bank for a given radius, arc length, DTA; 3 checks → 165. |
 | 2026-11-02 | 08-E Baro-VNAV FAS: Δh (App A) at the minimum temperature, tan FAS and X_FAS (§4.3.4.2.5), FAS′/FAS″ for Hi 105/120 m joined at 5 000/10 000 ft, minimum VPA ≥ 2.5°, FAP ≤ 10 NM, obstacle check, profile; 2 checks → 162. |
 | 2026-11-02 | 10-F stepdown fix: g1/g2 (to 50 ft, Cat H 35 ft) vs final limits, stabilized FAF→THR path vs SDF MOCA (I-4-5 §5.5.4), dual OCA/H reminder, close-to-fix 15 % plane (Cat H 2.5 × gradient) for up to 4 obstacles (I-2-2 §2.7.4); 2 checks → 160. |
 | 2026-11-02 | 10-E NPA missed approach: d (3 s) / X (15 s, H 5 s) at TAS + 10 kt, Tables I-4-6-1/-2 for distance MAPt (Cat A–D), SOC, initial phase with final MOC, 2.5 % climb with MOC 98 ft (secondary linear), OCA table for 2.5/3/4/5 %, 5.2 % path limit for MAPt before THR; 4 checks → 158. |

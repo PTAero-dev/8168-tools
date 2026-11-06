@@ -15,7 +15,7 @@ Guide for Claude Code sessions working on this repo. Read this first; details ar
 3. **Never commit the ICAO PDFs** (`*.pdf` is git-ignored; they are ICAO copyright). Don't delete them either.
 4. **Every formula must trace to a Doc paragraph** and live in the `PANS` object with a comment reference.
    Add a self-test case to `PANS_TESTS` for every new or changed formula, using Doc tables / worked examples where possible.
-   The QA sheet must stay 100 % passing (currently **162/162**).
+   The QA sheet must stay 100 % passing (currently **165/165**).
 5. **Verify against the PDFs**, not memory. If something can't be verified, say so in the UI and the QA audit card.
 6. The user tests on an **Android phone** and sends screenshots. Every change must work at ~360 px width with no horizontal overflow.
 7. Keep the **Blueprint theme** (CSS variables; drawings use `bpColors()` — never hard-code colours) and the light "Whiteprint" theme.
@@ -41,12 +41,12 @@ Guide for Claude Code sessions working on this repo. Read this first; details ar
 | 03 | Turn Anticipation | `turnviz` | 03-A intercept geometry |
 | 04 | IFP Gradient | `gradient` | legs (dynamic, ids `grad`, `grad2`…) |
 | 05 | Holding | `holdb` | 05-A holding template & area (Table I-4-3-App C-4), 05-C RNP holding area (III-3-7-App B), 05-B ATC point B on ARC |
-| 06 | Tolerance, VEB & PBN | `tol` | 06-A PBN ½A/W, 06-B DME/overhead, 06-C RNP AR VEB (Doc 9905), 06-D intersection fix |
+| 06 | Tolerance, VEB & PBN | `tol` | 06-A PBN ½A/W, 06-B DME/overhead, 06-C RNP AR VEB (Doc 9905), 06-D intersection fix, 06-E RF leg radius / bank (Doc 9905 §3.2) |
 | 07 | Departure & Missed App | `desc` | 07-A ROD, 07-B equivalent obstacle ha/hma, 07-C reaction distance, 07-D departure PDG, 07-E turn area (wind spiral) |
 | 08 | VNAV vs PAPI | `vnav-papi` | 08-A params, 08-B chart (PAPI-lights / profile toggle), 08-C analysis, 08-D true altitude, 08-E Baro-VNAV FAS (III-3-4 §4.3.4.2) |
-| 11 | MSA & TAA | `msa` | 11-A MSA sectors / DME-arc subsectors (I-4-8), TAA straight-in / left / right base (III-2-4); obstacle list in a textarea |
-| 10 | Circling & Visual Segment | `circ` | 10-A circling area / OCA/H (I-4-7), 10-B visual segment surface (I-4-5 §5.4.6), 10-C NPA OCA/H (I-4-5 §5.4), 10-D CDFA altitude/distance table, 10-E NPA missed approach, 10-F stepdown fix / obstacles close to a fix |
 | 09 | Path Terminators | `pt` | 09-A sequence builder/validator, 09-B matrix, 09-C reference, 09-D MSD |
+| 10 | Circling & Visual Segment | `circ` | 10-A circling area / OCA/H (I-4-7), 10-B visual segment surface (I-4-5 §5.4.6), 10-C NPA OCA/H (I-4-5 §5.4), 10-D CDFA altitude/distance table, 10-E NPA missed approach, 10-F stepdown fix / obstacles close to a fix |
+| 11 | MSA & TAA | `msa` | 11-A MSA sectors / DME-arc subsectors (I-4-8), TAA straight-in / left / right base (III-2-4); obstacle list in a textarea |
 | QA | Doc 8168 Self-test | `selftest` | QA-1 reference checks, QA-2 formula audit list |
 
 URL hash deep links: `#turn`, `#holdb`, `#pt`, …
@@ -118,7 +118,6 @@ Card in `tab-desc` (sheet 07 renamed "Departure & Missed Approach"): `PANS.depSt
 
 ### Backlog (agreed with the user, in rough priority)
 - (Holding done. Sector-1 area reduction §3.3.3.3 deliberately left out — user decision 2 Nov 2026: the Doc construction is ambiguous; the card says so.)
-- RF leg calculator: minimum radius / bank for GS and wind (Doc 9905).
 - Fly-over turn protection for RNAV turns.
 - En-route obstacle clearance: MOCA, primary/buffer widths, en-route turn areas.
 - DME arc segment: area widths and lead radial.

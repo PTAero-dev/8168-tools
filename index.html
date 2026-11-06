@@ -3305,6 +3305,98 @@
                     </div>
                 </div>
 
+
+                <!-- 06-E RF LEG -->
+                <div class="card span-all" id="card-rf">
+                    <div class="card-header minimizable" onclick="toggleCard(this)">
+                        <div class="card-heading"><span class="card-tag">06-E</span>
+                            <div class="card-title">RF Leg · Radius &amp; Bank (RNP AR)</div>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-reset" onclick="event.stopPropagation(); resetCard('card-rf', ['rf-ias', 'rf-alt', 'rf-ad', 'rf-wind', 'rf-r'], 'calcRf');">↺ Reset</button>
+                        </div>
+                    </div>
+                    <div class="card-body split">
+                        <div class="form-grid">
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>Segment</label>
+                                    <select id="rf-seg" onchange="calcRf()">
+                                        <option value="init">Initial / intermediate</option>
+                                        <option value="final">Final</option>
+                                        <option value="missed">Missed approach</option>
+                                    </select>
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Category</label>
+                                    <select id="rf-cat" onchange="calcRf()">
+                                        <option value="C">C</option><option value="D">D</option><option value="E">E</option>
+                                        <option value="B">B</option><option value="A">A</option>
+                                    </select>
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>IAS (kt)<span class="opt">OPT</span></label>
+                                    <input type="number" id="rf-ias" placeholder="Auto" oninput="calcRf()">
+                                </div>
+                            </div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>Highest altitude in turn (ft)</label>
+                                    <input type="number" id="rf-alt" placeholder="e.g. 4000" oninput="calcRf()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Aerodrome Elev (ft)<span class="opt">OPT</span></label>
+                                    <input type="number" id="rf-ad" placeholder="for MA wind" oninput="calcRf()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Tailwind (kt)<span class="opt">OPT</span></label>
+                                    <input type="number" id="rf-wind" placeholder="Auto" oninput="calcRf()">
+                                </div>
+                            </div>
+                            <div class="vp-row">
+                                <div class="vp-input-group">
+                                    <label>RF radius (NM)<span class="opt">OPT</span></label>
+                                    <input type="number" id="rf-r" placeholder="check a radius" step="0.01" oninput="calcRf()">
+                                </div>
+                                <div class="vp-input-group">
+                                    <label>Turn angle (°)</label>
+                                    <input type="number" id="rf-angle" value="90" oninput="calcRf()">
+                                </div>
+                            </div>
+                            <div class="results-panel">
+                                <div class="result-row">
+                                    <span class="result-label">TAS (ISA+15) + tailwind = V</span>
+                                    <span id="rf-res-v" class="result-value">---</span>
+                                </div>
+                                <div class="result-row key">
+                                    <span class="result-label">Minimum RF radius (design bank)</span>
+                                    <span id="rf-res-rmin" class="result-value c-warning">---</span>
+                                </div>
+                                <div class="result-row key">
+                                    <span class="result-label">Bank for the RF radius</span>
+                                    <span id="rf-res-bank" class="result-value c-cyan">---</span>
+                                </div>
+                                <div class="result-row">
+                                    <span class="result-label">Arc length · fly-by DTA (same angle)</span>
+                                    <span id="rf-res-arc" class="result-value">---</span>
+                                </div>
+                            </div>
+                            <div class="note">
+                                <div class="note-title">Reference</div>
+                                Doc 9905 §3.1–3.2: speeds Table 3-1 b) for the highest category (one speed restriction per segment allowed, §3.2.3); TAS at ISA + 15 for the highest
+                                altitude in the turn (initial / intermediate: the minimum altitude of the fix before the turn); V = TAS + tailwind, ICAO standard wind 2h + 47 kt, or
+                                in the missed approach 10 / 20 / 30 / 40 kt up to 500 / 1 000 / 2 000 / 3 000 ft above the aerodrome (§3.2.4); R = 3 431·tan φ / (πV) ≤ 3°/s,
+                                r = V / (20πR) (§3.2.7). Minimum RF radius from a design bank of 25° (15° above FL 190, §3.2.8–3.2.9); bank for a given radius
+                                φ = atan(V² / (68 625·r)) (§3.2.11); fly-by DTA = r·tan(A/2) (§3.2.10).
+                            </div>
+                        </div>
+                        <div class="viz">
+                            <span class="viz-label">Plan view · to scale</span>
+                            <button class="viz-dl" onclick="exportViz(this)" data-name="rf-leg" title="Download high-resolution PNG">⤓ PNG</button>
+                            <canvas id="rfVizCanvas" width="600" height="380"></canvas>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -4846,6 +4938,7 @@
                                 <li><b>05-A Holding</b> (new): Table II-4-1-2 speeds, ISA+15, ICAO wind, template Table I-4-3-App C-4 (all 33 lines), entry sectors, buffer MOC. Omnidirectional entry area §3.3.3.2.1 (curves 5–8, convex-envelope approximation); template extents checked against Diagram I-4-3-App C-6.</li>
                                 <li><b>05-A VOR/DME holding</b> (new, 2 Nov 2026): §3.3.4 distance parameters (Ds, DL rounding, DLs, d1/d2) and basic area towards / away from the station (convex-envelope approximation; along-radial entry areas not drawn).</li>
                                 <li><b>05-A holding entries</b> (new, 2 Nov 2026): VOR/DME sector 1 DME-arc and sector 2 entry areas (§3.3.4.1.2.6–7), radial-intersection entries (§3.3.3.2.2); VOR/DME DL checked against Diagrams C-13 (35 NM) and C-15 (26 NM). Sector-1 reduction (§3.3.3.3) not built (construction ambiguous).</li>
+                                <li><b>06-E RF leg</b> (new, 6 Nov 2026): Doc 9905 Table 3-1 b) speeds, tailwind (ICAO / MA table), minimum radius at 25° (15° above FL 190), bank for a radius, arc length and DTA.</li>
                                 <li><b>08-E Baro-VNAV FAS</b> (new, 2 Nov 2026): III-3-4 §4.3.4.2 FAS angle / origin with App A Δh, Hi bands with FAS′ / FAS″, minimum VPA ≥ 2.5° check, obstacle check.</li>
                                 <li><b>10-F Stepdown fix</b> (new, 2 Nov 2026): g1 / g2, stabilized path vs SDF MOCA (§5.5.4), close-to-fix 15 % plane (I-2-2 §2.7.4).</li>
                                 <li><b>10-E NPA missed approach</b> (new, 2 Nov 2026): d / X (Tables I-4-6-3/-4 checked), Tables I-4-6-1/-2, SOC, 2.5 % surface with MOC 98 ft, OCA gain table for 2.5–5 %, 5.2 % path limit for a MAPt before the threshold.</li>
@@ -5456,6 +5549,16 @@
                 const tas = PANS.tas(ias, adElevFt + 1000, 15), V = tas + 25, R = PANS.rate(V, 20), r = PANS.radius(V, R);
                 return { ias, tas, V, rate: R, r, seg: c.seg, Rthr: 2 * r + c.seg };
             },
+            // ---- RNP AR turns (Doc 9905 §3.1–3.2) ----
+            // Table 3-1 b): maximum IAS (kt) by segment and category
+            rnpArIas(seg, cat) {
+                const t = { init: { A: 150, B: 180, C: 240, D: 250, E: 250 }, final: { A: 100, B: 130, C: 160, D: 185, E: 230 }, missed: { A: 110, B: 150, C: 240, D: 265, E: 275 } };
+                return t[seg][cat];
+            },
+            // §3.2.4: missed approach RF tailwind by height above the aerodrome (kt); NaN above 3 000 ft (use ICAO standard wind)
+            rnpArMaWind(hAboveAdFt) { return hAboveAdFt <= 500 ? 10 : hAboveAdFt <= 1000 ? 20 : hAboveAdFt <= 2000 ? 30 : hAboveAdFt <= 3000 ? 40 : NaN; },
+            // §3.2.11: bank for a radius r (NM) at V = TAS + W (kt): φ = atan(V² / (68 625·r))
+            rfBank(V, rNm) { return Math.atan(V * V / (68625 * rNm)) * 180 / Math.PI; },
             // ---- Obstacle close to a FAF / stepdown fix (I-2-2 §2.7.4) ----
             // plane from the earliest fix point at (MOCA before the fix − MOC of the preceding segment), descending at 15 % (Cat H: max(15 %, 2.5 × gradient)), up to 5 NM
             closeFixSlope(catH, gradPct) { return catH ? Math.max(15, 2.5 * (gradPct || 0)) : 15; },
@@ -5727,6 +5830,9 @@
             { g: 'Circling', n: 'Cat E radius from threshold R (Doc rounds TAS and r first)', ref: 'Table I-4-7-2 (6.94 NM)', exp: 6.94, tol: 0.03, f: () => PANS.circlingRadius('E', 1000).Rthr },
             { g: 'Circling', n: 'Cat D TAS + 25 kt at 2 000 ft', ref: 'Table I-4-7-2 (242 kt)', exp: 242, tol: 1, f: () => PANS.circlingRadius('D', 1000).V },
             { g: 'Circling', n: 'Cat C MOC / OCH lower limit / visibility', ref: 'Table I-4-7-3 (394 ft, 591 ft, 2.0 NM)', exp: 1, tol: 0, f: () => { const c = PANS.circlingCat('C'); return c.moc === 394 && c.och === 591 && c.vis === 2 ? 1 : 0; } },
+            { g: 'RNP AR turns', n: 'Max IAS final Cat E / missed approach Cat D', ref: 'Doc 9905 Table 3-1 b) (230 / 265 kt)', exp: 1, tol: 0, f: () => PANS.rnpArIas('final', 'E') === 230 && PANS.rnpArIas('missed', 'D') === 265 ? 1 : 0 },
+            { g: 'RNP AR turns', n: 'Missed approach RF wind 800 ft / 2 500 ft above AD', ref: 'Doc 9905 §3.2.4 (20 / 40 kt)', exp: 1, tol: 0, f: () => PANS.rnpArMaWind(800) === 20 && PANS.rnpArMaWind(2500) === 40 ? 1 : 0 },
+            { g: 'RNP AR turns', n: 'Bank for the 25° radius returns 25°', ref: 'Doc 9905 §3.2.7 / §3.2.11', exp: 25, tol: 0.05, f: () => { const V = 260, r = PANS.radius(V, PANS.rateRaw(V, 25)); return PANS.rfBank(V, r); } },
             { g: 'Stepdown fix', n: 'Plane 1 NM past the earliest fix point: MOCA 2 000, MOC 492', ref: 'I-2-2 §2.7.4 (15 %)', exp: 2000 - 492 - 911.418, tol: 0.01, f: () => PANS.closeFixPlane(1, 2000, 492, 15) },
             { g: 'Stepdown fix', n: 'Cat H slope with a 7 % descent gradient', ref: 'I-2-2 §2.7.4 a) (2.5 × 7 = 17.5 %)', exp: 17.5, tol: 1e-9, f: () => PANS.closeFixSlope(true, 7) },
             { g: 'NPA missed app.', n: 'd (3 s) Cat C at 2 000 ft', ref: 'Table I-4-6-3 (0.15 NM)', exp: 0.15, tol: 0.006, f: () => PANS.maReaction('C', 2000) },
@@ -5906,6 +6012,8 @@
             'cf-res-slope': ['plane = MOCA − MOC(prev) − x · 15 % (Cat H max(15 %, 2.5 × gradient)), up to 5 NM past the earliest fix point', 'I-2-2 §2.7.4'],
             'fas-res-ang': ['tan FAS = (hFAP − Δh − Hi)·tan VPA / (hFAP − Hi)', 'III-3-4 §4.3.4.2.5'],
             'fas-res-x': ['X_FAS = (Hi − RDH) / tan VPA + ATT (444 m)', 'III-3-4 §4.3.4.2.5'],
+            'rf-res-rmin': ['r = V / (20πR), R = 3 431·tan φ / (πV) ≤ 3°/s, V = TAS + tailwind, φ = 25° (15° above FL 190)', 'Doc 9905 §3.2.7–3.2.9'],
+            'rf-res-bank': ['φ = atan(V² / (68 625·r))', 'Doc 9905 §3.2.11'],
             'msd-res-tas': ['TAS at ISA + ΔISA;  r at the phase bank or 3°/s, whichever is less', 'Vol II III-2-1 §1.4']
         };
         RESULT_INFO['res-ta-before'] = RESULT_INFO['turn-ta-before'];
@@ -8224,6 +8332,7 @@
             if (typeof calcMsa === 'function') calcMsa();
             if (typeof calcCdfa === 'function') calcCdfa();
             if (typeof calcFas === 'function') calcFas();
+            if (typeof calcRf === 'function') calcRf();
             if (typeof calcIfix === 'function') calcIfix();
             if (typeof calcDeparture === 'function') calcDeparture();
             if (typeof calcMsd === 'function') calcMsd();
@@ -8424,7 +8533,7 @@
             if (lim) document.getElementById('btp-ob-unit').textContent = lim.checked ? 'min' : 'DME';
             run('toggleVnpIls');
             ['calcTAS', 'calcTempCorr', 'calcTurn', 'calcPT', 'calcBaseTurn', 'calcBaseTurnPhi', 'drawTurnViz', 'calcHoldB',
-                'calcPBN', 'calcTolerance', 'calcVEB', 'calcDescent', 'calcEqObs', 'calcReaction', 'calcVnavPapi', 'calcHoldArea', 'calcRnpHold', 'calcRacetrack', 'calcTurnArea', 'calcCircling', 'calcVss', 'calcNpaOca', 'calcCdfa', 'calcMissed', 'calcSdf', 'calcFas', 'calcMsa', 'calcIfix', 'calcPathTerm', 'calcMsd', 'calcDeparture'].forEach((f) => run(f));
+                'calcPBN', 'calcTolerance', 'calcVEB', 'calcDescent', 'calcEqObs', 'calcReaction', 'calcVnavPapi', 'calcHoldArea', 'calcRnpHold', 'calcRacetrack', 'calcTurnArea', 'calcCircling', 'calcVss', 'calcNpaOca', 'calcCdfa', 'calcMissed', 'calcSdf', 'calcFas', 'calcMsa', 'calcRf', 'calcIfix', 'calcPathTerm', 'calcMsd', 'calcDeparture'].forEach((f) => run(f));
             gradLegIds().forEach((id) => run('calculateGradient', id));
         }
 
@@ -9816,6 +9925,64 @@
         }
 
         // =========================================================
+        // 06-E RF LEG (Doc 9905 §3.2)
+        // =========================================================
+        function calcRf() {
+            const g = (id) => parseFloat(document.getElementById(id).value);
+            const set = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+            const seg = document.getElementById('rf-seg').value, cat = document.getElementById('rf-cat').value, alt = g('rf-alt');
+            const autoIas = PANS.rnpArIas(seg, cat);
+            document.getElementById('rf-ias').placeholder = 'Auto ' + autoIas;
+            if (isNaN(alt)) return;
+            const ias = g('rf-ias') > 0 ? g('rf-ias') : autoIas;
+            let autoW = PANS.wind(alt), wNote = 'ICAO';
+            if (seg === 'missed' && !isNaN(g('rf-ad'))) { const mw = PANS.rnpArMaWind(alt - g('rf-ad')); if (!isNaN(mw)) { autoW = mw; wNote = 'MA table'; } }
+            document.getElementById('rf-wind').placeholder = 'Auto ' + Math.round(autoW);
+            const W = isNaN(g('rf-wind')) ? autoW : g('rf-wind');
+            const tas = PANS.tas(ias, alt, 15), V = tas + W;
+            const designBank = alt > 19000 ? 15 : 25;
+            const R = PANS.rate(V, designBank), rMin = PANS.radius(V, R);
+            const f2 = (n) => n.toFixed(2);
+            set('rf-res-v', Math.round(tas) + ' + ' + Math.round(W) + ' (' + wNote + ') = ' + Math.round(V) + ' kt');
+            set('rf-res-rmin', f2(rMin) + ' NM at ' + designBank + '°' + (PANS.rateRaw(V, designBank) > 3 ? ' (3°/s limit)' : ''));
+            const r = g('rf-r'), ang = Math.max(1, Math.min(300, g('rf-angle') || 90));
+            const L = [];
+            let bank = NaN;
+            if (r > 0) {
+                bank = PANS.rfBank(V, r);
+                set('rf-res-bank', bank.toFixed(1) + '°');
+                if (bank > designBank + 1e-6) L.push(['bad', 'Radius ' + f2(r) + ' NM needs ' + bank.toFixed(1) + '° bank — above the ' + designBank + '° design maximum; use ≥ ' + f2(rMin) + ' NM or a speed restriction.', 'Doc 9905 §3.2.8']);
+                else L.push(['ok', 'Bank ' + bank.toFixed(1) + '° within the ' + designBank + '° design maximum.', 'Doc 9905 §3.2.8']);
+            } else set('rf-res-bank', 'enter a radius');
+            if (g('rf-ias') > 0 && g('rf-ias') <= autoIas) L.push(['warn', 'IAS ' + ias + ' kt below the Table 3-1 b) maximum ' + autoIas + ' kt — publish it as a speed restriction (one per segment).', 'Doc 9905 §3.2.3']);
+            const rr = r > 0 ? r : rMin;
+            set('rf-res-arc', f2(rr * ang * DEG) + ' NM · ' + f2(rMin * Math.tan(ang / 2 * DEG)) + ' NM');
+            showLimits('rf-res-bank', L);
+            drawRfViz({ r: rr, rMin, ang, bank, V });
+        }
+
+        function drawRfViz(o) {
+            const canvas = document.getElementById('rfVizCanvas');
+            if (!canvas) return;
+            const { ctx, w, h } = setupCanvas(canvas, 0.62, 400, 260);
+            const C = bpColors();
+            const T = makeTurtle(0, -o.r * 0.8, 0).fwd(o.r * 0.8).turn(o.ang, o.r, true).fwd(o.r * 0.8);
+            const Tm = makeTurtle(0, -o.r * 0.8, 0).fwd(o.r * 0.8).turn(o.ang, o.rMin, true).fwd(o.r * 0.8);
+            const ctr = T.centers[0];
+            const B = boundsOf(T.pts.concat(Tm.pts, [[ctr[0], ctr[1]]]), 0.08);
+            const V = vizView(B, w, h, { t: 44, b: 44, l: 18, r: 18 });
+            cvFooter(ctx, C, V, w, h, 'V ' + Math.round(o.V) + ' kt · turn ' + o.ang + '°');
+            if (Math.abs(o.r - o.rMin) > 1e-6) cvStroke(ctx, C, V, Tm.pts, C.danger, 1.2, [4, 4]);
+            cvStroke(ctx, C, V, T.pts, C.primary, 2.4);
+            cvArrowsAlong(ctx, V, T.pts, [0.25, 0.6, 0.92], C.primary, 10);
+            const a0 = T.pts[Math.round(T.pts.length / 2)];
+            ctx.save(); ctx.setLineDash([3, 3]); ctx.strokeStyle = C.cyan; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(V.X(ctr[0]), V.Y(ctr[1])); ctx.lineTo(V.X(a0[0]), V.Y(a0[1])); ctx.stroke(); ctx.restore();
+            cvDot(ctx, C, V.X(ctr[0]), V.Y(ctr[1]), C.cyan, 2.6);
+            cvLabel(ctx, C, 'r ' + o.r.toFixed(2) + ' NM' + (isNaN(o.bank) ? '' : ' · ' + o.bank.toFixed(1) + '°'), (V.X(ctr[0]) + V.X(a0[0])) / 2, (V.Y(ctr[1]) + V.Y(a0[1])) / 2, { size: 10, color: C.cyan, border: C.soft });
+            cvLabel(ctx, C, '━ RF leg' + (Math.abs(o.r - o.rMin) > 1e-6 ? ' · ┄ minimum radius ' + o.rMin.toFixed(2) + ' NM' : ''), 10, 34, { align: 'left', size: 9, box: false, color: C.primary });
+        }
+
+        // =========================================================
         // 02-E RACETRACK PROTECTED AREA (I-4-3 §3.4, §3.6–3.8; App C §3.3) — holding template engine
         // =========================================================
         function calcRacetrack() {
@@ -10751,7 +10918,7 @@
                 if (id === 'tab-circ') { calcCircling(); calcVss(); calcNpaOca(); calcCdfa(); calcMissed(); calcSdf(); }
                 if (id === 'tab-msa') calcMsa();
                 if (id === 'tab-holdb') { calcHoldArea(); calcRnpHold(); }
-                if (id === 'tab-tol') calcIfix();
+                if (id === 'tab-tol') { calcIfix(); calcRf(); }
                 if (id === 'tab-pt') { ptRenderReference(); calcPathTerm(); calcMsd(); }
                 if (id === 'tab-desc') { calcDeparture(); calcTurnArea(); }
             }
@@ -10791,6 +10958,7 @@
             if (typeof calcMsa === 'function') calcMsa();
             if (typeof calcCdfa === 'function') calcCdfa();
             if (typeof calcFas === 'function') calcFas();
+            if (typeof calcRf === 'function') calcRf();
             if (typeof calcIfix === 'function') calcIfix();
             if (typeof calcPathTerm === 'function') calcPathTerm();
             if (typeof calcMsd === 'function') calcMsd();
