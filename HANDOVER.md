@@ -381,6 +381,7 @@ Key development milestones from previous sessions:
 | 2026-05-01 | Coordinate Converter mobile UI redesigned (within FISB Tools project, separate app). Nested card-in-card layout replaced with fluid full-page scroll. |
 | 2026-05-02 | Context imported from Claude session. Session context continuity maintained. |
 | 2026-05-08 | Folder rename from `FVP Tools` → `8168 Tools` initiated. Handover document created. |
+| 2026-11-06 | New sheet 13 Coordinates (`tab-geo`, group renamed Quality & Tools): WGS-84 Vincenty inverse / direct, DMS / packed / decimal input, DMS to 0.01″, true ↔ magnetic with variation; 4 checks incl. Vincenty's Flinders Peak – Buninyong example → 177. |
 | 2026-11-06 | 12-B DME arc: minimum radius (initial 7 NM / H 5 NM, arrival 10 NM), initial approach area ±2.5 / ±5 NM with splay beyond 37 NM VOR / 28 NM NDB, lead ≥ 2 NM (H 1 NM) above 70° or r·tan(θ/2), lead radial rounded to whole degrees, 120° check, drawing; 3 checks → 173. |
 | 2026-11-06 | New sheet 12 En-route & DME Arc (`tab-enr`), 12-A en-route segment: VOR/NDB widths with splay (Table II-3-1-1), COP, MOC 984 / mountainous 1 476 / 1 969 ft, buffer half MOC, MOCA from an obstacle textarea, turn r / E165° / T and K-K (Doc example checked); 3 checks → 170. |
 | 2026-11-06 | 07-E RNAV fly-over / fly-by turns: Table III-2-2-1 earliest / latest TP from ATT, c and TID = r·tan(A/2); outer spiral joins the next primary area at 15° (inside) or 30° (outside); inner 15° / A/2 to the next primary edge; fly-by nominal turn starts TID before the WP; 2 checks → 167. |

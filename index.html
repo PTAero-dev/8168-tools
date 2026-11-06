@@ -1448,8 +1448,9 @@
                 <div class="nav-item" data-tab="tab-vnav-papi" data-short="VNAV · PAPI" onclick="switchTab('tab-vnav-papi', this)"><span class="nav-num">08</span>VNAV vs PAPI</div>
                 <div class="nav-item" data-tab="tab-circ" data-short="Circling · VSS" onclick="switchTab('tab-circ', this)"><span class="nav-num">10</span>Circling &amp; Visual Segment</div>
             </div>
-            <div class="nav-group" data-group="qa" data-short="QA">
-                <div class="nav-group-title">Quality</div>
+            <div class="nav-group" data-group="qa" data-short="QA · Tools">
+                <div class="nav-group-title">Quality &amp; Tools</div>
+                <div class="nav-item" data-tab="tab-geo" data-short="Coordinates" onclick="switchTab('tab-geo', this)"><span class="nav-num">13</span>Coordinates (WGS-84)</div>
                 <div class="nav-item" data-tab="tab-selftest" data-short="Self-test" onclick="switchTab('tab-selftest', this)"><span class="nav-num">QA</span>Doc 8168 Self-test<span id="selftest-badge" class="nav-badge">…</span></div>
             </div>
         </nav>
@@ -5095,6 +5096,82 @@
             </div>
         </section>
 
+        <!-- =====================================================
+             13 · COORDINATES (WGS-84)
+             ===================================================== -->
+        <section id="tab-geo" class="tab-content" style="display:none;">
+            <header class="page-header">
+                <div class="ph-main">
+                    <div class="ph-crumb">Quality &amp; Tools / Sheet 13</div>
+                    <h1 class="page-title">Coordinates (WGS-84)</h1>
+                    <p class="page-subtitle">Distance and bearing between points, point from bearing and distance, true ↔ magnetic</p>
+                </div>
+                <dl class="ph-block">
+                    <div><dt>Sheet</dt><dd>13</dd></div>
+                    <div><dt>Reference</dt><dd>WGS-84 · Vincenty (1975)</dd></div>
+                </dl>
+            </header>
+
+            <div class="stack">
+                <div class="card" id="card-geo">
+                    <div class="card-header minimizable" onclick="toggleCard(this)">
+                        <div class="card-heading"><span class="card-tag">13-A</span>
+                            <div class="card-title">Inverse · Distance &amp; Bearing</div>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-reset" onclick="event.stopPropagation(); resetCard('card-geo', ['geo-lat1', 'geo-lon1', 'geo-lat2', 'geo-lon2', 'geo-var'], 'calcGeo');">↺ Reset</button>
+                        </div>
+                    </div>
+                    <div class="card-body split">
+                        <div class="form-grid">
+                            <div class="section-label">Point 1 · e.g. 13 41 26.50 N / 100 45 01.20 E, 134126.50N or −13.6907</div>
+                            <div class="vp-row">
+                                <div class="vp-input-group"><label>Latitude 1</label><input type="text" id="geo-lat1" placeholder="13 41 26.50 N" oninput="calcGeo()"></div>
+                                <div class="vp-input-group"><label>Longitude 1</label><input type="text" id="geo-lon1" placeholder="100 45 01.20 E" oninput="calcGeo()"></div>
+                            </div>
+                            <div class="section-label">Point 2</div>
+                            <div class="vp-row">
+                                <div class="vp-input-group"><label>Latitude 2</label><input type="text" id="geo-lat2" placeholder="13 54 45.00 N" oninput="calcGeo()"></div>
+                                <div class="vp-input-group"><label>Longitude 2</label><input type="text" id="geo-lon2" placeholder="100 36 24.00 E" oninput="calcGeo()"></div>
+                            </div>
+                            <div class="vp-row">
+                                <div class="vp-input-group"><label>Magnetic variation (° E +, W −)</label><input type="number" id="geo-var" placeholder="e.g. −0.6" step="0.1" oninput="calcGeo(); calcGeoDirect()"></div>
+                            </div>
+                            <div class="results-panel">
+                                <div class="result-row key"><span class="result-label">Distance</span><span id="geo-res-d" class="result-value c-cyan">---</span></div>
+                                <div class="result-row key"><span class="result-label">Initial bearing 1 → 2 (T / M)</span><span id="geo-res-az" class="result-value c-warning">---</span></div>
+                                <div class="result-row"><span class="result-label">Bearing 2 → 1 (T / M)</span><span id="geo-res-back" class="result-value">---</span></div>
+                                <div class="result-row"><span class="result-label">Points read as</span><span id="geo-res-echo" class="result-value">---</span></div>
+                            </div>
+                        </div>
+                        <div class="form-grid">
+                            <div class="section-label">13-B Direct · point from bearing and distance (from point 1)</div>
+                            <div class="vp-row">
+                                <div class="vp-input-group"><label>Bearing (°)</label><input type="number" id="geo-brg" placeholder="e.g. 045" step="0.01" oninput="calcGeoDirect()"></div>
+                                <div class="vp-input-group">
+                                    <label>Reference</label>
+                                    <select id="geo-brg-ref" onchange="calcGeoDirect()"><option value="T">True</option><option value="M">Magnetic</option></select>
+                                </div>
+                                <div class="vp-input-group"><label>Distance (NM)</label><input type="number" id="geo-dist" placeholder="e.g. 12.5" step="0.01" oninput="calcGeoDirect()"></div>
+                            </div>
+                            <div class="results-panel">
+                                <div class="result-row key"><span class="result-label">New point</span><span id="geo-res-p" class="result-value c-success">---</span></div>
+                                <div class="result-row"><span class="result-label">Decimal</span><span id="geo-res-pd" class="result-value">---</span></div>
+                                <div class="result-row"><span class="result-label">Final bearing at the point (T)</span><span id="geo-res-az2" class="result-value">---</span></div>
+                            </div>
+                            <div class="note">
+                                <div class="note-title">Reference</div>
+                                WGS-84 ellipsoid (a = 6 378 137 m, f = 1/298.257223563, as required for aeronautical coordinates by ICAO Annex 15 / Doc 9674); geodesic inverse
+                                and direct problems by Vincenty's formulae, sub-millimetre for aviation distances (self-test: Vincenty's own example). 1 NM = 1 852 m.
+                                Magnetic = true − variation (east positive). Bearings are initial geodesic bearings; for long legs the track changes along the line (see final bearing).
+                                Coordinates are shown to 0.01″ (Doc 8168 Vol II I-4-9 §9.4.1.3 asks for tenths of seconds in the database table).
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <section id="tab-selftest" class="tab-content" style="display:none;">
             <header class="page-header">
                 <div class="ph-main">
@@ -5159,6 +5236,7 @@
                                 <li><b>05-A Holding</b> (new): Table II-4-1-2 speeds, ISA+15, ICAO wind, template Table I-4-3-App C-4 (all 33 lines), entry sectors, buffer MOC. Omnidirectional entry area §3.3.3.2.1 (curves 5–8, convex-envelope approximation); template extents checked against Diagram I-4-3-App C-6.</li>
                                 <li><b>05-A VOR/DME holding</b> (new, 2 Nov 2026): §3.3.4 distance parameters (Ds, DL rounding, DLs, d1/d2) and basic area towards / away from the station (convex-envelope approximation; along-radial entry areas not drawn).</li>
                                 <li><b>05-A holding entries</b> (new, 2 Nov 2026): VOR/DME sector 1 DME-arc and sector 2 entry areas (§3.3.4.1.2.6–7), radial-intersection entries (§3.3.3.2.2); VOR/DME DL checked against Diagrams C-13 (35 NM) and C-15 (26 NM). Sector-1 reduction (§3.3.3.3) not built (construction ambiguous).</li>
+                                <li><b>13 Coordinates</b> (new, 6 Nov 2026): WGS-84 Vincenty inverse / direct (checked against Vincenty's example), DMS input formats, true ↔ magnetic.</li>
                                 <li><b>12-B DME arc</b> (new, 6 Nov 2026): minimum radius, initial-approach area width with splay, lead distance and lead radial (I-4-3 §3.3.2–3.3.3, I-4-2 §2.1.1.10).</li>
                                 <li><b>12 En-route</b> (new, 6 Nov 2026): VOR / NDB area widths and splay (Table II-3-1-1), MOC / mountainous MOC, MOCA from an obstacle list, turn r / E165° / T (Doc example §1.4.3.4 checked).</li>
                                 <li><b>07-E RNAV turns</b> (6 Nov 2026): fly-over / fly-by earliest and latest TP (Table III-2-2-1), 15° / 30° outer joins and 15° / A/2 inner joins (III-2-2 §2.3).</li>
@@ -5796,6 +5874,70 @@
                 const V = PANS.tas(315, altFt, 15), R = PANS.rate(V, 15), r = PANS.radius(V, R), w = PANS.wind(altFt), E = PANS.windEffect(165, R, w);
                 return { V, R, r, w, E, T: saNm + 2 * r + E };
             },
+            // ---- WGS-84 geodesy (Vincenty 1975; a = 6 378 137 m, f = 1/298.257223563). Angles in degrees, distance in metres ----
+            vincentyInverse(lat1, lon1, lat2, lon2) {
+                const a = 6378137, f = 1 / 298.257223563, b = a * (1 - f), D = Math.PI / 180;
+                const L = (lon2 - lon1) * D, U1 = Math.atan((1 - f) * Math.tan(lat1 * D)), U2 = Math.atan((1 - f) * Math.tan(lat2 * D));
+                const sU1 = Math.sin(U1), cU1 = Math.cos(U1), sU2 = Math.sin(U2), cU2 = Math.cos(U2);
+                let lam = L, lamP, it = 0, sS, cS, sig, sA, c2A, c2Sm;
+                do {
+                    const sL = Math.sin(lam), cL = Math.cos(lam);
+                    sS = Math.sqrt((cU2 * sL) ** 2 + (cU1 * sU2 - sU1 * cU2 * cL) ** 2);
+                    if (sS === 0) return { dist: 0, az1: 0, az2: 0 };
+                    cS = sU1 * sU2 + cU1 * cU2 * cL; sig = Math.atan2(sS, cS);
+                    sA = cU1 * cU2 * sL / sS; c2A = 1 - sA * sA;
+                    c2Sm = c2A !== 0 ? cS - 2 * sU1 * sU2 / c2A : 0;
+                    const C = f / 16 * c2A * (4 + f * (4 - 3 * c2A));
+                    lamP = lam; lam = L + (1 - C) * f * sA * (sig + C * sS * (c2Sm + C * cS * (-1 + 2 * c2Sm * c2Sm)));
+                } while (Math.abs(lam - lamP) > 1e-12 && ++it < 200);
+                const u2 = c2A * (a * a - b * b) / (b * b), A = 1 + u2 / 16384 * (4096 + u2 * (-768 + u2 * (320 - 175 * u2))), B = u2 / 1024 * (256 + u2 * (-128 + u2 * (74 - 47 * u2)));
+                const dS = B * sS * (c2Sm + B / 4 * (cS * (-1 + 2 * c2Sm * c2Sm) - B / 6 * c2Sm * (-3 + 4 * sS * sS) * (-3 + 4 * c2Sm * c2Sm)));
+                const sL = Math.sin(lam), cL = Math.cos(lam);
+                const az1 = Math.atan2(cU2 * sL, cU1 * sU2 - sU1 * cU2 * cL) / D, az2 = Math.atan2(cU1 * sL, -sU1 * cU2 + cU1 * sU2 * cL) / D;
+                return { dist: b * A * (sig - dS), az1: (az1 + 360) % 360, az2: (az2 + 360) % 360 };
+            },
+            vincentyDirect(lat1, lon1, az1Deg, distM) {
+                const a = 6378137, f = 1 / 298.257223563, b = a * (1 - f), D = Math.PI / 180;
+                const al1 = az1Deg * D, sA1 = Math.sin(al1), cA1 = Math.cos(al1);
+                const tU1 = (1 - f) * Math.tan(lat1 * D), cU1 = 1 / Math.sqrt(1 + tU1 * tU1), sU1 = tU1 * cU1;
+                const s1 = Math.atan2(tU1, cA1), sA = cU1 * sA1, c2A = 1 - sA * sA;
+                const u2 = c2A * (a * a - b * b) / (b * b), A = 1 + u2 / 16384 * (4096 + u2 * (-768 + u2 * (320 - 175 * u2))), B = u2 / 1024 * (256 + u2 * (-128 + u2 * (74 - 47 * u2)));
+                let sig = distM / (b * A), sigP, c2Sm, sS, cS, it = 0;
+                do {
+                    c2Sm = Math.cos(2 * s1 + sig); sS = Math.sin(sig); cS = Math.cos(sig);
+                    const dS = B * sS * (c2Sm + B / 4 * (cS * (-1 + 2 * c2Sm * c2Sm) - B / 6 * c2Sm * (-3 + 4 * sS * sS) * (-3 + 4 * c2Sm * c2Sm)));
+                    sigP = sig; sig = distM / (b * A) + dS;
+                } while (Math.abs(sig - sigP) > 1e-12 && ++it < 200);
+                const x = sU1 * sS - cU1 * cS * cA1;
+                const lat2 = Math.atan2(sU1 * cS + cU1 * sS * cA1, (1 - f) * Math.sqrt(sA * sA + x * x));
+                const lam = Math.atan2(sS * sA1, cU1 * cS - sU1 * sS * cA1), C = f / 16 * c2A * (4 + f * (4 - 3 * c2A));
+                const L = lam - (1 - C) * f * sA * (sig + C * sS * (c2Sm + C * cS * (-1 + 2 * c2Sm * c2Sm)));
+                const az2 = Math.atan2(sA, -x) / D;
+                return { lat: lat2 / D, lon: ((lon1 * D + L + 3 * Math.PI) % (2 * Math.PI) - Math.PI) / D, az2: (az2 + 360) % 360 };
+            },
+            // "13 41 26.50 N", "-13.6907", "134126.5N", "13°41'26.5\"N" → decimal degrees (NaN if not readable)
+            parseCoord(txt, isLat) {
+                if (!txt) return NaN;
+                let t = String(txt).trim().toUpperCase(), sgn = 1;
+                const h = t.match(/[NSEW]/);
+                if (h) { if (h[0] === 'S' || h[0] === 'W') sgn = -1; t = t.replace(/[NSEW]/g, ' '); }
+                if (/^\s*-/.test(t)) { sgn = -sgn; t = t.replace('-', ' '); }
+                const nums = t.replace(/[°'"’”:]/g, ' ').trim().split(/\s+/).filter(Boolean);
+                let v;
+                if (nums.length === 1 && /^\d{6,7}(\.\d+)?$/.test(nums[0]) && h) {            // packed DDMMSS.ss / DDDMMSS.ss
+                    const n = nums[0], dl = isLat ? 2 : 3, whole = n.split('.')[0];
+                    if (whole.length !== dl + 4) return NaN;
+                    v = parseFloat(n.slice(0, dl)) + parseFloat(n.slice(dl, dl + 2)) / 60 + parseFloat(n.slice(dl + 2)) / 3600;
+                } else v = nums.reduce((acc, x, i) => acc + parseFloat(x) / Math.pow(60, i), 0);
+                if (isNaN(v) || v > (isLat ? 90 : 180)) return NaN;
+                return sgn * v;
+            },
+            fmtDms(v, isLat, dec) {
+                const h = isLat ? (v < 0 ? 'S' : 'N') : (v < 0 ? 'W' : 'E'), x = Math.abs(v), p = Math.pow(10, dec === undefined ? 2 : dec);
+                let d = Math.floor(x), m = Math.floor((x - d) * 60), sec = Math.round(((x - d) * 60 - m) * 60 * p) / p;
+                if (sec >= 60) { sec -= 60; m += 1; } if (m >= 60) { m -= 60; d += 1; }
+                return String(d).padStart(isLat ? 2 : 3, '0') + '°' + String(m).padStart(2, '0') + '′' + sec.toFixed(dec === undefined ? 2 : dec).padStart((dec === undefined ? 2 : dec) + 3, '0') + '″' + h;
+            },
             // ---- DME arc (I-4-2 §2.1.1.10, I-4-3 §3.3.2–3.3.3) ----
             dmeArcMinRadius(phase, catH) { return phase === 'arrival' ? 10 : (catH ? 5 : 7); },
             // initial approach area half-width (NM): primary 2.5 + secondary 2.5, splaying 7.8° (VOR) beyond 37 NM / 10.3° (NDB) beyond 28 NM; primary = half
@@ -6090,6 +6232,10 @@
             { g: 'Circling', n: 'Cat E radius from threshold R (Doc rounds TAS and r first)', ref: 'Table I-4-7-2 (6.94 NM)', exp: 6.94, tol: 0.03, f: () => PANS.circlingRadius('E', 1000).Rthr },
             { g: 'Circling', n: 'Cat D TAS + 25 kt at 2 000 ft', ref: 'Table I-4-7-2 (242 kt)', exp: 242, tol: 1, f: () => PANS.circlingRadius('D', 1000).V },
             { g: 'Circling', n: 'Cat C MOC / OCH lower limit / visibility', ref: 'Table I-4-7-3 (394 ft, 591 ft, 2.0 NM)', exp: 1, tol: 0, f: () => { const c = PANS.circlingCat('C'); return c.moc === 394 && c.och === 591 && c.vis === 2 ? 1 : 0; } },
+            { g: 'Geodesy', n: 'Vincenty inverse: Flinders Peak → Buninyong distance', ref: 'Vincenty (1975) example, WGS-84 (54 972.271 m)', exp: 54972.271, tol: 0.01, f: () => PANS.vincentyInverse(PANS.parseCoord('37 57 03.72030 S', true), PANS.parseCoord('144 25 29.52440 E', false), PANS.parseCoord('37 39 10.15610 S', true), PANS.parseCoord('143 55 35.38390 E', false)).dist },
+            { g: 'Geodesy', n: 'Vincenty inverse: initial azimuth 306°52′05.37″', ref: 'Vincenty (1975) example', exp: 306 + 52 / 60 + 5.37 / 3600, tol: 0.5 / 3600, f: () => PANS.vincentyInverse(-(37 + 57 / 60 + 3.7203 / 3600), 144 + 25 / 60 + 29.5244 / 3600, -(37 + 39 / 60 + 10.1561 / 3600), 143 + 55 / 60 + 35.3839 / 3600).az1 },
+            { g: 'Geodesy', n: 'Direct ↔ inverse round trip (100 NM, 045°)', ref: 'consistency', exp: 0, tol: 1e-6, f: () => { const q = PANS.vincentyDirect(13.69, 100.75, 45, 185200); return Math.abs(PANS.vincentyInverse(13.69, 100.75, q.lat, q.lon).dist - 185200); } },
+            { g: 'Geodesy', n: 'Parse "134126.50N" = 13°41′26.50″', ref: 'input format', exp: 13 + 41 / 60 + 26.5 / 3600, tol: 1e-9, f: () => PANS.parseCoord('134126.50N', true) },
             { g: 'DME arc', n: 'Minimum radius initial 7 NM, Cat H 5 NM, arrival 10 NM', ref: 'I-4-3 §3.3.2, I-4-2 §2.1.1.10', exp: 1, tol: 0, f: () => PANS.dmeArcMinRadius('initial', false) === 7 && PANS.dmeArcMinRadius('initial', true) === 5 && PANS.dmeArcMinRadius('arrival', false) === 10 ? 1 : 0 },
             { g: 'DME arc', n: 'Lead radial offset for 2 NM on a 12 NM arc', ref: 'I-4-3 §3.3.2 (2 NM lead)', exp: 2 / 12 * 180 / Math.PI, tol: 1e-9, f: () => PANS.dmeArcLeadDeg(2, 12) },
             { g: 'DME arc', n: 'Area half-width at 20 NM (VOR): 5 NM, primary 2.5 NM', ref: 'I-4-3 §3.3.3.1', exp: 1, tol: 0, f: () => { const w = PANS.dmeArcWidth('vor', 20); return w.total === 5 && w.prim === 2.5 ? 1 : 0; } },
@@ -6283,6 +6429,8 @@
             'enr-res-moca': ['MOCA = max(obstacle + MOC in the primary, + MOC/2 in the buffer)', 'II-3-1 §1.3.1'],
             'enr-res-turn': ['r at 315 kt, ISA + 15, 15° bank; E165° = (165/R)(w/3600); T = SA + 2r + E165°', 'II-3-1 §1.4.3'],
             'arc-res-lead': ['lead ≥ 2 NM (Cat H 1 NM) above 70° (arrival: r·tan(θ/2)); offset = lead / R rounded up to whole degrees', 'I-4-3 §3.3.2, I-4-2 §2.1.1.10'],
+            'geo-res-d': ['Vincenty inverse on the WGS-84 ellipsoid (geodesic distance)', 'WGS-84 · Vincenty (1975)'],
+            'geo-res-p': ['Vincenty direct on the WGS-84 ellipsoid; magnetic bearing → true = M + variation (E +)', 'WGS-84 · Vincenty (1975)'],
             'msd-res-tas': ['TAS at ISA + ΔISA;  r at the phase bank or 3°/s, whichever is less', 'Vol II III-2-1 §1.4']
         };
         RESULT_INFO['res-ta-before'] = RESULT_INFO['turn-ta-before'];
@@ -8804,7 +8952,7 @@
             if (lim) document.getElementById('btp-ob-unit').textContent = lim.checked ? 'min' : 'DME';
             run('toggleVnpIls');
             ['calcTAS', 'calcTempCorr', 'calcTurn', 'calcPT', 'calcBaseTurn', 'calcBaseTurnPhi', 'drawTurnViz', 'calcHoldB',
-                'calcPBN', 'calcTolerance', 'calcVEB', 'calcDescent', 'calcEqObs', 'calcReaction', 'calcVnavPapi', 'calcHoldArea', 'calcRnpHold', 'calcRacetrack', 'calcTurnArea', 'calcCircling', 'calcVss', 'calcNpaOca', 'calcCdfa', 'calcMissed', 'calcSdf', 'calcFas', 'calcMsa', 'calcRf', 'calcEnroute', 'calcArc', 'calcIfix', 'calcPathTerm', 'calcMsd', 'calcDeparture'].forEach((f) => run(f));
+                'calcPBN', 'calcTolerance', 'calcVEB', 'calcDescent', 'calcEqObs', 'calcReaction', 'calcVnavPapi', 'calcHoldArea', 'calcRnpHold', 'calcRacetrack', 'calcTurnArea', 'calcCircling', 'calcVss', 'calcNpaOca', 'calcCdfa', 'calcMissed', 'calcSdf', 'calcFas', 'calcMsa', 'calcRf', 'calcEnroute', 'calcArc', 'calcGeo', 'calcIfix', 'calcPathTerm', 'calcMsd', 'calcDeparture'].forEach((f) => run(f));
             gradLegIds().forEach((id) => run('calculateGradient', id));
         }
 
@@ -10420,6 +10568,37 @@
         }
 
         // =========================================================
+        // 13 COORDINATES (WGS-84, Vincenty)
+        // =========================================================
+        function geoVar() { const v = parseFloat(document.getElementById('geo-var').value); return isNaN(v) ? null : v; }
+        function calcGeo() {
+            const set = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+            const v = (id) => document.getElementById(id).value;
+            const la1 = PANS.parseCoord(v('geo-lat1'), true), lo1 = PANS.parseCoord(v('geo-lon1'), false), la2 = PANS.parseCoord(v('geo-lat2'), true), lo2 = PANS.parseCoord(v('geo-lon2'), false);
+            calcGeoDirect();
+            if ([la1, lo1, la2, lo2].some(isNaN)) { set('geo-res-d', 'enter both points'); return; }
+            const r = PANS.vincentyInverse(la1, lo1, la2, lo2), vr = geoVar();
+            const brg = (t) => t.toFixed(2) + '°T' + (vr === null ? '' : ' / ' + (((t - vr) % 360 + 360) % 360).toFixed(2) + '°M');
+            set('geo-res-d', (r.dist / 1852).toFixed(3) + ' NM (' + (r.dist / 1000).toFixed(3) + ' km)');
+            set('geo-res-az', brg(r.az1));
+            set('geo-res-back', brg((r.az2 + 180) % 360));
+            set('geo-res-echo', PANS.fmtDms(la1, true) + ' ' + PANS.fmtDms(lo1, false) + ' → ' + PANS.fmtDms(la2, true) + ' ' + PANS.fmtDms(lo2, false));
+        }
+        function calcGeoDirect() {
+            const set = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+            const la1 = PANS.parseCoord(document.getElementById('geo-lat1').value, true), lo1 = PANS.parseCoord(document.getElementById('geo-lon1').value, false);
+            const b = parseFloat(document.getElementById('geo-brg').value), d = parseFloat(document.getElementById('geo-dist').value);
+            if (isNaN(la1) || isNaN(lo1) || isNaN(b) || !(d >= 0)) { set('geo-res-p', 'enter point 1, bearing and distance'); return; }
+            const vr = geoVar(), mag = document.getElementById('geo-brg-ref').value === 'M';
+            if (mag && vr === null) { set('geo-res-p', 'enter the magnetic variation'); return; }
+            const bt = mag ? b + vr : b;
+            const q = PANS.vincentyDirect(la1, lo1, bt, d * 1852);
+            set('geo-res-p', PANS.fmtDms(q.lat, true) + ' ' + PANS.fmtDms(q.lon, false));
+            set('geo-res-pd', q.lat.toFixed(6) + ', ' + q.lon.toFixed(6));
+            set('geo-res-az2', q.az2.toFixed(2) + '°T');
+        }
+
+        // =========================================================
         // 02-E RACETRACK PROTECTED AREA (I-4-3 §3.4, §3.6–3.8; App C §3.3) — holding template engine
         // =========================================================
         function calcRacetrack() {
@@ -11355,6 +11534,7 @@
                 if (id === 'tab-circ') { calcCircling(); calcVss(); calcNpaOca(); calcCdfa(); calcMissed(); calcSdf(); }
                 if (id === 'tab-msa') calcMsa();
                 if (id === 'tab-enr') { calcEnroute(); calcArc(); }
+                if (id === 'tab-geo') calcGeo();
                 if (id === 'tab-holdb') { calcHoldArea(); calcRnpHold(); }
                 if (id === 'tab-tol') { calcIfix(); calcRf(); }
                 if (id === 'tab-pt') { ptRenderReference(); calcPathTerm(); calcMsd(); }
