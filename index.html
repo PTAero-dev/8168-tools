@@ -3680,6 +3680,8 @@
                                     <select id="ta-type" onchange="calcTurnArea()">
                                         <option value="tp">At a turning point (TP)</option>
                                         <option value="alt">At an altitude / height</option>
+                                        <option value="flyover">RNAV fly-over waypoint</option>
+                                        <option value="flyby">RNAV fly-by waypoint</option>
                                     </select>
                                 </div>
                             </div>
@@ -3802,7 +3804,10 @@
                                 Track guidance after the turn (§3.3.4): VOR ±1.0 NM / 7.8°, NDB ±1.25 NM / 10.3° about the new track; P outside the band → towards the
                                 facility to the band edge at the facility, away → parallel to the track; P inside → 15° splay to the band edge. Secondary areas (§3.3.5,
                                 Figure I-2-3-6): from P and from the inner start, 30° lines to the primary edge (central half of the band). Without track guidance there
-                                is no secondary area after the turn.
+                                is no secondary area after the turn. RNAV fly-over / fly-by (III-2-2 §2.3, Table III-2-2-1): earliest / latest turning points from ATT, c and
+                                the turn initiation distance r·tan(A/2); the spiral joins the next leg's primary area at 15° (inside) or 30° (outside); inner side 15° or A/2.
+                                Not drawn for RNAV: the fly-by maximum-speed extension (§2.3.1.2), the constant-width secondary area in the turn (§2.3.1.3) and the circular
+                                arc method for small turns (§2.2).
                             </div>
                         </div>
 
@@ -4938,6 +4943,7 @@
                                 <li><b>05-A Holding</b> (new): Table II-4-1-2 speeds, ISA+15, ICAO wind, template Table I-4-3-App C-4 (all 33 lines), entry sectors, buffer MOC. Omnidirectional entry area §3.3.3.2.1 (curves 5–8, convex-envelope approximation); template extents checked against Diagram I-4-3-App C-6.</li>
                                 <li><b>05-A VOR/DME holding</b> (new, 2 Nov 2026): §3.3.4 distance parameters (Ds, DL rounding, DLs, d1/d2) and basic area towards / away from the station (convex-envelope approximation; along-radial entry areas not drawn).</li>
                                 <li><b>05-A holding entries</b> (new, 2 Nov 2026): VOR/DME sector 1 DME-arc and sector 2 entry areas (§3.3.4.1.2.6–7), radial-intersection entries (§3.3.3.2.2); VOR/DME DL checked against Diagrams C-13 (35 NM) and C-15 (26 NM). Sector-1 reduction (§3.3.3.3) not built (construction ambiguous).</li>
+                                <li><b>07-E RNAV turns</b> (6 Nov 2026): fly-over / fly-by earliest and latest TP (Table III-2-2-1), 15° / 30° outer joins and 15° / A/2 inner joins (III-2-2 §2.3).</li>
                                 <li><b>06-E RF leg</b> (new, 6 Nov 2026): Doc 9905 Table 3-1 b) speeds, tailwind (ICAO / MA table), minimum radius at 25° (15° above FL 190), bank for a radius, arc length and DTA.</li>
                                 <li><b>08-E Baro-VNAV FAS</b> (new, 2 Nov 2026): III-3-4 §4.3.4.2 FAS angle / origin with App A Δh, Hi bands with FAS′ / FAS″, minimum VPA ≥ 2.5° check, obstacle check.</li>
                                 <li><b>10-F Stepdown fix</b> (new, 2 Nov 2026): g1 / g2, stabilized path vs SDF MOCA (§5.5.4), close-to-fix 15 % plane (I-2-2 §2.7.4).</li>
@@ -5528,6 +5534,13 @@
                 const t = (phi - d) * D;
                 return [a[0] + E * Math.sin(t), a[1] + E * Math.cos(t)];
             },
+            // Table III-2-2-1 (PBN): earliest / latest turning point relative to the waypoint (NM, + before the waypoint); c = reaction + bank delay distance
+            // fly-over: earliest ATT before, latest ATT + c after; fly-by: earliest ATT + TID before, latest TID − ATT − c before (TID = r·tan(A/2))
+            rnavTurnPoints(type, att, r, angleDeg, cDist) {
+                if (type === 'flyover') return { earliest: att, latest: -(att + cDist) };
+                const tid = r * Math.tan(angleDeg / 2 * Math.PI / 180);
+                return { earliest: att + tid, latest: tid - att - cDist, tid };
+            },
             // Track guidance after the turn: navaid tolerance area ±1.0 NM at a VOR splaying 7.8°, ±1.25 NM at an NDB splaying 10.3° (I-4-6, Fig. I-4-6-7)
             navaidBand(aid) { return aid === 'ndb' ? { hw0: 1.25, splay: 10.3 } : { hw0: 1.0, splay: 7.8 }; },
             // §3.3.3 bounding circles (right turn from the origin heading +y, outer edge at the origin, inner edge at x = width):
@@ -5823,6 +5836,8 @@
             { g: 'Turn area', n: 'E for 90° at 30 kt, TAS 254 kt (0.75/R)', ref: 'Table I-2-3-3 (0.65 NM)', exp: 0.65, tol: 0.006, f: () => PANS.windEffect(90, PANS.rate(254, 15), 30) },
             { g: 'Turn area', n: 'c = (TAS + 30)·6/3600, TAS 159 kt', ref: 'Table I-2-3-3 (0.32 NM)', exp: 0.32, tol: 0.006, f: () => PANS.turnCDist(159, 30, 6) },
             { g: 'Turn area', n: 'Wind spiral: wind effect at 90° equals E', ref: 'I-2-3 §3.3.2.2', exp: 0, tol: 1e-9, f: () => { const V = 211, R = PANS.rate(V, 15), r = PANS.radius(V, R), q = PANS.windSpiralPoint(90, r, R, 30, V); return Math.abs(Math.hypot(q[0] - r, q[1] - r) - PANS.windEffect(90, R, 30)); } },
+            { g: 'Turn area', n: 'Fly-over: earliest ATT before, latest ATT + c after', ref: 'Table III-2-2-1', exp: 1, tol: 0, f: () => { const q = PANS.rnavTurnPoints('flyover', 0.8, 2, 60, 0.5); return q.earliest === 0.8 && Math.abs(q.latest + 1.3) < 1e-12 ? 1 : 0; } },
+            { g: 'Turn area', n: 'Fly-by 90°, r 2 NM, ATT 0.8, c 0.5: latest 0.7 NM before', ref: 'Table III-2-2-1 (TID − ATT − c)', exp: 0.7, tol: 1e-9, f: () => PANS.rnavTurnPoints('flyby', 0.8, 2, 90, 0.5).latest },
             { g: 'Turn area', n: 'Bounding circles: extent at 180° of turn = r + 2E beyond X′', ref: 'I-2-3 §3.3.3 (arc r + E about Y)', exp: 0, tol: 1e-9, f: () => { const r = 2, E = 0.5, a = PANS.boundingCircles(r, E, 3)[2]; return Math.abs((a.c[0] + a.R) - (3 + r) - (r + 2 * E)); } },
             { g: 'Turn area', n: 'Navaid band VOR ±1.0 NM / 7.8°, NDB ±1.25 NM / 10.3°', ref: 'I-4-6, Figure I-4-6-7', exp: 1, tol: 0, f: () => { const v = PANS.navaidBand('vor'), n = PANS.navaidBand('ndb'); return v.hw0 === 1 && v.splay === 7.8 && n.hw0 === 1.25 && n.splay === 10.3 ? 1 : 0; } },
             { g: 'Circling', n: 'Cat A radius r, aerodrome 1 000 ft', ref: 'Table I-4-7-2 (0.69 NM)', exp: 0.69, tol: 0.01, f: () => PANS.circlingRadius('A', 1000).r },
@@ -9213,7 +9228,7 @@
             const phiP = o.method === 'circles' ? Math.round(hdgOf(curve[iP - 1], curve[iP])) : iP;
             // ---- nominal track ----
             const Lafter = Math.max(6, 2 * (o.r + E90) + 4, o.guid ? Math.abs(o.fac) + 4 : 0);
-            const T = makeTurtle(0, -o.before - 2, 0).fwd(o.before + 2).turn(th, o.r, true);
+            const T = makeTurtle(0, -o.before - 2, 0).fwd(o.before + 2 - (o.nomStart || 0)).turn(th, o.r, true);   // fly-by: the nominal turn starts TID before the waypoint
             const TE = [T.x, T.y];                                    // end of the nominal turn
             T.fwd(Lafter);
             const nom = T.pts, u2 = dirOf(th), nIn = [u2[1], -u2[0]];  // new track direction; inner (right-hand) normal
@@ -9237,7 +9252,22 @@
             const edgeFrom = (q, side, k) => { const pts = []; for (let sA = along(q); sA <= sEnd + 1e-9; sA += 0.25) pts.push(at(sA, side * k * bandHW(sA))); return pts; };
             // ---- outer boundary after P ----
             let outerAfter, outerNote;
-            if (!band) { outerAfter = [P, ray(P, th - 15, Lafter)]; outerNote = '15° splay (no track guidance)'; }
+            if (!band && o.rnav) {                                      // III-2-2 §2.3.1.1: join the next leg's primary area at 15° (inside) or 30° (outside)
+                const hw2o = o.hw2;
+                if (-off(P) <= hw2o + 1e-6) {
+                    let q = ray(P, th - 15, Lafter);
+                    const d15 = dirOf(th - 15), k = -(d15[0] * nIn[0] + d15[1] * nIn[1]);
+                    if (k > 1e-9) q = ray(P, th - 15, (hw2o + off(P)) / k);
+                    outerAfter = [P, q, at(sEnd, -hw2o)]; outerNote = 'inside the next primary area → 15° to its edge';
+                } else {
+                    let i30 = curve.findIndex((q2, i) => i > 0 && hdgOf(curve[i - 1], q2) >= th + 30 - 0.5);
+                    const T30 = i30 > 0 ? curve[i30] : P;
+                    const d30 = dirOf(th + 30), k = d30[0] * nIn[0] + d30[1] * nIn[1];
+                    const q = k > 1e-9 ? ray(T30, th + 30, Math.max(0, (-off(T30) - hw2o) / k)) : ray(T30, th + 30, Lafter);
+                    outerAfter = [P].concat(i30 > iP ? curve.slice(iP + 1, i30 + 1) : [], [q, at(sEnd, -hw2o)]);
+                    outerNote = 'outside the next primary area → 30° to its edge';
+                }
+            } else if (!band) { outerAfter = [P, ray(P, th - 15, Lafter)]; outerNote = '15° splay (no track guidance)'; }
             else {
                 const sP = along(P), oP = -off(P), wP = bandHW(sP);
                 if (oP > wP + 1e-6) {
@@ -9256,7 +9286,7 @@
             // ---- inner boundary ----
             const hw2 = o.hw2;
             let inner = [], innerNote = '', innerStart;
-            if (o.type === 'tp') {
+            if (o.type === 'tp' || o.rnav) {
                 const K = [o.hw, -o.before]; innerStart = K;
                 const d = off(K);
                 if (d > hw2) {
@@ -9265,6 +9295,10 @@
                     const M = [K[0] + v[0] * t, K[1] + v[1] * t];
                     inner = [K, M, at(sEnd, hw2)];
                     innerNote = 'K-line, converges at A/2 = ' + (th / 2).toFixed(0) + '°';
+                } else if (o.rnav) {                                     // III-2-2 §2.3.2 a): splay 15° to the edge of the next primary area
+                    const d15 = dirOf(th + 15), k = d15[0] * nIn[0] + d15[1] * nIn[1];
+                    const q = k > 1e-9 ? ray(K, th + 15, (hw2 - d) / k) : ray(K, th + 15, Lafter);
+                    inner = [K, q, at(sEnd, hw2)]; innerNote = 'earliest TP, 15° to the next primary edge';
                 } else { inner = [K, ray(K, th + 15, Lafter)]; innerNote = 'K-line, diverges 15°'; }
             } else {
                 innerStart = th < 75 ? [o.hw, -o.before] : [-o.hw, -o.before];
@@ -9318,9 +9352,9 @@
             pt(geo.P, 'P', C.warning);
             if (geo.F) { const m = M(geo.F); cvFix(ctx, C, V.X(m[0]), V.Y(m[1]), (geo.o.guid || '').toUpperCase()); }
             const k = M(geo.Kline[1]);
-            cvLabel(ctx, C, o.type === 'tp' ? 'K-line' : 'TIA start', V.X(k[0]), V.Y(k[1]) + 12, { size: 9, color: C.muted });
+            cvLabel(ctx, C, o.rnav ? 'earliest' : o.type === 'tp' ? 'K-line' : 'TIA start', V.X(k[0]), V.Y(k[1]) + 12, { size: 9, color: C.muted });
             const tp = M([0, 0]);
-            cvFix(ctx, C, V.X(tp[0]), V.Y(tp[1]), o.type === 'tp' ? 'TP' : 'nominal');
+            cvFix(ctx, C, V.X(tp[0]), V.Y(tp[1]), o.rnav ? 'WP' : o.type === 'tp' ? 'TP' : 'nominal');
             cvLabel(ctx, C, '▭ primary' + (geo.secondary.length ? ' · ▭ secondary' : '') + ' · ━ nominal', 10, 34, { align: 'left', size: 9, box: false, color: C.warning });
             cvLabel(ctx, C, (o.method === 'circles' ? 'circles' : 'spiral') + ' · r ' + o.r.toFixed(2) + ' · E90 ' + PANS.windEffect(90, o.R, o.w).toFixed(2) + ' · c ' + o.cDist.toFixed(2), 10, 48, { align: 'left', size: 9, box: false, color: C.muted });
         }
@@ -9329,8 +9363,10 @@
             const g = (id) => parseFloat(document.getElementById(id).value);
             const set = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
             const type = document.getElementById('ta-type').value;
-            document.getElementById('ta-before-lbl').textContent = type === 'tp' ? 'Earliest, before TP (NM)' : 'TIA length, earliest → latest (NM)';
-            document.getElementById('ta-after-lbl').textContent = type === 'tp' ? 'Latest, after TP (NM)' : 'Latest after nominal (NM)';
+            const rnav = type === 'flyover' || type === 'flyby';
+            document.getElementById('ta-before-lbl').textContent = rnav ? 'ATT (NM)' : type === 'tp' ? 'Earliest, before TP (NM)' : 'TIA length, earliest → latest (NM)';
+            document.getElementById('ta-after-lbl').textContent = rnav ? 'Latest (from Table III-2-2-1)' : type === 'tp' ? 'Latest, after TP (NM)' : 'Latest after nominal (NM)';
+            document.getElementById('ta-after').disabled = rnav;
             const ph = PANS.turnPhase(document.getElementById('ta-phase').value);
             const ias = g('ta-ias'), alt = g('ta-alt'), angle = g('ta-angle'), hw = g('ta-hw');
             document.getElementById('ta-bank').placeholder = 'Auto ' + ph.bank;
@@ -9345,7 +9381,14 @@
             const guid = document.getElementById('ta-guid').value;
             document.getElementById('ta-guid-grp').style.display = guid === 'none' ? 'none' : 'flex';
             const fac = g('ta-fac');
-            const o = { type, angle, hw, hw2: g('ta-hw2') > 0 ? g('ta-hw2') : hw, before: Math.max(0, g('ta-before') || 0), after: Math.max(0, g('ta-after') || 0),
+            let before = Math.max(0, g('ta-before') || 0), after = Math.max(0, g('ta-after') || 0), nomStart = 0;
+            if (rnav) {                                                // Table III-2-2-1; geometry: y_A = after + c, so after = −latest − c
+                const q = PANS.rnavTurnPoints(type, before, r, angle, cDist);
+                after = -q.latest - cDist; before = q.earliest; nomStart = q.tid || 0;
+                document.getElementById('ta-after').value = '';
+                document.getElementById('ta-after').placeholder = (q.latest >= 0 ? q.latest.toFixed(2) + ' before' : (-q.latest).toFixed(2) + ' after') + ' WP';
+            }
+            const o = { type, rnav, angle, hw, hw2: g('ta-hw2') > 0 ? g('ta-hw2') : hw, before, after, nomStart,
                 V, R, r, w, cDist, method: document.getElementById('ta-method').value, guid: guid !== 'none' && !isNaN(fac) ? guid : null, fac: isNaN(fac) ? 0 : fac };
             const geo = turnAreaGeometry(o);
             const f2 = (n) => n.toFixed(2);
