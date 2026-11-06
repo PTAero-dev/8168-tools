@@ -15,7 +15,7 @@ Guide for Claude Code sessions working on this repo. Read this first; details ar
 3. **Never commit the ICAO PDFs** (`*.pdf` is git-ignored; they are ICAO copyright). Don't delete them either.
 4. **Every formula must trace to a Doc paragraph** and live in the `PANS` object with a comment reference.
    Add a self-test case to `PANS_TESTS` for every new or changed formula, using Doc tables / worked examples where possible.
-   The QA sheet must stay 100 % passing (currently **177/177**).
+   The QA sheet must stay 100 % passing (currently **178/178**).
 5. **Verify against the PDFs**, not memory. If something can't be verified, say so in the UI and the QA audit card.
 6. The user tests on an **Android phone** and sends screenshots. Every change must work at ~360 px width with no horizontal overflow.
 7. Keep the **Blueprint theme** (CSS variables; drawings use `bpColors()` — never hard-code colours) and the light "Whiteprint" theme.
@@ -48,7 +48,7 @@ Guide for Claude Code sessions working on this repo. Read this first; details ar
 | 10 | Circling & Visual Segment | `circ` | 10-A circling area / OCA/H (I-4-7), 10-B visual segment surface (I-4-5 §5.4.6), 10-C NPA OCA/H (I-4-5 §5.4), 10-D CDFA altitude/distance table, 10-E NPA missed approach, 10-F stepdown fix / obstacles close to a fix |
 | 11 | MSA & TAA | `msa` | 11-A MSA sectors / DME-arc subsectors (I-4-8), TAA straight-in / left / right base (III-2-4); obstacle list in a textarea |
 | 12 | En-route & DME Arc | `enr` | 12-A en-route VOR/NDB segment: widths, MOC, MOCA, turn (II-3-1); 12-B DME arc area / lead radial (I-4-3 §3.3) |
-| 13 | Coordinates (WGS-84) | `geo` | 13-A inverse distance / bearing, 13-B direct (Vincenty), true ↔ magnetic |
+| 13 | Coordinates (WGS-84) | `geo` | 13-A inverse distance / bearing, 13-B direct (Vincenty), true ↔ magnetic, 13-C obstacle list import → 07-D / 05-A / 11 / 12-A |
 | QA | Doc 8168 Self-test | `selftest` | QA-1 reference checks, QA-2 formula audit list |
 
 URL hash deep links: `#turn`, `#holdb`, `#pt`, …
@@ -120,7 +120,6 @@ Card in `tab-desc` (sheet 07 renamed "Departure & Missed Approach"): `PANS.depSt
 
 ### Backlog (agreed with the user, in rough priority)
 - (Holding done. Sector-1 area reduction §3.3.3.3 deliberately left out — user decision 2 Nov 2026: the Doc construction is ambiguous; the card says so.)
-- Obstacle list import (CSV) checked in one go against PDG, holding and departure surfaces.
 - Real-device testing by the user (install, offline, print to PDF on phone) — the user's own step; not picked by "continue".
 - RNAV turn follow-ups (optional): fly-by maximum-speed extension (III-2-2 §2.3.1.2), constant-width secondary in the turn (§2.3.1.3), circular arc method for small turns (§2.2).
 - Optional: renumber sheets/cards to the new section order (currently original numbers kept; 02R added).

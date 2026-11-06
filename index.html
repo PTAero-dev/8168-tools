@@ -928,6 +928,7 @@
         .oca-table th { font-size: 0.62rem; }
         textarea { width: 100%; min-height: 120px; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-input);
             color: var(--text-main); font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.5; resize: vertical; box-sizing: border-box; }
+        .imp-actions { flex-wrap: wrap; gap: 6px; }
         /* foldable long notes */
         .note-fold > .note-title { cursor: pointer; user-select: none; display: flex; align-items: center; gap: 8px; margin-bottom: 0; }
         .note-fold > .note-title::after { content: '▾'; margin-left: auto; font-size: 0.8rem; color: var(--text-muted); transition: transform 0.15s; }
@@ -5169,6 +5170,62 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- 13-C OBSTACLE IMPORT -->
+                <div class="card" id="card-imp">
+                    <div class="card-header minimizable" onclick="toggleCard(this)">
+                        <div class="card-heading"><span class="card-tag">13-C</span>
+                            <div class="card-title">Obstacle List Import (CSV)</div>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-reset" onclick="event.stopPropagation(); resetCard('card-imp', ['imp-csv', 'imp-plat', 'imp-plon', 'imp-trk', 'imp-qlat', 'imp-qlon'], 'calcImport');">↺ Reset</button>
+                        </div>
+                    </div>
+                    <div class="card-body split">
+                        <div class="form-grid">
+                            <div class="vp-input-group">
+                                <label>Obstacles: name, latitude, longitude, elevation ft — one per line (paste from a spreadsheet or load a .csv)</label>
+                                <textarea id="imp-csv" rows="7" placeholder="Tower, 13 43 10.2 N, 100 46 55.0 E, 420&#10;Hill, 134512.0N, 1004130.0E, 1250" oninput="calcImport()"></textarea>
+                            </div>
+                            <div class="vp-row">
+                                <button class="btn-mini" type="button" onclick="document.getElementById('imp-file').click()">⤒ Load .csv</button>
+                                <input type="file" id="imp-file" accept=".csv,.txt,text/csv" hidden onchange="impLoadFile(this)">
+                                <span id="imp-count" class="coord-hint" style="align-self: center;"></span>
+                            </div>
+                            <div class="section-label">Reference point P (DER / holding fix / MSA centre / en-route A) · second point Q (en-route B)</div>
+                            <div class="vp-row">
+                                <div class="vp-input-group"><label>P latitude</label><input type="text" id="imp-plat" placeholder="13 41 26.50 N" oninput="calcImport()"></div>
+                                <div class="vp-input-group"><label>P longitude</label><input type="text" id="imp-plon" placeholder="100 45 01.20 E" oninput="calcImport()"></div>
+                                <div class="vp-input-group"><label>Departure track (°T)</label><input type="number" id="imp-trk" placeholder="DER only" step="0.01" oninput="calcImport()"></div>
+                            </div>
+                            <div class="vp-row">
+                                <div class="vp-input-group"><label>Q latitude<span class="opt">OPT</span></label><input type="text" id="imp-qlat" placeholder="en-route B" oninput="calcImport()"></div>
+                                <div class="vp-input-group"><label>Q longitude<span class="opt">OPT</span></label><input type="text" id="imp-qlon" placeholder="en-route B" oninput="calcImport()"></div>
+                            </div>
+                            <div class="vp-row imp-actions">
+                                <button class="btn-mini primary" type="button" onclick="impSend('dep')" title="P = DER, with the departure track">→ 07-D Departure</button>
+                                <button class="btn-mini primary" type="button" onclick="impSend('hold')" title="P = holding fix; uses the area drawn on 05-A">→ 05-A Holding</button>
+                                <button class="btn-mini primary" type="button" onclick="impSend('msa')" title="P = MSA reference point; bearings magnetic with the variation on 13-A">→ 11 MSA</button>
+                                <button class="btn-mini primary" type="button" onclick="impSend('enr')" title="P = facility A, Q = facility B">→ 12-A En-route</button>
+                            </div>
+                        </div>
+                        <div class="form-grid">
+                            <div class="results-panel flush">
+                                <div class="result-row key"><span class="result-label">Last transfer</span><span id="imp-res" class="result-value c-success">---</span></div>
+                            </div>
+                            <div class="table-wrap"><table class="qa-table"><thead><tr><th>Obstacle</th><th>From P (°T / NM)</th><th>Elev</th></tr></thead><tbody id="imp-rows"></tbody></table></div>
+                            <div class="note">
+                                <div class="note-title">Reference</div>
+                                Positions are converted on WGS-84 (13-A). Departure: P is the DER and the track the departure track; obstacles inside the straight departure area
+                                — 150 m each side at the DER (Cat H 45 m) splaying 15° (Doc 8168 Vol II I-3-3 §3.2.4.1) — are written to 07-D with their distance from the DER.
+                                Holding: P is the holding fix and the check uses the holding area last drawn on 05-A (same inbound track and turns): the highest obstacle inside it,
+                                and the buffer obstacle needing the highest level with its distance beyond the area (Table II-4-1-1), are written to 05-A. MSA: bearings / distances
+                                from P (magnetic when a variation is entered on 13-A) to sheet 11. En-route: along-track distance and offset relative to the geodesic P → Q to 12-A
+                                (plane approximation of the offset, adequate for route segments). Check the transferred values on each sheet.
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -5236,6 +5293,7 @@
                                 <li><b>05-A Holding</b> (new): Table II-4-1-2 speeds, ISA+15, ICAO wind, template Table I-4-3-App C-4 (all 33 lines), entry sectors, buffer MOC. Omnidirectional entry area §3.3.3.2.1 (curves 5–8, convex-envelope approximation); template extents checked against Diagram I-4-3-App C-6.</li>
                                 <li><b>05-A VOR/DME holding</b> (new, 2 Nov 2026): §3.3.4 distance parameters (Ds, DL rounding, DLs, d1/d2) and basic area towards / away from the station (convex-envelope approximation; along-radial entry areas not drawn).</li>
                                 <li><b>05-A holding entries</b> (new, 2 Nov 2026): VOR/DME sector 1 DME-arc and sector 2 entry areas (§3.3.4.1.2.6–7), radial-intersection entries (§3.3.3.2.2); VOR/DME DL checked against Diagrams C-13 (35 NM) and C-15 (26 NM). Sector-1 reduction (§3.3.3.3) not built (construction ambiguous).</li>
+                                <li><b>13-C Obstacle import</b> (new, 6 Nov 2026): CSV / pasted lat-lon obstacles to 07-D (departure area I-3-3 §3.2.4.1), 05-A (holding area / buffer), 11 (MSA) and 12-A (en-route).</li>
                                 <li><b>13 Coordinates</b> (new, 6 Nov 2026): WGS-84 Vincenty inverse / direct (checked against Vincenty's example), DMS input formats, true ↔ magnetic.</li>
                                 <li><b>12-B DME arc</b> (new, 6 Nov 2026): minimum radius, initial-approach area width with splay, lead distance and lead radial (I-4-3 §3.3.2–3.3.3, I-4-2 §2.1.1.10).</li>
                                 <li><b>12 En-route</b> (new, 6 Nov 2026): VOR / NDB area widths and splay (Table II-3-1-1), MOC / mountainous MOC, MOCA from an obstacle list, turn r / E165° / T (Doc example §1.4.3.4 checked).</li>
@@ -6235,6 +6293,7 @@
             { g: 'Geodesy', n: 'Vincenty inverse: Flinders Peak → Buninyong distance', ref: 'Vincenty (1975) example, WGS-84 (54 972.271 m)', exp: 54972.271, tol: 0.01, f: () => PANS.vincentyInverse(PANS.parseCoord('37 57 03.72030 S', true), PANS.parseCoord('144 25 29.52440 E', false), PANS.parseCoord('37 39 10.15610 S', true), PANS.parseCoord('143 55 35.38390 E', false)).dist },
             { g: 'Geodesy', n: 'Vincenty inverse: initial azimuth 306°52′05.37″', ref: 'Vincenty (1975) example', exp: 306 + 52 / 60 + 5.37 / 3600, tol: 0.5 / 3600, f: () => PANS.vincentyInverse(-(37 + 57 / 60 + 3.7203 / 3600), 144 + 25 / 60 + 29.5244 / 3600, -(37 + 39 / 60 + 10.1561 / 3600), 143 + 55 / 60 + 35.3839 / 3600).az1 },
             { g: 'Geodesy', n: 'Direct ↔ inverse round trip (100 NM, 045°)', ref: 'consistency', exp: 0, tol: 1e-6, f: () => { const q = PANS.vincentyDirect(13.69, 100.75, 45, 185200); return Math.abs(PANS.vincentyInverse(13.69, 100.75, q.lat, q.lon).dist - 185200); } },
+            { g: 'Geodesy', n: 'Departure area half-width 1 NM past the DER', ref: 'I-3-3 §3.2.4.1 (150 m + 15° splay)', exp: 150 / 1852 + Math.tan(15 * Math.PI / 180), tol: 1e-12, f: () => depAreaHalfWidth(1, false) },
             { g: 'Geodesy', n: 'Parse "134126.50N" = 13°41′26.50″', ref: 'input format', exp: 13 + 41 / 60 + 26.5 / 3600, tol: 1e-9, f: () => PANS.parseCoord('134126.50N', true) },
             { g: 'DME arc', n: 'Minimum radius initial 7 NM, Cat H 5 NM, arrival 10 NM', ref: 'I-4-3 §3.3.2, I-4-2 §2.1.1.10', exp: 1, tol: 0, f: () => PANS.dmeArcMinRadius('initial', false) === 7 && PANS.dmeArcMinRadius('initial', true) === 5 && PANS.dmeArcMinRadius('arrival', false) === 10 ? 1 : 0 },
             { g: 'DME arc', n: 'Lead radial offset for 2 NM on a 12 NM arc', ref: 'I-4-3 §3.3.2 (2 NM lead)', exp: 2 / 12 * 180 / Math.PI, tol: 1e-9, f: () => PANS.dmeArcLeadDeg(2, 12) },
@@ -8952,7 +9011,7 @@
             if (lim) document.getElementById('btp-ob-unit').textContent = lim.checked ? 'min' : 'DME';
             run('toggleVnpIls');
             ['calcTAS', 'calcTempCorr', 'calcTurn', 'calcPT', 'calcBaseTurn', 'calcBaseTurnPhi', 'drawTurnViz', 'calcHoldB',
-                'calcPBN', 'calcTolerance', 'calcVEB', 'calcDescent', 'calcEqObs', 'calcReaction', 'calcVnavPapi', 'calcHoldArea', 'calcRnpHold', 'calcRacetrack', 'calcTurnArea', 'calcCircling', 'calcVss', 'calcNpaOca', 'calcCdfa', 'calcMissed', 'calcSdf', 'calcFas', 'calcMsa', 'calcRf', 'calcEnroute', 'calcArc', 'calcGeo', 'calcIfix', 'calcPathTerm', 'calcMsd', 'calcDeparture'].forEach((f) => run(f));
+                'calcPBN', 'calcTolerance', 'calcVEB', 'calcDescent', 'calcEqObs', 'calcReaction', 'calcVnavPapi', 'calcHoldArea', 'calcRnpHold', 'calcRacetrack', 'calcTurnArea', 'calcCircling', 'calcVss', 'calcNpaOca', 'calcCdfa', 'calcMissed', 'calcSdf', 'calcFas', 'calcMsa', 'calcRf', 'calcEnroute', 'calcArc', 'calcGeo', 'calcImport', 'calcIfix', 'calcPathTerm', 'calcMsd', 'calcDeparture'].forEach((f) => run(f));
             gradLegIds().forEach((id) => run('calculateGradient', id));
         }
 
@@ -9514,6 +9573,7 @@
                 ['32 XE', f2(tp.XE)], ['33 YE', f2(tp.YE)]];
             document.getElementById('hold-lines').innerHTML = L.map(([k, v]) => '<tr><td>' + k + '</td><td class="num">' + v + '</td></tr>').join('');
 
+            window._holdGeom = { area: holdArea, inbound, left };          // used by the obstacle import on sheet 13
             drawHoldViz({ tp, geo, fa, basic, entry, buffer, inbound, left, T, V, wind, dme });
         }
 
@@ -10599,6 +10659,87 @@
         }
 
         // =========================================================
+        // 13-C OBSTACLE LIST IMPORT → 07-D / 05-A / 11 / 12-A
+        // =========================================================
+        // I-3-3 §3.2.4.1: straight departure area half-width (NM) at d NM past the DER
+        function depAreaHalfWidth(dNm, catH) { return (catH ? 45 : 150) / 1852 + Math.max(0, dNm) * Math.tan(15 * Math.PI / 180); }
+        function impParse() {
+            return document.getElementById('imp-csv').value.split(/\n/).map((l) => l.split(/[,;\t]/).map((x) => x.trim())).filter((a) => a.length >= 4)
+                .map((a) => ({ n: a[0].replace(/[<>&]/g, ''), lat: PANS.parseCoord(a[1], true), lon: PANS.parseCoord(a[2], false), e: parseFloat(a[3]) }))
+                .filter((o) => !isNaN(o.lat) && !isNaN(o.lon) && !isNaN(o.e));
+        }
+        function impRef(prefix) {
+            const la = PANS.parseCoord(document.getElementById(prefix + 'lat').value, true), lo = PANS.parseCoord(document.getElementById(prefix + 'lon').value, false);
+            return isNaN(la) || isNaN(lo) ? null : { lat: la, lon: lo };
+        }
+        function impLoadFile(inp) {
+            const f = inp.files && inp.files[0];
+            if (!f) return;
+            const rd = new FileReader();
+            rd.onload = () => { const t = document.getElementById('imp-csv'); t.value = String(rd.result); t.dispatchEvent(new Event('input', { bubbles: true })); };
+            rd.readAsText(f);
+            inp.value = '';
+        }
+        function calcImport() {
+            const obs = impParse(), P = impRef('imp-p');
+            document.getElementById('imp-count').textContent = obs.length + ' obstacle' + (obs.length === 1 ? '' : 's') + ' read';
+            document.getElementById('imp-rows').innerHTML = obs.slice(0, 200).map((o) => {
+                let rel = '—';
+                if (P) { const r = PANS.vincentyInverse(P.lat, P.lon, o.lat, o.lon); rel = r.az1.toFixed(1) + '° / ' + (r.dist / 1852).toFixed(2); }
+                return '<tr><td>' + o.n + '</td><td class="num">' + rel + '</td><td class="num">' + Math.round(o.e) + '</td></tr>';
+            }).join('');
+        }
+        function impSend(target) {
+            const set = (t) => { document.getElementById('imp-res').textContent = t; };
+            const obs = impParse(), P = impRef('imp-p');
+            if (!obs.length) { set('no obstacles read'); return; }
+            if (!P) { set('enter reference point P'); return; }
+            const rel = obs.map((o) => { const r = PANS.vincentyInverse(P.lat, P.lon, o.lat, o.lon); return Object.assign({}, o, { brg: r.az1, d: r.dist / 1852 }); });
+            const setVal = (id, v) => { const el = document.getElementById(id); if (!el) return; el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); };
+            if (target === 'dep') {
+                const trk = parseFloat(document.getElementById('imp-trk').value);
+                if (isNaN(trk)) { set('enter the departure track'); return; }
+                const catH = document.getElementById('dep-cat').value === 'H';
+                const inside = rel.map((o) => ({ o, along: o.d * Math.cos((o.brg - trk) * DEG), lat: o.d * Math.sin((o.brg - trk) * DEG) }))
+                    .filter((q) => q.along >= 0 && Math.abs(q.lat) <= depAreaHalfWidth(q.along, catH));
+                DEP_ROWS = inside.map((q) => ({ n: q.o.n, d: +q.along.toFixed(2), e: q.o.e }));
+                depSave(); calcDeparture();
+                set(inside.length + ' of ' + obs.length + ' inside the departure area → 07-D');
+            } else if (target === 'hold') {
+                const hg = window._holdGeom;
+                if (!hg || !hg.area) { set('draw the holding area on 05-A first'); return; }
+                const th = hg.inbound * DEG, sx = hg.left ? -1 : 1;
+                const W = ([x, y]) => { const X = x * sx; return [y * Math.sin(th) + X * Math.cos(th), y * Math.cos(th) - X * Math.sin(th)]; };
+                const poly = hg.area.map(W);
+                let hiA = null, best = null;
+                rel.forEach((o) => {
+                    const q = [o.d * Math.sin(o.brg * DEG), o.d * Math.cos(o.brg * DEG)];
+                    if (pointInPoly(q, poly)) { if (!hiA || o.e > hiA.e) hiA = o; return; }
+                    const dist = distToPoly(q, poly);
+                    if (dist > 5) return;
+                    const req = o.e + PANS.bufferMoc(dist);
+                    if (!best || req > best.req) best = { o, dist, req };
+                });
+                if (hiA) setVal('hold-obs', Math.round(hiA.e));
+                if (best) { setVal('hold-obs-buf', Math.round(best.o.e)); setVal('hold-obs-dist', best.dist.toFixed(2)); }
+                set('area: ' + (hiA ? hiA.n + ' ' + Math.round(hiA.e) : 'none') + ' · buffer: ' + (best ? best.o.n + ' ' + Math.round(best.o.e) + ' at ' + best.dist.toFixed(2) + ' NM' : 'none') + ' → 05-A');
+            } else if (target === 'msa') {
+                const vr = typeof geoVar === 'function' ? geoVar() : null;
+                const out = rel.filter((o) => o.d <= PANS.msaRadius + PANS.msaBuffer + 0.5).map((o) => (((o.brg - (vr || 0)) % 360 + 360) % 360).toFixed(1) + ', ' + o.d.toFixed(2) + ', ' + Math.round(o.e) + ', ' + o.n);
+                setVal('msa-obs', out.join('\n'));
+                set(out.length + ' within 30 NM → 11 (' + (vr === null ? 'true' : 'magnetic') + ' bearings)');
+            } else if (target === 'enr') {
+                const Q = impRef('imp-q');
+                if (!Q) { set('enter Q (facility B)'); return; }
+                const ab = PANS.vincentyInverse(P.lat, P.lon, Q.lat, Q.lon), len = ab.dist / 1852;
+                const out = rel.map((o) => (o.d * Math.cos((o.brg - ab.az1) * DEG)).toFixed(2) + ', ' + (o.d * Math.sin((o.brg - ab.az1) * DEG)).toFixed(2) + ', ' + Math.round(o.e) + ', ' + o.n);
+                setVal('enr-len', len.toFixed(1));
+                setVal('enr-obs', out.join('\n'));
+                set(out.length + ' obstacles, segment ' + len.toFixed(1) + ' NM → 12-A');
+            }
+        }
+
+        // =========================================================
         // 02-E RACETRACK PROTECTED AREA (I-4-3 §3.4, §3.6–3.8; App C §3.3) — holding template engine
         // =========================================================
         function calcRacetrack() {
@@ -11534,7 +11675,7 @@
                 if (id === 'tab-circ') { calcCircling(); calcVss(); calcNpaOca(); calcCdfa(); calcMissed(); calcSdf(); }
                 if (id === 'tab-msa') calcMsa();
                 if (id === 'tab-enr') { calcEnroute(); calcArc(); }
-                if (id === 'tab-geo') calcGeo();
+                if (id === 'tab-geo') { calcGeo(); calcImport(); }
                 if (id === 'tab-holdb') { calcHoldArea(); calcRnpHold(); }
                 if (id === 'tab-tol') { calcIfix(); calcRf(); }
                 if (id === 'tab-pt') { ptRenderReference(); calcPathTerm(); calcMsd(); }
